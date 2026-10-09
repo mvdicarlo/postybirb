@@ -1,17 +1,16 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
-  ILoginState,
   ImageResizeProps,
+  LoginResult,
   PostData,
   PostResponse,
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -72,14 +71,14 @@ export default class Itaku
       notificationFolders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
-    const localStorage = await BrowserWindowUtils.getLocalStorage<{
+  public async onLogin(): Promise<LoginResult> {
+    const localStorage = await this.platform.browser.getLocalStorage<{
       token: string;
     }>(this.accountId, this.BASE_URL);
 
     if (localStorage.token) {
       this.sessionData.token = localStorage.token.replace(/"/g, '');
-      const user = await Http.get<ItakuUserInfo>(
+      const user = await this.platform.http.get<ItakuUserInfo>(
         `${this.BASE_URL}/api/auth/user/`,
         {
           partition: this.accountId,
@@ -89,19 +88,17 @@ export default class Itaku
         },
       );
 
-      this.loginState.setLogin(true, user.body.profile.displayname);
       this.sessionData.profile = user.body.profile;
       await this.retrieveFolders();
-    } else {
-      this.loginState.logout();
+      return { loggedIn: true, username: user.body.profile.displayname };
     }
 
-    return this.loginState;
+    return { loggedIn: false };
   }
 
   private async retrieveFolders(): Promise<void> {
     try {
-      const notificationFolderRes = await Http.get<
+      const notificationFolderRes = await this.platform.http.get<
         { id: string; num_images: number; title: string }[]
       >(
         `${this.BASE_URL}/api/post_folders/?owner=${this.sessionData.profile.owner}`,
@@ -119,7 +116,7 @@ export default class Itaku
           label: f.title,
         }));
 
-      const galleryFolderRes = await Http.get<{
+      const galleryFolderRes = await this.platform.http.get<{
         count: number;
         links: object;
         results: {
@@ -171,7 +168,7 @@ export default class Itaku
     return new ItakuFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -179,10 +176,18 @@ export default class Itaku
     postData: PostData<ItakuFileSubmission>,
     file: PostingFile,
     isBatch: boolean,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<{ id: number }> {
-    const spoilerText =
-      postData.options.contentWarning || file.metadata.spoilerText;
+    const maxContentWarningLength =
+      new ItakuFileSubmission().getFormFieldFor('contentWarning')?.maxLength ??
+      Infinity;
+    const spoilerText = (
+      postData.options.contentWarning ||
+      file.metadata.spoilerText ||
+      ''
+    )
+      .trim()
+      .slice(0, maxContentWarningLength);
 
     if (
       !(file.fileType === FileType.IMAGE || file.fileType === FileType.VIDEO)
@@ -205,7 +210,7 @@ export default class Itaku
       .setField('maturity_rating', this.convertRating(postData.options.rating))
       .setField('visibility', postData.options.visibility)
       .setConditional(
-        'share_on_feed',
+        'add_to_feed',
         isBatch || postData.options.shareOnFeed,
         postData.options.shareOnFeed,
       )
@@ -224,26 +229,22 @@ export default class Itaku
 
   async postSubmission(
     postData: PostData<ItakuFileSubmission | ItakuMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     uploadedFiles?: { id: number }[],
   ): Promise<PostResponse> {
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
       .setField('title', postData.options.title)
-      .setField('content', postData.options.description)
-      .setField('folders', postData.options.folders)
-      .setField('tags', postData.options.tags.join(','))
+      .setField('content', postData.options.description ?? '')
+      .setField('folders', postData.options.folders ?? [])
+      .setField(
+        'tags',
+        postData.options.tags.map((tag) => ({ name: tag })),
+      )
       .setField('maturity_rating', this.convertRating(postData.options.rating))
       .setField('visibility', postData.options.visibility)
-      .setField(
-        'gallery_images',
-        uploadedFiles?.map((file) => file.id),
-      )
-      .setConditional(
-        'content_warning',
-        !!postData.options.contentWarning,
-        postData.options.contentWarning,
-      )
+      .setField('gallery_images', uploadedFiles?.map((file) => file.id) ?? [])
+      .setField('content_warning', postData.options.contentWarning ?? '')
       .withHeader('Authorization', `Token ${this.sessionData.token}`);
 
     const post = await builder.send<{ id: number }>(
@@ -264,9 +265,9 @@ export default class Itaku
   async onPostFileSubmission(
     postData: PostData<ItakuFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const isBatch = files.length > 1;
 
     const uploadedFiles = await Promise.all(
@@ -318,9 +319,9 @@ export default class Itaku
 
   async onPostMessageSubmission(
     postData: PostData<ItakuMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     return this.postSubmission(postData, cancellationToken);
   }
 

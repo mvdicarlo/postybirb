@@ -1,15 +1,13 @@
-import { Http } from '@postybirb/http';
 import {
-  ILoginState,
   ImageResizeProps,
+  LoginResult,
   PostData,
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -39,6 +37,7 @@ import { PillowfortMessageSubmission } from './models/pillowfort-message-submiss
   acceptedFileSizes: {
     '*': FileSize.megabytes(2),
   },
+  fileBatchSize: 100,
 })
 export default class Pillowfort
   extends Website<PillowfortAccountData>
@@ -51,13 +50,18 @@ export default class Pillowfort
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<PillowfortAccountData> =
     {};
 
-  public async onLogin(): Promise<ILoginState> {
+  protected readonly cookieIgnoreList = ['_Pf_reset_session'];
+
+  public async onLogin(): Promise<LoginResult> {
     try {
-      const res = await Http.get<string>(this.BASE_URL, {
+      const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
       });
 
-      await BrowserWindowUtils.getLocalStorage(this.accountId, this.BASE_URL);
+      await this.platform.browser.getLocalStorage(
+        this.accountId,
+        this.BASE_URL,
+      );
 
       if (res.body.includes('/signout')) {
         const html = parse(res.body);
@@ -65,13 +69,13 @@ export default class Pillowfort
           html
             .querySelector('option[value="current_user"]')
             ?.innerText.trim() || 'Unknown';
-        return this.loginState.setLogin(true, username);
+        return { loggedIn: true, username };
       }
 
-      return this.loginState.logout();
+      return { loggedIn: false };
     } catch (e) {
       this.logger.error('Failed to login', e);
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 
@@ -79,21 +83,23 @@ export default class Pillowfort
     return new PillowfortFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
-    // PillowFort max file size is 2MB, we'll use default resizing logic
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
   async onPostFileSubmission(
     postData: PostData<PillowfortFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     try {
       // Get form page and CSRF token
-      const page = await Http.get<string>(`${this.BASE_URL}/posts/new`, {
-        partition: this.accountId,
-      });
+      const page = await this.platform.http.get<string>(
+        `${this.BASE_URL}/posts/new`,
+        {
+          partition: this.accountId,
+        },
+      );
 
       // Extract CSRF token
       const html = parse(page.body);
@@ -111,10 +117,10 @@ export default class Pillowfort
       const uploadedImages: Array<{ full_image: string; small_image: string }> =
         [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         // Upload the image
-        const upload = await Http.post<{
+        const upload = await this.platform.http.post<{
           full_image: string;
           small_image: string;
         }>(`${this.BASE_URL}/image_upload`, {
@@ -154,6 +160,11 @@ export default class Pillowfort
         .setField('commit', 'Submit')
         .setConditional('rebloggable', postData.options.allowReblogging, 'on')
         .setConditional('commentable', postData.options.allowComments, 'on')
+        .setConditional(
+          'nsfw',
+          postData.options.rating !== SubmissionRating.GENERAL,
+          'on',
+        )
         .setField(
           'picture[][pic_url]',
           uploadedImages.map((upload) => upload.full_image),
@@ -182,9 +193,7 @@ export default class Pillowfort
         .withAdditionalInfo(post.body);
     } catch (e) {
       this.logger.error('Failed to post submission', e);
-      return PostResponse.fromWebsite(this)
-        .withMessage(e.message)
-        .withException(e);
+      return PostResponse.fromWebsite(this).withException(e);
     }
   }
 
@@ -196,13 +205,16 @@ export default class Pillowfort
 
   async onPostMessageSubmission(
     postData: PostData<PillowfortMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     try {
       // Get form page and CSRF token
-      const page = await Http.get<string>(`${this.BASE_URL}/posts/new`, {
-        partition: this.accountId,
-      });
+      const page = await this.platform.http.get<string>(
+        `${this.BASE_URL}/posts/new`,
+        {
+          partition: this.accountId,
+        },
+      );
 
       // Extract CSRF token
       const html = parse(page.body);
@@ -250,9 +262,7 @@ export default class Pillowfort
         .withAdditionalInfo(post.body);
     } catch (e) {
       this.logger.error('Failed to post submission', e);
-      return PostResponse.fromWebsite(this)
-        .withMessage(e.message)
-        .withException(e);
+      return PostResponse.fromWebsite(this).withException(e);
     }
   }
 

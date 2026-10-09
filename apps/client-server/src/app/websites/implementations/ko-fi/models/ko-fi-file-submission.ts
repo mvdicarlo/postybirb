@@ -18,17 +18,17 @@ export class KoFiFileSubmission extends BaseWebsiteOptions {
   @TagField({
     hidden: true,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @RatingField({
     options: [{ value: SubmissionRating.GENERAL, label: 'General' }],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @SelectField<KoFiAccountData>({
     label: 'folder',

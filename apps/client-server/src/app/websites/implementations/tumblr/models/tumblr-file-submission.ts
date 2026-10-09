@@ -2,11 +2,14 @@ import {
   BooleanField,
   DescriptionField,
   SelectField,
+  TagField,
 } from '@postybirb/form-builder';
 import {
+  DefaultTagValue,
   DescriptionType,
   DescriptionValue,
   SubmissionRating,
+  TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { TumblrAccountData } from './tumblr-account-data';
@@ -14,22 +17,17 @@ import { TumblrAccountData } from './tumblr-account-data';
 export class TumblrFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
+    expectsInlineTitle: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
-  @SelectField<TumblrAccountData>({
-    label: 'blog',
-    options: [],
-    required: true,
-    derive: [
-      {
-        key: 'blogs',
-        populate: 'options',
-      },
-    ],
+  @TagField({
+    section: 'common',
+    order: 3,
     span: 12,
+    spaceReplacer: ' ',
   })
-  blog: string;
+  tags: TagValue = DefaultTagValue();
 
   @BooleanField({
     label: 'drugUse',
@@ -78,4 +76,18 @@ export class TumblrFileSubmission extends BaseWebsiteOptions {
     ],
   })
   sexualContent = false;
+
+  @SelectField<TumblrAccountData>({
+    label: 'blog',
+    options: [],
+    required: true,
+    derive: [
+      {
+        key: 'blogs',
+        populate: 'options',
+      },
+    ],
+    span: 6,
+  })
+  blog: string;
 }

@@ -1,14 +1,14 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { NOTIFICATION_UPDATES } from '@postybirb/socket-events';
+import { Notification, NotificationRepository } from '@postybirb/database';
+import { PlatformService } from '@postybirb/platform';
 import { EntityId } from '@postybirb/types';
-import { Notification as ElectronNotification } from 'electron';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Notification } from '../drizzle/models/notification.entity';
 import { SettingsService } from '../settings/settings.service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateNotificationDto } from './dtos/create-notification.dto';
 import { UpdateNotificationDto } from './dtos/update-notification.dto';
+import { NOTIFICATION_EVENT_PREFIX } from './notification.events';
 
 /**
  * Service responsible for managing application notifications.
@@ -16,19 +16,21 @@ import { UpdateNotificationDto } from './dtos/update-notification.dto';
  * sending desktop notifications based on user settings.
  */
 @Injectable()
-export class NotificationsService extends PostyBirbService<'NotificationSchema'> {
+export class NotificationsService extends PostyBirbService<NotificationRepository> {
   /**
    * Creates a new instance of the NotificationsService.
    *
    * @param settingsService - Service for accessing application settings
-   * @param webSocket - Optional websocket gateway for emitting events
+   * @param platform - Platform service for desktop notifications
+   * @param eventEmitter - Event emitter for CRUD event publication
    */
   constructor(
     private readonly settingsService: SettingsService,
-    @Optional() webSocket?: WSGateway,
+    private readonly platform: PlatformService,
+    eventEmitter: EventEmitter2,
   ) {
-    super('NotificationSchema', webSocket);
-    this.repository.subscribe('NotificationSchema', () => this.emit());
+    super(new NotificationRepository());
+    this.configureCrudEvents(NOTIFICATION_EVENT_PREFIX, eventEmitter);
     this.removeStaleNotifications();
   }
 
@@ -47,7 +49,7 @@ export class NotificationsService extends PostyBirbService<'NotificationSchema'>
         new Date(notification.createdAt).getTime() < aMonthAgo.getTime(),
     );
     if (staleNotifications.length) {
-      await this.repository.deleteById(staleNotifications.map((n) => n.id));
+      await this.removeMany(staleNotifications.map((n) => n.id));
     }
   }
 
@@ -69,7 +71,27 @@ export class NotificationsService extends PostyBirbService<'NotificationSchema'>
       this.sendDesktopNotification(createDto);
     }
 
-    return this.repository.insert(createDto);
+    const entity = await this.repository.insert(createDto);
+    this.publishCreated(entity.toDTO());
+    return entity;
+  }
+
+  /**
+   * Trims notifications to a maximum of 250, removing the oldest first.
+   * Runs every 5 minutes.
+   */
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  private async trimNotifications() {
+    const notifications = await this.repository.findAll();
+    if (notifications.length <= 250) {
+      return;
+    }
+    const sorted = notifications.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+    const toRemove = sorted.slice(0, notifications.length - 250);
+    await this.removeMany(toRemove.map((n) => n.id));
   }
 
   /**
@@ -87,48 +109,22 @@ export class NotificationsService extends PostyBirbService<'NotificationSchema'>
       return;
     }
 
-    if (
-      desktopNotifications.showOnDirectoryWatcherError &&
-      tags.includes('directory-watcher') &&
-      type === 'error'
-    ) {
-      new ElectronNotification({
-        title,
-        body: message,
-      }).show();
-    }
+    const shouldShow =
+      (desktopNotifications.showOnDirectoryWatcherError &&
+        tags.includes('directory-watcher') &&
+        type === 'error') ||
+      (desktopNotifications.showOnDirectoryWatcherSuccess &&
+        tags.includes('directory-watcher') &&
+        type === 'success') ||
+      (desktopNotifications.showOnPostError &&
+        tags.includes('post') &&
+        type === 'error') ||
+      (desktopNotifications.showOnPostSuccess &&
+        tags.includes('post') &&
+        type === 'success');
 
-    if (
-      desktopNotifications.showOnDirectoryWatcherSuccess &&
-      tags.includes('directory-watcher') &&
-      type === 'success'
-    ) {
-      new ElectronNotification({
-        title,
-        body: message,
-      }).show();
-    }
-
-    if (
-      desktopNotifications.showOnPostError &&
-      tags.includes('post') &&
-      type === 'error'
-    ) {
-      new ElectronNotification({
-        title,
-        body: message,
-      }).show();
-    }
-
-    if (
-      desktopNotifications.showOnPostSuccess &&
-      tags.includes('post') &&
-      type === 'success'
-    ) {
-      new ElectronNotification({
-        title,
-        body: message,
-      }).show();
+    if (shouldShow) {
+      this.platform.notification.show({ title, body: message });
     }
   }
 
@@ -139,19 +135,10 @@ export class NotificationsService extends PostyBirbService<'NotificationSchema'>
    * @param update - The data to update
    * @returns The updated notification
    */
-  update(id: EntityId, update: UpdateNotificationDto) {
+  async update(id: EntityId, update: UpdateNotificationDto) {
     this.logger.withMetadata(update).info(`Updating notification '${id}'`);
-    return this.repository.update(id, update);
-  }
-
-  /**
-   * Emits notification updates to connected clients.
-   * Converts entities to DTOs before sending.
-   */
-  protected async emit() {
-    super.emit({
-      event: NOTIFICATION_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
-    });
+    const entity = await this.repository.update(id, update);
+    this.publishUpdated(entity.toDTO());
+    return entity;
   }
 }

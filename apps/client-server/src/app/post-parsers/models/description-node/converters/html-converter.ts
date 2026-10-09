@@ -1,127 +1,119 @@
 import { encode } from 'html-entities';
-import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
-} from '../description-node.base';
+import { ConversionContext } from '../description-node.base';
+import { TipTapMark, TipTapNode } from '../description-node.types';
 import { BaseConverter } from './base-converter';
 
 export class HtmlConverter extends BaseConverter {
-  /** Pixels of margin-left per nesting level */
-  private static readonly INDENT_PX = 20;
-
   protected getBlockSeparator(): string {
     return '';
   }
 
-  convertBlockNode(
-    node: IDescriptionBlockNodeClass,
-    context: ConversionContext,
-  ): string {
+  convertBlockNode(node: TipTapNode, context: ConversionContext): string {
     // Handle special block types
     if (node.type === 'defaultShortcut') {
-      return this.convertRawBlocks(context.defaultDescription, context);
+      if (!this.shouldRenderShortcut(node, context)) return '';
+      return this.convertBlocks(context.defaultDescription, context);
     }
 
-    if (node.type === 'divider') return '<hr>';
+    if (node.type === 'horizontalRule') return '<hr>';
     if (node.type === 'image') return this.convertImage(node);
-    if (node.type === 'video') return this.convertVideo(node);
-    if (node.type === 'audio') return this.convertAudio(node);
+    if (node.type === 'hardBreak') return '<br>';
 
-    // Regular blocks
+    // List containers: render as <ul>/<ol> wrapping children
+    if (node.type === 'bulletList') {
+      const items = (node.content ?? [])
+        .map((child) => this.convertBlockNode(child, context))
+        .join('');
+      return `<ul>${items}</ul>`;
+    }
+
+    if (node.type === 'orderedList') {
+      const items = (node.content ?? [])
+        .map((child) => this.convertBlockNode(child, context))
+        .join('');
+      return `<ol>${items}</ol>`;
+    }
+
+    if (node.type === 'listItem') {
+      // listItem content is typically [paragraph, ...]. Render inline content of inner paragraphs.
+      const inner = (node.content ?? [])
+        .map((child) => {
+          if (child.type === 'paragraph') {
+            return this.convertContent(child.content, context);
+          }
+          return this.convertBlockNode(child, context);
+        })
+        .join('');
+      return `<li>${inner}</li>`;
+    }
+
+    if (node.type === 'blockquote') {
+      const inner = (node.content ?? [])
+        .map((child) => this.convertBlockNode(child, context))
+        .join('');
+      return `<blockquote>${inner}</blockquote>`;
+    }
+
+    // Regular blocks: paragraph, heading, etc.
     const tag = this.getBlockTag(node);
     const styles = this.getBlockStyles(node);
-    const content = (
-      node.content as Array<
-        IDescriptionInlineNodeClass | IDescriptionTextNodeClass
-      >
-    )
-      .map((child) => {
-        if (child.type === 'text') {
-          return this.convertTextNode(
-            child as IDescriptionTextNodeClass,
-            context,
-          );
-        }
-        return this.convertInlineNode(
-          child as IDescriptionInlineNodeClass,
-          context,
-        );
-      })
-      .join('');
+    const content = this.convertContent(node.content, context);
 
-    let result = `<${tag}${styles ? ` style="${styles}"` : ''}>${content}</${tag}>`;
-
-    // Process children with indentation
-    if (node.children && node.children.length > 0) {
-      // Calculate indent based on the depth level the children will be at (current + 1)
-      const indentPx = (this.currentDepth + 1) * HtmlConverter.INDENT_PX;
-      const childrenHtml = this.convertChildren(node.children, context);
-      if (childrenHtml) {
-        result += `<div style="margin-left: ${indentPx}px">${childrenHtml}</div>`;
-      }
-    }
-
-    return result;
+    return `<${tag}${styles ? ` style="${styles}"` : ''}>${content}</${tag}>`;
   }
 
-  convertInlineNode(
-    node: IDescriptionInlineNodeClass,
-    context: ConversionContext,
-  ): string {
-    // System shortcuts are atomic nodes with no content
-    const atomicTypes = ['customShortcut', 'titleShortcut', 'tagsShortcut', 'contentWarningShortcut', 'username'];
-    if (!node.content.length && !atomicTypes.includes(node.type)) return '';
-
-    if (node.type === 'link') {
-      const content = (node.content as IDescriptionTextNodeClass[])
-        .map((child) => this.convertTextNode(child, context))
-        .join('');
-      return `<a target="_blank" href="${
-        node.href ?? node.props.href
-      }">${content}</a>`;
-    }
+  convertInlineNode(node: TipTapNode, context: ConversionContext): string {
+    const attrs = node.attrs ?? {};
 
     if (node.type === 'username') {
-      if (!this.shouldRenderUsernameShortcut(node, context)) return '';
-
+      if (!this.shouldRenderShortcut(node, context)) return '';
       const sc = this.getUsernameShortcutLink(node, context);
       if (!sc) return '';
-      if (!sc.url.startsWith('http')) return `<span>${sc.url}</span>`;
+      if (!sc.url.startsWith('http')) return sc.url;
       return `<a target="_blank" href="${sc.url}">${sc.username}</a>`;
     }
 
     if (node.type === 'customShortcut') {
-      const shortcutBlocks = context.customShortcuts.get(node.props.id);
+      if (!this.shouldRenderShortcut(node, context)) return '';
+      const shortcutBlocks = context.customShortcuts.get(attrs.id);
       if (shortcutBlocks) {
-        return this.convertRawBlocks(shortcutBlocks, context);
+        // Render inline: extract inner content from each block without block
+        // wrapper tags. This prevents nested block elements (e.g. <div><div>)
+        // when the shortcut sits alongside other inline content in a paragraph.
+        return shortcutBlocks
+          .map((block) => this.convertContent(block.content, context))
+          .filter((s) => s.length > 0)
+          .join('<br>');
       }
       return '';
     }
 
     if (node.type === 'titleShortcut') {
-      return context.title ? `<span>${encode(context.title, { level: 'html5' })}</span>` : '';
+      if (!this.shouldRenderShortcut(node, context)) return '';
+      return context.title ? encode(context.title, { level: 'html5' }) : '';
     }
 
     if (node.type === 'tagsShortcut') {
-      return context.tags?.length ? `<span>${context.tags.map(t => encode(t, { level: 'html5' })).join(' ')}</span>` : '';
+      if (!this.shouldRenderShortcut(node, context)) return '';
+      return context.tags?.length
+        ? context.tags.map((t) => encode(`#${t}`, { level: 'html5' })).join(' ')
+        : '';
     }
 
     if (node.type === 'contentWarningShortcut') {
-      return context.contentWarningText ? `<span>${encode(context.contentWarningText, { level: 'html5' })}</span>` : '';
+      if (!this.shouldRenderShortcut(node, context)) return '';
+      return context.contentWarningText
+        ? encode(context.contentWarningText, { level: 'html5' })
+        : '';
     }
 
-    const content = (node.content as IDescriptionTextNodeClass[])
-      .map((child) => this.convertTextNode(child, context))
-      .join('');
-    return `<span>${content}</span>`;
+    if (node.type === 'hardBreak') return '<br>';
+
+    // Fallback: render content
+    return this.convertContent(node.content, context);
   }
 
-  convertTextNode(
-    node: IDescriptionTextNodeClass,
-    context: ConversionContext,
-  ): string {
+  convertTextNode(node: TipTapNode, context: ConversionContext): string {
     if (!node.text) return '';
 
     // Handle line breaks from merged blocks
@@ -129,120 +121,110 @@ export class HtmlConverter extends BaseConverter {
       return '<br>';
     }
 
+    const marks = node.marks ?? [];
+
+    // Check for link mark — wrap entire text in <a>
+    const linkMark = marks.find((m) => m.type === 'link');
+    if (linkMark) {
+      const href = linkMark.attrs?.href ?? '';
+      const innerHtml = this.renderTextWithMarks(
+        node.text,
+        marks.filter((m) => m.type !== 'link'),
+      );
+      return `<a target="_blank" href="${href}">${innerHtml}</a>`;
+    }
+
+    return this.renderTextWithMarks(node.text, marks);
+  }
+
+  /**
+   * Renders text with formatting marks (bold, italic, etc.) applied.
+   */
+  private renderTextWithMarks(text: string, marks: TipTapMark[]): string {
     const segments: string[] = [];
     const styles: string[] = [];
 
-    if (node.styles.bold) segments.push('b');
-    if (node.styles.italic) segments.push('i');
-    if (node.styles.underline) segments.push('u');
-    if (node.styles.strike) segments.push('s');
-
-    if (node.styles.textColor && node.styles.textColor !== 'default') {
-      styles.push(`color: ${node.styles.textColor}`);
+    for (const mark of marks) {
+      switch (mark.type) {
+        case 'bold':
+          segments.push('b');
+          break;
+        case 'italic':
+          segments.push('i');
+          break;
+        case 'underline':
+          segments.push('u');
+          break;
+        case 'strike':
+          segments.push('s');
+          break;
+        default:
+          break;
+      }
     }
 
-    if (
-      node.styles.backgroundColor &&
-      node.styles.backgroundColor !== 'default'
-    ) {
-      styles.push(`background-color: ${node.styles.backgroundColor}`);
+    // Check for textStyle mark with color
+    const textStyleMark = marks.find((m) => m.type === 'textStyle');
+    if (textStyleMark?.attrs?.color) {
+      styles.push(`color: ${textStyleMark.attrs.color}`);
     }
 
-    const text = encode(node.text, { level: 'html5' }).replace(/\n/g, '<br />');
+    const encodedText = encode(text, { level: 'html5' }).replace(
+      /\n/g,
+      '<br />',
+    );
 
-    if (!segments.length && !styles.length) {
-      return text;
-    }
-
-    const stylesString = styles.join(';');
-    return `<span${
-      stylesString.length ? ` style="${stylesString}"` : ''
-    }>${segments.map((s) => `<${s}>`).join('')}${text}${segments
+    const openTags = segments.map((s) => `<${s}>`).join('');
+    const closeTags = segments
+      .slice()
       .reverse()
       .map((s) => `</${s}>`)
-      .join('')}</span>`;
+      .join('');
+    const formattedText = `${openTags}${encodedText}${closeTags}`;
+
+    // A span is only required to carry an inline color style; there is no
+    // dedicated HTML element for applying color to inline text.
+    if (styles.length) {
+      return `<span style="${styles.join(';')}">${formattedText}</span>`;
+    }
+
+    return formattedText;
   }
 
-  private getBlockTag(node: IDescriptionBlockNodeClass): string {
+  private getBlockTag(node: TipTapNode): string {
+    const attrs = node.attrs ?? {};
     if (node.type === 'paragraph') return 'div';
-    if (node.type === 'heading') return `h${node.props.level}`;
+    if (node.type === 'heading') return `h${attrs.level ?? 1}`;
     return 'div';
   }
 
-  private getBlockStyles(node: IDescriptionBlockNodeClass): string {
+  private getBlockStyles(node: TipTapNode): string {
+    const attrs = node.attrs ?? {};
     const styles: string[] = [];
-    if (node.props.textColor && node.props.textColor !== 'default') {
-      styles.push(`color: ${node.props.textColor}`);
+
+    if (attrs.textAlign && attrs.textAlign !== 'left') {
+      styles.push(`text-align: ${attrs.textAlign}`);
     }
-    if (
-      node.props.backgroundColor &&
-      node.props.backgroundColor !== 'default'
-    ) {
-      styles.push(`background-color: ${node.props.backgroundColor}`);
+
+    if (attrs.indent && attrs.indent > 0) {
+      styles.push(`margin-left: ${attrs.indent * 2}em`);
     }
-    if (
-      node.props.textAlignment &&
-      node.props.textAlignment !== 'default' &&
-      node.props.textAlignment !== 'left'
-    ) {
-      styles.push(`text-align: ${node.props.textAlignment}`);
-    }
+
     return styles.join(';');
   }
 
-  private convertImage(node: IDescriptionBlockNodeClass): string {
-    const src = node.props.url || '';
-    const alt = node.props.name || node.props.caption || '';
-    const caption = node.props.caption || '';
-    const width = node.props.previewWidth || '';
-    const align =
-      node.props.textAlignment &&
-      node.props.textAlignment !== 'default' &&
-      node.props.textAlignment !== 'left'
-        ? node.props.textAlignment
-        : '';
+  private convertImage(node: TipTapNode): string {
+    const attrs = node.attrs ?? {};
+    const src = attrs.src || '';
+    const alt = attrs.alt || '';
+    const width = attrs.width || '';
+    const height = attrs.height || '';
 
     let imgTag = `<img src="${src}" alt="${alt}"`;
     if (width) imgTag += ` width="${width}"`;
-    if (align) imgTag += ` style="text-align: ${align}"`;
+    if (height) imgTag += ` height="${height}"`;
     imgTag += '>';
 
-    if (caption) {
-      return `<div><figure>${imgTag}<figcaption>${caption}</figcaption></figure></div>`;
-    }
     return `<div>${imgTag}</div>`;
-  }
-
-  private convertVideo(node: IDescriptionBlockNodeClass): string {
-    const src = node.props.url || '';
-    const caption = node.props.caption || '';
-    const width = node.props.previewWidth || '';
-    const align =
-      node.props.textAlignment &&
-      node.props.textAlignment !== 'default' &&
-      node.props.textAlignment !== 'left'
-        ? node.props.textAlignment
-        : '';
-
-    let videoTag = `<video controls`;
-    if (width) videoTag += ` width="${width}"`;
-    if (align) videoTag += ` style="text-align: ${align}"`;
-    videoTag += `><source src="${src}">Your browser does not support the video tag.</video>`;
-
-    if (caption) {
-      return `<div><figure>${videoTag}<figcaption>${caption}</figcaption></figure></div>`;
-    }
-    return `<div>${videoTag}</div>`;
-  }
-
-  private convertAudio(node: IDescriptionBlockNodeClass): string {
-    const src = node.props.url || '';
-    const caption = node.props.caption || '';
-    const audioTag = `<audio controls><source src="${src}">Your browser does not support the audio tag.</audio>`;
-
-    if (caption) {
-      return `<div><figure>${audioTag}<figcaption>${caption}</figcaption></figure></div>`;
-    }
-    return `<div>${audioTag}</div>`;
   }
 }

@@ -1,4 +1,8 @@
-import { HttpResponse } from '@postybirb/http';
+import { HttpResponse } from '@postybirb/http/types';
+import { DynamicObject } from '@postybirb/types';
+// Required by drizzle which does not support custom paths like this
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { toError } from '../../../../utils/common/src/lib/common';
 
 export type IPostResponse = {
   /**
@@ -19,6 +23,12 @@ export type IPostResponse = {
    * @type {string}
    */
   stage?: string;
+
+  /**
+   * The timestamp after which this post may be retried.
+   * @type {string}
+   */
+  rateLimitedUntil?: string;
 
   /**
    * The response message to return to a user.
@@ -47,6 +57,8 @@ export class PostResponse implements IPostResponse {
 
   stage?: string;
 
+  rateLimitedUntil?: string;
+
   message?: string;
 
   additionalInfo?: unknown;
@@ -63,24 +75,27 @@ export class PostResponse implements IPostResponse {
     website: { id: string },
     res: HttpResponse<unknown>,
     stage?: string,
+    url?: string,
+    extraInfo?: DynamicObject,
   ): void {
     if (res.statusCode > 303) {
       // eslint-disable-next-line @typescript-eslint/no-throw-literal
       throw PostResponse.fromWebsite(website)
         .withException(
           new Error(
-            `Unexpected status code from ${res.responseUrl}: ${res.statusCode}`,
+            `Unexpected status code from ${res.responseUrl || url}: ${res.statusCode}`,
           ),
         )
         .atStage(stage || 'Unknown')
-        .withAdditionalInfo(res.body);
+        .withAdditionalInfo({ body: res.body, ...(extraInfo || {}) });
     }
   }
 
-  withException(exception: Error) {
-    this.exception = exception;
+  withException(exception: unknown) {
+    this.exception = toError(exception);
+
     if (!this.message) {
-      this.message = exception.message;
+      this.message = this.exception.message;
     }
     return this;
   }
@@ -90,8 +105,10 @@ export class PostResponse implements IPostResponse {
     return this;
   }
 
-  withSourceUrl(url: string) {
-    this.sourceUrl = url;
+  withSourceUrl(url?: string) {
+    if (url) {
+      this.sourceUrl = url;
+    }
     return this;
   }
 
@@ -102,6 +119,14 @@ export class PostResponse implements IPostResponse {
 
   atStage(stage: string) {
     this.stage = stage;
+    return this;
+  }
+
+  withRateLimit(rateLimitedUntil: string | number) {
+    this.rateLimitedUntil =
+      typeof rateLimitedUntil === 'number'
+        ? new Date(Date.now() + rateLimitedUntil).toISOString()
+        : rateLimitedUntil;
     return this;
   }
 }

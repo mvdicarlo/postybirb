@@ -6,7 +6,7 @@ export default class HtmlParserUtil {
     index = index || 0;
     const inputs = (html.match(/<input.*?(\/)*>/gim) || [])
       .filter((input?: string) => input?.includes(`name="${name}"`))
-      .map((input) => input.match(/value="(.*?)"/)[1]);
+      .map((input) => input.match(/value="(.*?)"/)?.[1]);
 
     const picked = inputs[index];
     if (!picked) {

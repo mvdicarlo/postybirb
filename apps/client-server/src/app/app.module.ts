@@ -1,20 +1,25 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AccountModule } from './account/account.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { EntityDeltaModule } from './common/events/entity-delta.module';
 import { CustomShortcutsModule } from './custom-shortcuts/custom-shortcuts.module';
 import { DirectoryWatchersModule } from './directory-watchers/directory-watchers.module';
 import { FileConverterModule } from './file-converter/file-converter.module';
 import { FileModule } from './file/file.module';
 import { FormGeneratorModule } from './form-generator/form-generator.module';
+import { ImageProcessingModule } from './image-processing/image-processing.module';
 import { LegacyDatabaseImporterModule } from './legacy-database-importer/legacy-database-importer.module';
+import { LogsModule } from './logs/logs.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PlatformModule } from './platform/platform.module';
 import { PostParsersModule } from './post-parsers/post-parsers.module';
-import { PostModule } from './post/post.module';
+import { PostingModule } from './posting/posting.module';
 import { RemotePasswordMiddleware } from './remote/remote.middleware';
 import { RemoteModule } from './remote/remote.module';
 import { SettingsModule } from './settings/settings.module';
@@ -23,7 +28,6 @@ import { TagConvertersModule } from './tag-converters/tag-converters.module';
 import { TagGroupsModule } from './tag-groups/tag-groups.module';
 import { UpdateModule } from './update/update.module';
 import { UserConvertersModule } from './user-converters/user-converters.module';
-import { UserSpecifiedWebsiteOptionsModule } from './user-specified-website-options/user-specified-website-options.module';
 import { ValidationModule } from './validation/validation.module';
 import { WebSocketModule } from './web-socket/web-socket.module';
 import { WebsiteOptionsModule } from './website-options/website-options.module';
@@ -31,7 +35,11 @@ import { WebsitesModule } from './websites/websites.module';
 
 @Module({
   imports: [
+    PlatformModule,
+    EventEmitterModule.forRoot({ global: true }),
     ScheduleModule.forRoot(),
+    EntityDeltaModule,
+    ImageProcessingModule,
     AccountModule,
     WebSocketModule,
     WebsitesModule,
@@ -48,9 +56,8 @@ import { WebsitesModule } from './websites/websites.module';
     TagConvertersModule,
     UserConvertersModule,
     DirectoryWatchersModule,
-    UserSpecifiedWebsiteOptionsModule,
     UpdateModule,
-    PostModule,
+    PostingModule,
     PostParsersModule,
     ValidationModule,
     FileConverterModule,
@@ -58,6 +65,7 @@ import { WebsitesModule } from './websites/websites.module';
     RemoteModule,
     CustomShortcutsModule,
     LegacyDatabaseImporterModule,
+    LogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -3,8 +3,8 @@ import { IWebsiteFormFields } from '../submission/website-form-fields.interface'
 
 export type PostFields<T extends IWebsiteFormFields = IWebsiteFormFields> =
   Omit<T, 'description' | 'tags'> & {
-    description?: string;
-    tags?: string[];
+    description: string;
+    tags: string[];
   };
 
 /**

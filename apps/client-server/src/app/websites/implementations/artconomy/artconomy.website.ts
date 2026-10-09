@@ -1,14 +1,13 @@
-import { Http } from '@postybirb/http';
 import {
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -60,21 +59,21 @@ export default class Artconomy
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<ArtconomyAccountData> =
     {};
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
-      const authCheck = await Http.get<{ username: string; id: number }>(
-        `${this.BASE_URL}/api/profiles/data/requester/`,
-        {
-          partition: this.accountId,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+      const authCheck = await this.platform.http.get<{
+        username: string;
+        id: number;
+      }>(`${this.BASE_URL}/api/profiles/data/requester/`, {
+        partition: this.accountId,
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+      });
 
       if (authCheck.statusCode === 200 && authCheck.body.username !== '_') {
         // Get CSRF token from cookies
-        const cookies = await Http.getWebsiteCookies(
+        const cookies = await this.platform.http.getWebsiteCookies(
           this.accountId,
           this.BASE_URL,
         );
@@ -84,12 +83,12 @@ export default class Artconomy
           username: authCheck.body.username,
           csrfToken: csrfCookie?.value || '',
         });
-        return this.loginState.setLogin(true, authCheck.body.username);
+        return { loggedIn: true, username: authCheck.body.username };
       }
 
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     } catch (error) {
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
   }
 
@@ -97,14 +96,14 @@ export default class Artconomy
     return new ArtconomyFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
   async onPostFileSubmission(
     postData: PostData<ArtconomyFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const { id, username, csrfToken } = this.getWebsiteData();
 
@@ -156,7 +155,7 @@ export default class Artconomy
       thumbnailAsset = thumbnailUpload.body.id;
     }
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Create submission using PostBuilder
     const postResponse = await new PostBuilder(this, cancellationToken)
@@ -199,9 +198,9 @@ export default class Artconomy
 
   async onPostMessageSubmission(
     postData: PostData<ArtconomyMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { username, csrfToken } = this.getWebsiteData();
 

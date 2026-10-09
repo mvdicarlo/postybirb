@@ -1,13 +1,12 @@
 import {
-  FormFile,
-  Http,
-  HttpRequestOptions,
-  PostOptions,
-} from '@postybirb/http';
+    FormFile,
+    HttpRequestOptions,
+    PostOptions,
+} from '@postybirb/http/types';
 import { Logger } from '@postybirb/logger';
 import { FileType, PostResponse } from '@postybirb/types';
-import { CancellableToken } from '../../post/models/cancellable-token';
-import { PostingFile } from '../../post/models/posting-file';
+import { CancellationToken } from '../../posting/cancellation-token';
+import { PostingFile } from '../../posting/models/posting-file';
 import { UnknownWebsite } from '../website';
 
 /**
@@ -72,6 +71,13 @@ export class PostBuilder {
   private readonly fileFields = new Set<string>();
 
   /**
+   * When true, the request will be sent via Electron's BrowserWindow.loadURL
+   * with raw data bytes instead of using net.request ClientRequest.
+   * @private
+   */
+  private rawData = false;
+
+  /**
    * Creates a new PostBuilder instance.
    *
    * @param website - The website instance for which the post is being built
@@ -79,7 +85,7 @@ export class PostBuilder {
    */
   constructor(
     private readonly website: UnknownWebsite,
-    private readonly cancellationToken: CancellableToken,
+    private readonly cancellationToken: CancellationToken,
   ) {}
 
   /**
@@ -158,6 +164,23 @@ export class PostBuilder {
   asUrlEncoded(skipIndex = false) {
     this.postType = 'urlencoded';
     this.httpRequestOptions.skipUrlEncodedIndexing = skipIndex;
+    return this;
+  }
+
+  /**
+   * Configures the request to be sent via Electron's BrowserWindow.loadURL
+   * with raw data bytes instead of the standard net.request flow.
+   * Can be combined with any content type (multipart, json, urlencoded).
+   *
+   * @returns The PostBuilder instance for method chaining
+   *
+   * @example
+   * ```typescript
+   * builder.asMultipart().asRawData().addFile('image', file).send(url);
+   * ```
+   */
+  asRawData() {
+    this.rawData = true;
     return this;
   }
 
@@ -371,7 +394,7 @@ export class PostBuilder {
    * ```
    */
   async send<ReturnValue>(url: string) {
-    this.cancellationToken.throwIfCancelled();
+    this.cancellationToken.throwIfAborted();
     const data = this.build();
     this.logger
       .withMetadata({
@@ -390,15 +413,18 @@ export class PostBuilder {
 
     while (attempt <= maxRetries) {
       try {
-        const value = await Http.post<ReturnValue>(url, {
+        const value = await this.website.platform.http.post<ReturnValue>(url, {
           partition: this.website.account.id,
           type: this.postType,
           data,
           headers: this.headers,
           options: this.httpRequestOptions,
+          uploadAsRawData: this.rawData,
         });
         this.logger.debug(`Received response from ${url}:`, value.statusCode);
-        PostResponse.validateBody(this.website, value);
+        PostResponse.validateBody(this.website, value, undefined, url, {
+          keys: Object.keys(data),
+        });
         return value;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
@@ -543,7 +569,7 @@ export class PostBuilder {
             v instanceof FormFile ? v.toString() : v,
           );
         } else {
-          sanitizedData[key] = value.toString();
+          sanitizedData[key] = value?.toString();
         }
       } else {
         sanitizedData[key] = value;

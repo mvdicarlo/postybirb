@@ -8,6 +8,9 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
+      "parserOptions": {
+        "project": ["apps/postybirb/tsconfig.*?.json"]
+      },
       "rules": {}
     },
     {

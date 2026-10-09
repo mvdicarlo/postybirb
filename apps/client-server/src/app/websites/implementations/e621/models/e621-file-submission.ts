@@ -9,9 +9,10 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class E621FileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
-    descriptionType: DescriptionType.BBCODE,
+    descriptionType: DescriptionType.CUSTOM,
+    expectsInlineTitle: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     minTags: 4,

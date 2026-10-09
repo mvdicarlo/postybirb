@@ -28,7 +28,7 @@ From the base `postybirb` path, run the command.
 #### Sample
 
 ```ts
-import { ILoginState } from '@postybirb/types';
+import { LoginResult } from '@postybirb/types';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { Website } from '../../website';
@@ -50,16 +50,16 @@ export default class Foo extends Website<FooAccountData> {
     sensitiveProperty: false,
   };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     if (this.account.name === 'test') {
-      this.loginState.logout();
+      return { loggedIn: false };
     }
 
     await this.websiteDataStore.setData({
       sensitiveProperty: '<SECRET-API-KEY>',
       nonSensitiveProperty: ['folder1', 'folder2'],
     });
-    return this.loginState.setLogin(true, 'TestUser');
+    return { loggedIn: true, username: 'TestUser' };
   }
 }
 ```

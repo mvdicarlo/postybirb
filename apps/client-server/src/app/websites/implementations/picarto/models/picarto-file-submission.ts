@@ -13,14 +13,15 @@ export class PicartoFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
+    minTagLength: 1,
     maxTags: 30,
     maxTagLength: 30,
     spaceReplacer: '_',
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @SelectField({
     label: 'visibility',

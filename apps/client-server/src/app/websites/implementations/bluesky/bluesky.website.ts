@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import {
   $Typed,
   AppBskyActorGetProfile,
@@ -11,26 +12,32 @@ import {
   AtUri,
   BlobRef,
   ComAtprotoLabelDefs,
-  RichText,
 } from '@atproto/api';
 import { ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/post';
+import { isMention } from '@atproto/api/dist/client/types/app/bsky/richtext/facet';
 import { JobStatus } from '@atproto/api/dist/client/types/app/bsky/video/defs';
 import {
   BlueskyAccountData,
   BlueskyOAuthRoutes,
   FileType,
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   OAuthRouteHandlers,
   PostData,
   PostResponse,
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import {
+  calculateImageResize,
+  getFileTypeFromMimeType,
+} from '@postybirb/utils/file-type';
+import { setTimeout as delay } from 'timers/promises';
+import { SetNonNullable } from 'type-fest';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SubmissionValidator } from '../../commons/validator';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
@@ -42,9 +49,13 @@ import { DataPropertyAccessibility } from '../../models/data-property-accessibil
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
+import { BlueskyConverter } from './bluesky-description-converter';
 import { BlueskyFileSubmission } from './models/bluesky-file-submission';
 import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
+
+type LoggedInAgent = SetNonNullable<AtpAgent, 'session' | 'pdsUrl'>;
 
 @WebsiteMetadata({ name: 'bluesky', displayName: 'BlueSky' })
 @CustomLoginFlow()
@@ -69,10 +80,10 @@ import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
     'video/webm',
   ],
   acceptedFileSizes: {
-    '*': 1_000_000,
-    [FileType.VIDEO]: FileSize.megabytes(50),
+    '*': 2_000_000,
+    [FileType.VIDEO]: FileSize.megabytes(300),
   },
-  fileBatchSize: 4,
+  fileBatchSize: 10,
 })
 @DisableAds()
 export default class Bluesky
@@ -80,13 +91,14 @@ export default class Bluesky
   implements
     FileWebsite<BlueskyFileSubmission>,
     MessageWebsite<BlueskyMessageSubmission>,
-    OAuthWebsite<BlueskyOAuthRoutes>
+    OAuthWebsite<BlueskyOAuthRoutes>,
+    WithCustomDescriptionParser
 {
   onAuthRoute: OAuthRouteHandlers<BlueskyOAuthRoutes> = {
     login: async (request) => {
       await this.setWebsiteData(request);
-      const result = await this.onLogin();
-      return { result: result.isLoggedIn };
+      const state = await this.login();
+      return { result: state.isLoggedIn };
     },
   };
 
@@ -99,28 +111,29 @@ export default class Bluesky
 
   private agent?: AtpAgent;
 
-  private getLoggedInAgent(): AtpAgent {
-    if (!this.agent.hasSession) throw new Error('Not logged in');
-    return this.agent;
+  private getLoggedInAgent(): LoggedInAgent {
+    if (!this.agent?.hasSession) throw new Error('Not logged in');
+
+    return this.agent as LoggedInAgent;
   }
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const { username, password, serviceUrl } = this.websiteDataStore.getData();
 
-    if (!username || !password) return this.loginState.logout();
+    if (!username || !password) return { loggedIn: false };
 
     this.agent = new AtpAgent({ service: serviceUrl ?? 'https://bsky.social' });
 
     return this.agent
       .login({ identifier: username, password })
       .then((res) => {
-        if (!res.success) return this.loginState.logout();
+        if (!res.success) return { loggedIn: false };
 
-        return this.loginState.setLogin(true, res.data.handle);
+        return { loggedIn: true, username: res.data.handle };
       })
       .catch((error) => {
         this.logger.error(error);
-        return this.loginState.logout();
+        return { loggedIn: false };
       });
   }
 
@@ -128,53 +141,57 @@ export default class Bluesky
     return new BlueskyFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    return {
-      // Yes they are this lame: https://github.com/bluesky-social/social-app/blob/main/src/lib/constants.ts
-      height: 2000,
-      width: 2000,
-    };
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
+    // https://github.com/bluesky-social/social-app/blob/main/src/lib/constants.ts
+    return calculateImageResize(file, {
+      maxWidth: 4000,
+      maxHeight: 4000,
+    });
+  }
+
+  getDescriptionConverter(): BaseConverter {
+    return new BlueskyConverter();
   }
 
   async onPostFileSubmission(
     postData: PostData<BlueskyFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const agent = this.getLoggedInAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
 
     const embed = await this.uploadEmbeds(agent, files, cancellationToken);
-    const postResult = await this.post(postData, agent, embed, reply);
+    const postResult = await this.createPost(postData, agent, embed, reply);
 
     return this.createPostResponse(postResult, profile, postData, agent);
   }
 
   async onPostMessageSubmission(
     postData: PostData<BlueskyMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const agent = this.getLoggedInAgent();
     const profile = await agent.getProfile({ actor: agent.session.did });
     const reply = await this.getReplyRef(agent, postData.options.replyToUrl);
-    const postResult = await this.post(postData, agent, undefined, reply);
+    const postResult = await this.createPost(postData, agent, undefined, reply);
 
     return this.createPostResponse(postResult, profile, postData, agent);
   }
 
-  private async post(
+  private async createPost(
     postData: PostData<BlueskyFileSubmission>,
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     embed:
       | undefined
       | $Typed<AppBskyEmbedImages.Main>
       | $Typed<AppBskyEmbedVideo.Main>,
-    reply: ReplyRef,
+    reply: ReplyRef | null,
   ) {
     let labels: $Typed<ComAtprotoLabelDefs.SelfLabels> | undefined;
     if (postData.options.labelRating) {
@@ -184,8 +201,7 @@ export default class Bluesky
       };
     }
 
-    const rt = new RichText({ text: postData.options.description });
-    await rt.detectFacets(agent);
+    const rt = await BlueskyConverter.getRichText(postData.options.description);
 
     const postResult = await agent.post({
       text: rt.text,
@@ -203,17 +219,14 @@ export default class Bluesky
     postResult: { uri: string },
     profile: AppBskyActorGetProfile.Response,
     postData: PostData<BlueskyMessageSubmission | BlueskyFileSubmission>,
-    agent: AtpAgent,
+    agent: LoggedInAgent,
   ) {
     if (postResult && postResult.uri) {
-      // Generate a friendly URL
-      const { handle } = profile.data;
-
-      const hostname = this.getWebsiteData().appViewUrl ?? 'https://bsky.app';
-
+      // Generate a permanent URL
+      const hostname = this.getWebsiteData().appViewUrl ?? this.BASE_URL;
+      const origin = `${hostname.includes('://') ? '' : 'https://'}${hostname}`;
       const postId = postResult.uri.slice(postResult.uri.lastIndexOf('/') + 1);
-
-      const friendlyUrl = `https://${hostname}/profile/${handle}/post/${postId}`;
+      const friendlyUrl = `${origin.padEnd(origin.length, '/')}profile/${profile.data.did}/post/${postId}`;
 
       // After the post has been made, check to see if we need to set a ThreadGate; these are the options to control who can reply to your post, and need additional calls
       if (postData.options.whoCanReply) {
@@ -224,7 +237,10 @@ export default class Bluesky
         );
       }
 
-      return PostResponse.fromWebsite(this).withSourceUrl(friendlyUrl);
+      const response =
+        PostResponse.fromWebsite(this).withSourceUrl(friendlyUrl);
+
+      return response;
     }
 
     return PostResponse.fromWebsite(this)
@@ -315,13 +331,27 @@ export default class Bluesky
   ): Promise<void> {
     const { description } = postData.options;
 
-    const rt = new RichText({ text: description });
-    await rt.detectFacets(this.agent);
+    const rt = await BlueskyConverter.getRichText(description);
 
     if (rt.graphemeLength > this.MAX_CHARS) {
       validator.error(
         'validation.description.max-length',
         { maxLength: this.MAX_CHARS, currentLength: rt.graphemeLength },
+        'description',
+      );
+    }
+
+    // When RichText.detectFacets encounters invalid mention (user does not exists) it sets did to empty string
+    const invalidMentions = rt.facets
+      ?.filter((e) =>
+        e.features.find((feature) => isMention(feature) && feature.did === ''),
+      )
+      .map((e) => rt.unicodeText.slice(e.index.byteStart, e.index.byteEnd));
+
+    if (invalidMentions?.length) {
+      validator.error(
+        'validation.description.bluesky.invalid-mentions',
+        { mentions: invalidMentions },
         'description',
       );
     }
@@ -334,7 +364,7 @@ export default class Bluesky
     >,
   ): void {
     const url = postData.options.replyToUrl;
-    if (url.trim() && !this.getPostIdFromUrl(url)) {
+    if (url?.trim() && !this.getPostIdFromUrl(url)) {
       validator.error(
         'validation.file.bluesky.invalid-reply-url',
         {},
@@ -344,10 +374,10 @@ export default class Bluesky
   }
 
   private async getReplyRef(
-    agent: AtpAgent,
-    url: string,
+    agent: LoggedInAgent,
+    url?: string,
   ): Promise<ReplyRef | null> {
-    if (!url.trim()) return null;
+    if (!url?.trim()) return null;
 
     const postId = this.getPostIdFromUrl(url);
     if (!postId) throw new Error(`Invalid reply to url '${url}'`);
@@ -402,7 +432,7 @@ export default class Bluesky
   }
 
   private createThreadgate(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     postUri: string,
     whoCanReply: NonNullable<BlueskyFileSubmission['whoCanReply']>,
   ) {
@@ -434,9 +464,9 @@ export default class Bluesky
   }
 
   private async uploadEmbeds(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<$Typed<AppBskyEmbedImages.Main> | $Typed<AppBskyEmbedVideo.Main>> {
     // Bluesky supports either images or a video as an embed
     // GIFs must be treated as video on bsky
@@ -445,7 +475,7 @@ export default class Bluesky
     if (fileCount.videos === 0 && fileCount.gifs === 0) {
       const uploadedImages: AppBskyEmbedImages.Image[] = [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         const altText = file.metadata.altText || '';
         const ref = await this.uploadImage(agent, file);
@@ -461,7 +491,7 @@ export default class Bluesky
     }
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       if (
         file.fileType === FileType.VIDEO ||
@@ -479,9 +509,9 @@ export default class Bluesky
   }
 
   private async uploadImage(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     file: PostingFile,
-  ): Promise<BlobRef | undefined> {
+  ): Promise<BlobRef> {
     const blobUpload = await agent.uploadBlob(file.buffer, {
       encoding: file.mimeType,
     });
@@ -506,7 +536,7 @@ export default class Bluesky
   // path) and not doing the proper service authentication dance. So we instead
   // follow what the website does here, which is the way that actually works.
   // We also use the same inconsistent header capitalization as they do.
-  private async checkVideoUploadLimits(agent: AtpAgent): Promise<void> {
+  private async checkVideoUploadLimits(agent: LoggedInAgent): Promise<void> {
     const token = await this.getAuthToken(
       agent,
       'did:web:video.bsky.app',
@@ -537,7 +567,7 @@ export default class Bluesky
   }
 
   private async uploadVideo(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     file: PostingFile,
   ): Promise<BlobRef> {
     const token = await this.getAuthToken(
@@ -545,7 +575,7 @@ export default class Bluesky
       `did:web:${agent.pdsUrl.hostname}`,
       'com.atproto.repo.uploadBlob',
     );
-    const did = encodeURIComponent(agent.did);
+    const did = encodeURIComponent(agent.session.did);
     const name = encodeURIComponent(this.generateVideoName());
     const url = `https://video.bsky.app/xrpc/app.bsky.video.uploadVideo?did=${did}&name=${name}`;
     const req: RequestInit = {
@@ -587,42 +617,50 @@ export default class Bluesky
   private async waitForVideoProcessing(jobId: string): Promise<BlobRef> {
     const encodedJobId = encodeURIComponent(jobId);
     const url = `https://video.bsky.app/xrpc/app.bsky.video.getJobStatus?jobId=${encodedJobId}`;
-    let jobStatus: JobStatus;
-    do {
-      await new Promise((r) => {
-        setTimeout(r, 4000);
-      });
-      this.logger.debug(`Polling video processing status at ${url}`);
-      const req: RequestInit = {
-        method: 'GET',
-        headers: {
-          'atproto-accept-labelers': 'did:plc:ar7c4by46qjdydhdevvrndac;redact',
-        },
-      };
-      const res =
-        await this.checkFetchResult<AppBskyVideoGetJobStatus.OutputSchema>(
-          fetch(url, req),
-        ).catch((err) => {
-          this.logger.error(err);
-          throw new Error('Checking video processing status failed', {
-            cause: err,
+    const controller = new AbortController();
+    const timeoutError = new Error('Bluesky video processing timed out after 15 minutes');
+    const timeout = setTimeout(() => controller.abort(timeoutError), 15 * 60 * 1000);
+    try {
+      let jobStatus: JobStatus;
+      do {
+        await delay(4000, undefined, { signal: controller.signal });
+        this.logger.debug(`Polling video processing status at ${url}`);
+        const req: RequestInit = {
+          method: 'GET',
+          signal: controller.signal,
+          headers: {
+            'atproto-accept-labelers': 'did:plc:ar7c4by46qjdydhdevvrndac;redact',
+          },
+        };
+        const res =
+          await this.checkFetchResult<AppBskyVideoGetJobStatus.OutputSchema>(
+            fetch(url, req),
+          ).catch((err) => {
+            this.logger.error(err);
+            throw new Error('Checking video processing status failed', {
+              cause: err,
+            });
           });
-        });
 
-      this.logger.debug(`Job status: ${JSON.stringify(res)}`);
-      jobStatus = res.jobStatus;
-    } while (
-      jobStatus.state !== 'JOB_STATE_COMPLETED' &&
-      jobStatus.state !== 'JOB_STATE_FAILED'
-    );
+        this.logger.debug(`Job status: ${JSON.stringify(res)}`);
+        jobStatus = res.jobStatus;
+      } while (
+        jobStatus.state !== 'JOB_STATE_COMPLETED' &&
+        jobStatus.state !== 'JOB_STATE_FAILED'
+      );
 
-    if (jobStatus.state === 'JOB_STATE_COMPLETED') {
-      if (jobStatus.blob) return jobStatus.blob;
+      if (jobStatus.state === 'JOB_STATE_COMPLETED') {
+        if (jobStatus.blob) return jobStatus.blob;
 
-      throw new Error('No blob ref after video processing');
+        throw new Error('No blob ref after video processing');
+      }
+
+      throw new Error(`Video processing failed: ${jobStatus.message}`);
+    } catch (error) {
+      throw controller.signal.aborted ? timeoutError : error;
+    } finally {
+      clearTimeout(timeout);
     }
-
-    throw new Error(`Video processing failed: ${jobStatus.message}`);
   }
 
   private async checkFetchResult<T>(
@@ -649,7 +687,7 @@ export default class Bluesky
   }
 
   private async getAuthToken(
-    agent: AtpAgent,
+    agent: LoggedInAgent,
     aud: string,
     lxm: string,
   ): Promise<string> {

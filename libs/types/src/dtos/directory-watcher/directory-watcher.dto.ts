@@ -5,5 +5,5 @@ export type DirectoryWatcherDto = Omit<
   IEntityDto<IDirectoryWatcher>,
   'template'
 > & {
-  template?: SubmissionId;
+  template?: SubmissionId | null;
 };

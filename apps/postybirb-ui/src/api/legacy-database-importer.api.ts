@@ -5,11 +5,13 @@ export interface LegacyImportDto {
   tagGroups: boolean;
   accounts: boolean;
   tagConverters: boolean;
+  submissions: boolean;
+  templates: boolean;
   customPath?: string;
 }
 
 export interface LegacyImportResponse {
-  errors: Error[];
+  errors: { message: string }[];
 }
 
 class LegacyDatabaseImporterApi {

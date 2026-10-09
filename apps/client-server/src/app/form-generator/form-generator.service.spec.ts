@@ -1,22 +1,53 @@
-import { NotFoundException } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
-import {
-  NullAccount,
-  SubmissionRating,
-  SubmissionType,
-} from '@postybirb/types';
+import { clearDatabase, EntityNotFoundError } from '@postybirb/database';
+import { SubmissionType } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
-import { CreateUserSpecifiedWebsiteOptionsDto } from '../user-specified-website-options/dtos/create-user-specified-website-options.dto';
-import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
-import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
+import { TestPlatformModule } from '../platform/testing/test-platform.module';
+import { DiscordFileSubmission } from '../websites/implementations/discord/models/discord-file-submission';
 import { WebsitesModule } from '../websites/websites.module';
 import { FormGeneratorService } from './form-generator.service';
 
+describe('FormGeneratorService Discord defaults', () => {
+  const instance = {
+    supportsFile: true,
+    getFormProperties: () => ({}),
+    createFileModel: () => new DiscordFileSubmission(),
+    onPostFileSubmission: jest.fn(),
+  };
+  const service = new FormGeneratorService(
+    { findInstance: async () => instance } as unknown as ConstructorParameters<
+      typeof FormGeneratorService
+    >[0],
+    { resolveDefaults: async () => undefined } as unknown as ConstructorParameters<
+      typeof FormGeneratorService
+    >[1],
+    { findByIdOrThrow: async () => ({ id: 'discord' }) } as unknown as ConstructorParameters<
+      typeof FormGeneratorService
+    >[2],
+  );
+
+  it('generates component controls with a fixed description limit', async () => {
+    const form = await service.generateForm({
+      accountId: 'discord',
+      type: SubmissionType.FILE,
+    });
+    expect(form.description).toMatchObject({
+      maxDescriptionLength: 4000,
+      expectsInlineTitle: false,
+    });
+    expect(form.title).not.toHaveProperty('maxLength');
+    expect(form.useTitle.hidden).not.toBe(true);
+    expect(form.mediaPosition.showWhen).toBeUndefined();
+    expect(form.galleryArrangement.showWhen).toBeUndefined();
+    expect(form).not.toHaveProperty('useEmbed');
+    expect(form).not.toHaveProperty('useComponentsV2');
+  });
+});
+
 describe('FormGeneratorService', () => {
   let service: FormGeneratorService;
-  let userSpecifiedService: UserSpecifiedWebsiteOptionsService;
   let accountService: AccountService;
   let module: TestingModule;
 
@@ -24,18 +55,16 @@ describe('FormGeneratorService', () => {
     clearDatabase();
     module = await Test.createTestingModule({
       imports: [
+        EventEmitterModule.forRoot(),
+        TestPlatformModule,
         AccountModule,
         WebsitesModule,
-        UserSpecifiedWebsiteOptionsModule,
       ],
       providers: [FormGeneratorService],
     }).compile();
 
     service = module.get<FormGeneratorService>(FormGeneratorService);
     accountService = module.get<AccountService>(AccountService);
-    userSpecifiedService = module.get<UserSpecifiedWebsiteOptionsService>(
-      UserSpecifiedWebsiteOptionsService,
-    );
 
     await accountService.onModuleInit();
   });
@@ -50,302 +79,213 @@ describe('FormGeneratorService', () => {
 
   it('should fail on missing account', async () => {
     await expect(
-      service.generateForm({ accountId: 'fake', type: SubmissionType.MESSAGE }),
-    ).rejects.toThrow(NotFoundException);
-  });
-
-  it('should return user specific defaults', async () => {
-    const userSpecifiedDto = new CreateUserSpecifiedWebsiteOptionsDto();
-    userSpecifiedDto.accountId = new NullAccount().id;
-    userSpecifiedDto.type = SubmissionType.MESSAGE;
-    userSpecifiedDto.options = { rating: SubmissionRating.ADULT };
-    await userSpecifiedService.create(userSpecifiedDto);
-
-    const messageForm = await service.getDefaultForm(SubmissionType.MESSAGE);
-    expect(messageForm).toEqual({
-      rating: {
-        required: true,
-        section: 'common',
-        order: 1,
-        span: 12,
-        layout: 'horizontal',
-        label: 'rating',
-        formField: 'rating',
-        options: [
-          {
-            label: 'General',
-            value: 'GENERAL',
-          },
-          {
-            label: 'Mature',
-            value: 'MATURE',
-          },
-          {
-            label: 'Adult',
-            value: 'ADULT',
-          },
-          {
-            label: 'Extreme',
-            value: 'EXTREME',
-          },
-        ],
-        type: 'rating',
-        responsive: {
-          xs: 12,
-        },
-        defaultValue: 'ADULT',
-      },
-      title: {
-        required: true,
-        section: 'common',
-        order: 2,
-        span: 12,
-        defaultValue: '',
-        formField: 'input',
-        label: 'title',
-        type: 'title',
-        responsive: {
-          xs: 12,
-        },
-      },
-      tags: {
-        section: 'common',
-        order: 3,
-        span: 12,
-        formField: 'tag',
-        label: 'tags',
-        defaultValue: {
-          overrideDefault: false,
-          tags: [],
-        },
-        minTagLength: 1,
-        spaceReplacer: '_',
-        type: 'tag',
-        responsive: {
-          xs: 12,
-        },
-      },
-      description: {
-        section: 'common',
-        order: 4,
-        span: 12,
-        label: 'description',
-        formField: 'description',
-        defaultValue: {
-          overrideDefault: false,
-          description: [],
-        },
-        descriptionType: 'html',
-        type: 'description',
-        responsive: {
-          xs: 12,
-        },
-      },
-      contentWarning: {
-        label: 'contentWarning',
-        section: 'common',
-        order: 5,
-        span: 12,
-        hidden: false,
-        defaultValue: '',
-        formField: 'input',
-        type: 'text',
-        responsive: {
-          xs: 12,
-        },
-      },
-    });
+      service.generateForm({ accountId: 'fake', type: SubmissionType.MESSAGE })
+    ).rejects.toThrow(EntityNotFoundError);
   });
 
   it('should return standard form', async () => {
     const messageForm = await service.getDefaultForm(SubmissionType.MESSAGE);
-    expect(messageForm).toEqual({
-      rating: {
-        required: true,
-        section: 'common',
-        order: 1,
-        span: 12,
-        layout: 'horizontal',
-        label: 'rating',
-        formField: 'rating',
-        options: [
-          {
-            label: 'General',
-            value: 'GENERAL',
+    expect(messageForm).toMatchInlineSnapshot(`
+      {
+        "contentWarning": {
+          "defaultValue": "",
+          "formField": "input",
+          "hidden": false,
+          "label": "contentWarning",
+          "order": 5,
+          "responsive": {
+            "xs": 12,
           },
-          {
-            label: 'Mature',
-            value: 'MATURE',
+          "section": "common",
+          "span": 12,
+          "type": "text",
+        },
+        "description": {
+          "defaultValue": {
+            "description": {
+              "content": [],
+              "type": "doc",
+            },
+            "overrideDefault": false,
           },
-          {
-            label: 'Adult',
-            value: 'ADULT',
+          "descriptionType": "html",
+          "formField": "description",
+          "label": "description",
+          "order": 4,
+          "required": true,
+          "responsive": {
+            "xs": 12,
           },
-          {
-            label: 'Extreme',
-            value: 'EXTREME',
+          "section": "common",
+          "span": 12,
+          "type": "description",
+        },
+        "rating": {
+          "defaultValue": "GENERAL",
+          "formField": "rating",
+          "label": "rating",
+          "layout": "horizontal",
+          "options": [
+            {
+              "label": "General",
+              "value": "GENERAL",
+            },
+            {
+              "label": "Mature",
+              "value": "MATURE",
+            },
+            {
+              "label": "Adult",
+              "value": "ADULT",
+            },
+            {
+              "label": "Extreme",
+              "value": "EXTREME",
+            },
+          ],
+          "order": 1,
+          "required": true,
+          "responsive": {
+            "xs": 12,
           },
-        ],
-        type: 'rating',
-        responsive: {
-          xs: 12,
+          "section": "common",
+          "span": 12,
+          "type": "rating",
         },
-        defaultValue: 'GENERAL',
-      },
-      title: {
-        required: true,
-        section: 'common',
-        order: 2,
-        span: 12,
-        defaultValue: '',
-        formField: 'input',
-        label: 'title',
-        type: 'title',
-        responsive: {
-          xs: 12,
+        "tags": {
+          "defaultValue": {
+            "overrideDefault": false,
+            "tags": [],
+          },
+          "formField": "tag",
+          "label": "tags",
+          "minTagLength": 1,
+          "order": 3,
+          "responsive": {
+            "xs": 12,
+          },
+          "section": "common",
+          "spaceReplacer": "_",
+          "span": 12,
+          "type": "tag",
         },
-      },
-      tags: {
-        section: 'common',
-        order: 3,
-        span: 12,
-        formField: 'tag',
-        label: 'tags',
-        defaultValue: {
-          overrideDefault: false,
-          tags: [],
+        "title": {
+          "defaultValue": "",
+          "expectedInDescription": false,
+          "formField": "input",
+          "label": "title",
+          "order": 2,
+          "required": true,
+          "responsive": {
+            "xs": 12,
+          },
+          "section": "common",
+          "span": 12,
+          "type": "title",
         },
-        minTagLength: 1,
-        spaceReplacer: '_',
-        type: 'tag',
-        responsive: {
-          xs: 12,
-        },
-      },
-      description: {
-        section: 'common',
-        order: 4,
-        span: 12,
-        label: 'description',
-        formField: 'description',
-        defaultValue: {
-          overrideDefault: false,
-          description: [],
-        },
-        descriptionType: 'html',
-        type: 'description',
-        responsive: {
-          xs: 12,
-        },
-      },
-      contentWarning: {
-        label: 'contentWarning',
-        section: 'common',
-        order: 5,
-        span: 12,
-        hidden: false,
-        defaultValue: '',
-        formField: 'input',
-        type: 'text',
-        responsive: {
-          xs: 12,
-        },
-      },
-    });
+      }
+    `);
 
     const fileForm = await service.getDefaultForm(SubmissionType.FILE);
-    expect(fileForm).toEqual({
-      rating: {
-        required: true,
-        section: 'common',
-        order: 1,
-        span: 12,
-        layout: 'horizontal',
-        label: 'rating',
-        formField: 'rating',
-        options: [
-          {
-            label: 'General',
-            value: 'GENERAL',
+    expect(fileForm).toMatchInlineSnapshot(`
+      {
+        "contentWarning": {
+          "defaultValue": "",
+          "formField": "input",
+          "hidden": false,
+          "label": "contentWarning",
+          "order": 5,
+          "responsive": {
+            "xs": 12,
           },
-          {
-            label: 'Mature',
-            value: 'MATURE',
+          "section": "common",
+          "span": 12,
+          "type": "text",
+        },
+        "description": {
+          "defaultValue": {
+            "description": {
+              "content": [],
+              "type": "doc",
+            },
+            "overrideDefault": false,
           },
-          {
-            label: 'Adult',
-            value: 'ADULT',
+          "descriptionType": "html",
+          "formField": "description",
+          "label": "description",
+          "order": 4,
+          "required": true,
+          "responsive": {
+            "xs": 12,
           },
-          {
-            label: 'Extreme',
-            value: 'EXTREME',
+          "section": "common",
+          "span": 12,
+          "type": "description",
+        },
+        "rating": {
+          "defaultValue": "GENERAL",
+          "formField": "rating",
+          "label": "rating",
+          "layout": "horizontal",
+          "options": [
+            {
+              "label": "General",
+              "value": "GENERAL",
+            },
+            {
+              "label": "Mature",
+              "value": "MATURE",
+            },
+            {
+              "label": "Adult",
+              "value": "ADULT",
+            },
+            {
+              "label": "Extreme",
+              "value": "EXTREME",
+            },
+          ],
+          "order": 1,
+          "required": true,
+          "responsive": {
+            "xs": 12,
           },
-        ],
-        type: 'rating',
-        responsive: {
-          xs: 12,
+          "section": "common",
+          "span": 12,
+          "type": "rating",
         },
-        defaultValue: 'GENERAL',
-      },
-      title: {
-        required: true,
-        section: 'common',
-        order: 2,
-        span: 12,
-        defaultValue: '',
-        formField: 'input',
-        label: 'title',
-        type: 'title',
-        responsive: {
-          xs: 12,
+        "tags": {
+          "defaultValue": {
+            "overrideDefault": false,
+            "tags": [],
+          },
+          "formField": "tag",
+          "label": "tags",
+          "minTagLength": 1,
+          "order": 3,
+          "responsive": {
+            "xs": 12,
+          },
+          "section": "common",
+          "spaceReplacer": "_",
+          "span": 12,
+          "type": "tag",
         },
-      },
-      tags: {
-        section: 'common',
-        order: 3,
-        span: 12,
-        formField: 'tag',
-        label: 'tags',
-        defaultValue: {
-          overrideDefault: false,
-          tags: [],
+        "title": {
+          "defaultValue": "",
+          "expectedInDescription": false,
+          "formField": "input",
+          "label": "title",
+          "order": 2,
+          "required": true,
+          "responsive": {
+            "xs": 12,
+          },
+          "section": "common",
+          "span": 12,
+          "type": "title",
         },
-        minTagLength: 1,
-        spaceReplacer: '_',
-        type: 'tag',
-        responsive: {
-          xs: 12,
-        },
-      },
-      description: {
-        section: 'common',
-        order: 4,
-        span: 12,
-        label: 'description',
-        formField: 'description',
-        defaultValue: {
-          overrideDefault: false,
-          description: [],
-        },
-        descriptionType: 'html',
-        type: 'description',
-        responsive: {
-          xs: 12,
-        },
-      },
-      contentWarning: {
-        label: 'contentWarning',
-        section: 'common',
-        order: 5,
-        span: 12,
-        hidden: false,
-        defaultValue: '',
-        formField: 'input',
-        type: 'text',
-        responsive: {
-          xs: 12,
-        },
-      },
-    });
+      }
+    `);
   });
 });

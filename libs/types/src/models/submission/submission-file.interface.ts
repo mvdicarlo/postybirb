@@ -130,6 +130,11 @@ export interface SubmissionFileMetadata {
    * @type {string[]}
    */
   sourceUrls: string[];
+
+  /**
+   * Duration, in seconds. Not 0 if file is video
+   */
+  duration?: number;
 }
 
 export const DefaultSubmissionFileMetadata: () => SubmissionFileMetadata =
@@ -139,4 +144,5 @@ export const DefaultSubmissionFileMetadata: () => SubmissionFileMetadata =
     dimensions: {},
     ignoredWebsites: [],
     sourceUrls: [],
+    duration: 0,
   });

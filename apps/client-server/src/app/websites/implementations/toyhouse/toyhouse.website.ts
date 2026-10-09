@@ -1,8 +1,7 @@
-import { FormFile, Http, HttpResponse } from '@postybirb/http';
+import { FormFile, HttpResponse } from '@postybirb/http/types';
 import {
-  ILoginState,
-  ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostFields,
   PostResponse,
@@ -10,8 +9,8 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -44,31 +43,36 @@ export default class Toyhouse
       characters: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
-      const res = await Http.get<string>(
+      const res = await this.platform.http.get<string>(
         `${this.BASE_URL}/~characters/manage/folder:all`,
         { partition: this.accountId },
       );
 
       if (!isLoggedIn(res)) {
         // Not logged in
-        return this.loginState.setLogin(false, null);
+        return { loggedIn: false };
       }
 
       const $ = parse(res.body);
-      const username = $.querySelector(
+      const usernameEl = $.querySelector(
         '.navbar .display-user-tiny > span.display-user-username',
-      ).text.trim();
+      );
+      if (!usernameEl) {
+        this.logger.warn('Failed to find username element during login');
+        return { loggedIn: false };
+      }
+      const username = usernameEl.text.trim();
 
       const characters = await this.loadAllCharacters($);
 
       this.setWebsiteData({ characters });
 
-      return this.loginState.setLogin(true, username);
+      return { loggedIn: true, username };
     } catch (e) {
-      this.logger.error('Failed to login', e);
-      return this.loginState.setLogin(false, null);
+      this.logger.withError(e).error('Failed to login');
+      return { loggedIn: false };
     }
   }
 
@@ -84,7 +88,7 @@ export default class Toyhouse
     while (hasNextPage) {
       const url = `${this.BASE_URL}/~characters/manage/folder:all?page=${pageNumber}`;
 
-      const res = await Http.get<string>(url, {
+      const res = await this.platform.http.get<string>(url, {
         partition: this.accountId,
       });
 
@@ -104,20 +108,23 @@ export default class Toyhouse
     return new ToyhouseFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile) {
     return undefined;
   }
 
   async onPostFileSubmission(
     postData: PostData<ToyhouseFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
-    const page = await Http.get<string>(`${this.BASE_URL}/~images/upload`, {
-      partition: this.accountId,
-    });
+    const page = await this.platform.http.get<string>(
+      `${this.BASE_URL}/~images/upload`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     if (!isLoggedIn(page)) {
       return PostResponse.fromWebsite(this).withException(
@@ -128,7 +135,12 @@ export default class Toyhouse
     const $ = parse(page.body);
     const token = $.querySelector(
       'head > meta[name="csrf-token"]',
-    ).getAttribute('content');
+    )?.getAttribute('content');
+    if (!token) {
+      return PostResponse.fromWebsite(this).withException(
+        new Error('Failed to find csrf-token meta element'),
+      );
+    }
 
     // This form data is very finnicky on what does and does not work.
     // Having some fields as empty strings is actually required. Be wary about changing anything about this payload.
@@ -176,11 +188,14 @@ export default class Toyhouse
       'character_ids[]': [...postData.options.characters, ''],
     };
 
-    const result = await Http.post<string>(`${this.BASE_URL}/~images/upload`, {
-      partition: this.accountId,
-      data: formData,
-      type: 'multipart',
-    });
+    const result = await this.platform.http.post<string>(
+      `${this.BASE_URL}/~images/upload`,
+      {
+        partition: this.accountId,
+        data: formData,
+        type: 'multipart',
+      },
+    );
 
     if (result.statusCode === 200 && !result.body.includes('alert-danger')) {
       return PostResponse.fromWebsite(this)
@@ -190,7 +205,7 @@ export default class Toyhouse
 
     const err = parse(result.body)
       .querySelector('.alert-danger')
-      .textContent.trim();
+      ?.textContent.trim();
 
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo(result.body)
@@ -206,7 +221,9 @@ export default class Toyhouse
   }
 
   private getCharacters($: HTMLElement) {
-    const getCharId = (href: string) => {
+    const getCharId = (href?: string) => {
+      if (!href) return null;
+
       // Extract the rightmost ID from paths like /6669686.name or /6669686.name/6669743.other-name
       const parts = href.split('/').filter(Boolean);
       const match = parts[parts.length - 1]?.match(/^(\d+)\./);
@@ -217,10 +234,12 @@ export default class Toyhouse
       $.querySelectorAll(
         '.characters-gallery .gallery-thumb .character-name-badge',
       ),
-    ).map((e) => ({
-      label: e.textContent.trim(),
-      value: getCharId(e.getAttribute('href')),
-    }));
+    )
+      .map((e) => ({
+        label: e.textContent.trim(),
+        value: getCharId(e.getAttribute('href')),
+      }))
+      .filter((e) => !!e.value) as { label: string; value: string }[];
   }
 }
 

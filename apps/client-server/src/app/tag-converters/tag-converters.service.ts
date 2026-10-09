@@ -1,47 +1,54 @@
-import { Injectable, Optional } from '@nestjs/common';
-import { TAG_CONVERTER_UPDATES } from '@postybirb/socket-events';
-import { EntityId } from '@postybirb/types';
+import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TagConverter, TagConverterRepository } from '@postybirb/database';
+import { DynamicObject, EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { TagConverter } from '../drizzle/models';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { Website } from '../websites/website';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
+import { TAG_CONVERTER_EVENT_PREFIX } from './tag-converter.events';
 
 @Injectable()
-export class TagConvertersService extends PostyBirbService<'TagConverterSchema'> {
-  constructor(@Optional() webSocket?: WSGateway) {
-    super('TagConverterSchema', webSocket);
-    this.repository.subscribe('TagConverterSchema', () => {
-      this.emit();
-    });
+export class TagConvertersService extends PostyBirbService<TagConverterRepository> {
+  constructor(eventEmitter: EventEmitter2) {
+    super(new TagConverterRepository());
+    this.configureCrudEvents(TAG_CONVERTER_EVENT_PREFIX, eventEmitter);
   }
 
   async create(createDto: CreateTagConverterDto): Promise<TagConverter> {
     this.logger
       .withMetadata(createDto)
       .info(`Creating TagConverter '${createDto.tag}'`);
-    await this.throwIfExists(eq(this.schema.tag, createDto.tag));
-    return this.repository.insert(createDto);
+    await this.throwIfExists(eq(this.table.tag, createDto.tag));
+    const entity = await this.repository.insert(createDto);
+    this.publishCreated(entity.toDTO());
+    return entity;
   }
 
-  update(id: EntityId, update: UpdateTagConverterDto) {
+  async update(
+    id: EntityId,
+    update: UpdateTagConverterDto,
+  ): Promise<TagConverter> {
     this.logger.withMetadata(update).info(`Updating TagConverter '${id}'`);
-    return this.repository.update(id, update);
+    const entity = await this.repository.update(id, update);
+    this.publishUpdated(entity.toDTO());
+    return entity;
   }
 
   /**
    * Converts a list of tags using user defined conversion table.
-   *
-   * @param {Website<unknown>} instance
-   * @param {string[]} tags
-   * @return {*}  {Promise<string[]>}
    */
-  async convert(instance: Website<unknown>, tags: string): Promise<string>;
-  async convert(instance: Website<unknown>, tags: string[]): Promise<string[]>;
   async convert(
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
+    tags: string,
+  ): Promise<string>;
+  async convert(
+    instance: Website<DynamicObject>,
+    tags: string[],
+  ): Promise<string[]>;
+  async convert(
+    instance: Website<DynamicObject>,
     tags: string[] | string,
   ): Promise<string[] | string> {
     if (typeof tags === 'string') {
@@ -62,13 +69,6 @@ export class TagConvertersService extends PostyBirbService<'TagConverterSchema'>
         converter.convertTo.default ?? // NOTE: This is not currently used, but it's here for future proofing
         tag
       );
-    });
-  }
-
-  protected async emit() {
-    super.emit({
-      event: TAG_CONVERTER_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
     });
   }
 }

@@ -1,5 +1,8 @@
 import { SelectOption } from '@postybirb/form-builder';
 
+// Run this script on https://www.furaffinity.net/submit/finalize/ to update themes
+// JSON.stringify(Array.prototype.map.call(document.querySelector("select[name='atype']"), (e) => ({ value: e.value, label: e.label, parent: e.parentNode?.label, })).reduce((e, c) => { if (!c.parent) { e.push({ value: c.value, label: c.label }); return e; }; const f = e.find((e) => e.label === c.parent) ?? e[e.push({ label: c.parent, items: [] }) - 1]; f.items.push({ value: c.value, label: c.label }); return e; }, []))
+
 export const FurAffinityThemes: SelectOption[] = [
   {
     label: 'General Things',
@@ -23,6 +26,8 @@ export const FurAffinityThemes: SelectOption[] = [
   {
     label: 'Specialty',
     items: [
+      { value: '100', label: 'General Furry Art' },
+      { value: '122', label: 'ABDL' },
       { value: '101', label: 'Baby fur' },
       { value: '102', label: 'Bondage' },
       { value: '103', label: 'Digimon' },
@@ -44,7 +49,6 @@ export const FurAffinityThemes: SelectOption[] = [
       { value: '120', label: 'TF / TG' },
       { value: '117', label: 'Vore' },
       { value: '118', label: 'Water Sports' },
-      { value: '100', label: 'General Furry Art' },
     ],
   },
   {

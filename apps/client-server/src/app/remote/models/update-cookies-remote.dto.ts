@@ -1,5 +1,5 @@
 import { UpdateCookiesRemote } from '@postybirb/types';
-import { IsString } from 'class-validator';
+import { IsObject, IsOptional, IsString } from 'class-validator';
 
 export class UpdateCookiesRemoteDto implements UpdateCookiesRemote {
   @IsString()
@@ -7,4 +7,8 @@ export class UpdateCookiesRemoteDto implements UpdateCookiesRemote {
 
   @IsString()
   cookies: string;
+
+  @IsObject()
+  @IsOptional()
+  localStorage?: { url: string; data: Record<string, unknown> };
 }

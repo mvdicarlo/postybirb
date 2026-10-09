@@ -1,0 +1,337 @@
+/**
+ * TemplatesSection - Section panel for managing submission templates.
+ */
+
+import { Trans, useLingui } from '@lingui/react/macro';
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Divider,
+  Group,
+  Loader,
+  Modal,
+  ScrollArea,
+  SegmentedControl,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
+  Tooltip,
+} from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { SubmissionType } from '@postybirb/types';
+import {
+  IconFile,
+  IconHelp,
+  IconMessage,
+  IconPlus,
+  IconSortAscendingLetters,
+  IconSortDescendingLetters,
+  IconTemplate,
+  IconX,
+} from '@tabler/icons-react';
+import { useCallback, useMemo, useState } from 'react';
+import submissionApi from '../../../api/submission.api';
+import { useSubmissionsLoading } from '../../../stores/entity/submission-store';
+import { useNavigationStore } from '../../../stores/ui/navigation-store';
+import {
+  useSortedTemplateSubmissions,
+  useTemplatesFilter,
+} from '../../../stores/ui/templates-ui-store';
+import { useTourActions } from '../../../stores/ui/tour-store';
+import {
+  isTemplatesViewState,
+  type ViewState,
+} from '../../../types/view-state';
+import {
+  showErrorNotification,
+  showSuccessNotification,
+} from '../../../utils/notifications';
+import { EmptyState } from '../../empty-state';
+import { TEMPLATES_TOUR_ID } from '../../onboarding-tour/tours/templates-tour';
+import { SearchInput } from '../../shared';
+import { TemplateCard } from './template-card';
+import './templates-section.css';
+
+interface TemplatesSectionProps {
+  viewState: ViewState;
+}
+
+/**
+ * Templates section panel with search, tabs, and template list.
+ */
+export function TemplatesSection({ viewState }: TemplatesSectionProps) {
+  const { t } = useLingui();
+  const { isLoading } = useSubmissionsLoading();
+  const {
+    tabType,
+    searchQuery,
+    sortOrder,
+    setTabType,
+    setSearchQuery,
+    toggleSortOrder,
+  } = useTemplatesFilter();
+  const templates = useSortedTemplateSubmissions(tabType);
+
+  const { startTour } = useTourActions();
+  const setViewState = useNavigationStore((state) => state.setViewState);
+
+  // Create template modal
+  const [modalOpened, { open: openModal, close: closeModal }] =
+    useDisclosure(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Get selected template ID from view state
+  const selectedTemplateId = isTemplatesViewState(viewState)
+    ? viewState.params.selectedId
+    : null;
+
+  // Handle selecting a template
+  const handleSelectTemplate = useCallback(
+    (templateId: string) => {
+      if (isTemplatesViewState(viewState)) {
+        setViewState({
+          ...viewState,
+          params: {
+            ...viewState.params,
+            selectedId: templateId,
+          },
+        });
+      }
+    },
+    [viewState, setViewState],
+  );
+
+  // Handle creating a new template
+  const handleCreateTemplate = useCallback(async () => {
+    if (!newTemplateName.trim()) return;
+
+    setIsCreating(true);
+    try {
+      await submissionApi.create({
+        name: newTemplateName.trim(),
+        type: tabType,
+        isTemplate: true,
+      });
+      showSuccessNotification(<Trans>Template created</Trans>);
+      setNewTemplateName('');
+      closeModal();
+    } catch {
+      showErrorNotification(<Trans>Failed to create template</Trans>);
+    } finally {
+      setIsCreating(false);
+    }
+  }, [newTemplateName, tabType, closeModal]);
+
+  // Handle key press in input
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleCreateTemplate();
+      }
+    },
+    [handleCreateTemplate],
+  );
+
+  // Filter and sort templates by type, search query, and name sort order
+  const filteredTemplates = useMemo(
+    () =>
+      templates.filter((template) => {
+        // Filter by search query
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase();
+          const name = template.title?.toLowerCase() ?? '';
+          if (!name.includes(query)) return false;
+        }
+
+        return true;
+      }),
+    [templates, searchQuery],
+  );
+
+  return (
+    <Box h="100%" className="postybirb__templates__section">
+      {/* Header */}
+      <Stack gap="xs" p="xs" className="postybirb__templates__header">
+        <Group gap="xs" justify="space-between">
+          <Group gap="xs">
+            <ThemeIcon size="sm" variant="light">
+              <IconTemplate size={14} />
+            </ThemeIcon>
+            <Text size="sm" fw={500}>
+              <Trans>Templates</Trans>
+            </Text>
+          </Group>
+          <Tooltip label={<Trans>Templates Tour</Trans>}>
+            <ActionIcon
+              aria-label={t`Templates Tour`}
+              variant="subtle"
+              size="sm"
+              onClick={() => startTour(TEMPLATES_TOUR_ID)}
+            >
+              <IconHelp size={18} />
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+
+        {/* Search + Sort */}
+        <Group gap="xs" data-tour-id="templates-search">
+          <Box style={{ flex: 1 }}>
+            <SearchInput
+              size="xs"
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onClear={() => setSearchQuery('')}
+            />
+          </Box>
+          <Tooltip
+            label={sortOrder === 'asc' ? t`Sort Z to A` : t`Sort A to Z`}
+          >
+            <ActionIcon
+              variant="light"
+              size="sm"
+              onClick={toggleSortOrder}
+              aria-label={sortOrder === 'asc' ? t`Sort Z to A` : t`Sort A to Z`}
+            >
+              {sortOrder === 'asc' ? (
+                <IconSortAscendingLetters size={14} />
+              ) : (
+                <IconSortDescendingLetters size={14} />
+              )}
+            </ActionIcon>
+          </Tooltip>
+        </Group>
+
+        {/* Tabs */}
+        <SegmentedControl
+          data-tour-id="templates-type-tabs"
+          size="xs"
+          fullWidth
+          value={tabType}
+          onChange={(value) => setTabType(value as SubmissionType)}
+          data={[
+            {
+              value: SubmissionType.FILE,
+              label: (
+                <Group gap={4} justify="center">
+                  <IconFile size={14} />
+                  <Trans>File</Trans>
+                </Group>
+              ),
+            },
+            {
+              value: SubmissionType.MESSAGE,
+              label: (
+                <Group gap={4} justify="center">
+                  <IconMessage size={14} />
+                  <Trans>Message</Trans>
+                </Group>
+              ),
+            },
+          ]}
+        />
+
+        {/* Create new template */}
+        <Button
+          data-tour-id="templates-create"
+          size="xs"
+          variant="light"
+          leftSection={<IconPlus size={14} />}
+          onClick={openModal}
+          fullWidth
+        >
+          <Trans>Create New Template</Trans>
+        </Button>
+      </Stack>
+
+      {/* Create template modal */}
+      <Modal
+        opened={modalOpened}
+        onClose={closeModal}
+        title={<Trans>Create New Template</Trans>}
+        size="sm"
+        centered
+      >
+        <Stack gap="md">
+          <TextInput
+            label={<Trans>Template Name</Trans>}
+            value={newTemplateName}
+            onChange={(e) => setNewTemplateName(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isCreating}
+            data-autofocus
+          />
+          <Group justify="flex-end">
+            <Button
+              variant="default"
+              onClick={closeModal}
+              disabled={isCreating}
+            >
+              <Trans>Cancel</Trans>
+            </Button>
+            <Button
+              onClick={handleCreateTemplate}
+              disabled={!newTemplateName.trim()}
+              loading={isCreating}
+            >
+              <Trans>Create</Trans>
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
+      <Divider />
+
+      {/* Template list */}
+      <ScrollArea style={{ flex: 1 }} type="hover" scrollbarSize={6}>
+        <Stack gap="xs" p="xs">
+          {isLoading ? (
+            <Box ta="center" py="xl">
+              <Loader size="sm" />
+            </Box>
+          ) : filteredTemplates.length === 0 ? (
+            <EmptyState
+              preset={searchQuery ? 'no-results' : 'no-records'}
+              message={
+                searchQuery ? undefined : <Trans>No templates yet</Trans>
+              }
+              size="sm"
+              action={
+                searchQuery ? (
+                  <Button
+                    size="xs"
+                    variant="light"
+                    leftSection={<IconX size={14} />}
+                    onClick={() => setSearchQuery('')}
+                  >
+                    <Trans>Clear search</Trans>
+                  </Button>
+                ) : (
+                  <Button
+                    size="xs"
+                    variant="light"
+                    leftSection={<IconPlus size={14} />}
+                    onClick={openModal}
+                  >
+                    <Trans>Create New Template</Trans>
+                  </Button>
+                )
+              }
+            />
+          ) : (
+            filteredTemplates.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                isSelected={template.id === selectedTemplateId}
+                onSelect={handleSelectTemplate}
+              />
+            ))
+          )}
+        </Stack>
+      </ScrollArea>
+    </Box>
+  );
+}

@@ -1,11 +1,13 @@
+import { ConflictException } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, PostRepository } from '@postybirb/database';
 import {
-  DefaultDescriptionValue,
-  DefaultTagValue,
-  Description,
-  SubmissionRating,
-  SubmissionType,
+    DefaultDescriptionValue,
+    DefaultTagValue,
+    SubmissionRating,
+    SubmissionType,
+    TipTapNode,
 } from '@postybirb/types';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -15,13 +17,16 @@ import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';
 import { UpdateFileService } from '../file/services/update-file.service';
 import { FormGeneratorModule } from '../form-generator/form-generator.module';
+import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
+import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
+import { PostingActivityModule } from '../posting/posting-activity.module';
+import { PostingActivityService } from '../posting/posting-activity.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
-import { UserSpecifiedWebsiteOptionsModule } from '../user-specified-website-options/user-specified-website-options.module';
-import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
+import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -34,6 +39,10 @@ describe('WebsiteOptionsService', () => {
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let module: TestingModule;
+  let postingActivity: PostingActivityService;
+  let postRepository: PostRepository;
+  const markChanged = jest.fn();
+  const markRemoved = jest.fn();
 
   async function createAccount() {
     const dto = new CreateAccountDto();
@@ -54,21 +63,31 @@ describe('WebsiteOptionsService', () => {
     return record;
   }
 
+  async function acceptSubmission(submissionId: string): Promise<void> {
+    const post = await postRepository.insert({ submissionId });
+    expect(postingActivity.accept(post.id, 3)).toBe(true);
+  }
+
   beforeEach(async () => {
     clearDatabase();
+    markChanged.mockReset();
+    markRemoved.mockReset();
     try {
       module = await Test.createTestingModule({
         imports: [
+          EventEmitterModule.forRoot(),
+          TestPlatformModule,
           WebsitesModule,
           AccountModule,
-          UserSpecifiedWebsiteOptionsModule,
           PostParsersModule,
           FormGeneratorModule,
+          PostingActivityModule,
         ],
         providers: [
           SubmissionService,
           CreateFileService,
           UpdateFileService,
+          SharpInstanceManager,
           FileService,
           SubmissionService,
           FileSubmissionService,
@@ -77,8 +96,11 @@ describe('WebsiteOptionsService', () => {
           WebsiteRegistryService,
           ValidationService,
           WebsiteOptionsService,
+          {
+            provide: SubmissionEventPublisher,
+            useValue: { markChanged, markRemoved },
+          },
           WebsiteImplProvider,
-          UserSpecifiedWebsiteOptionsService,
           FileConverterService,
         ],
       }).compile();
@@ -86,6 +108,10 @@ describe('WebsiteOptionsService', () => {
       service = module.get<WebsiteOptionsService>(WebsiteOptionsService);
       submissionService = module.get<SubmissionService>(SubmissionService);
       accountService = module.get<AccountService>(AccountService);
+      postingActivity = module.get<PostingActivityService>(
+        PostingActivityService,
+      );
+      postRepository = new PostRepository();
       await accountService.onModuleInit();
     } catch (e) {
       console.error(e);
@@ -115,6 +141,7 @@ describe('WebsiteOptionsService', () => {
     dto.accountId = account.id;
     dto.submissionId = submission.id;
 
+    markChanged.mockClear();
     const record = await service.create(dto);
     const groups = await service.findAll();
     expect(groups).toHaveLength(2); // 2 because default
@@ -123,6 +150,7 @@ describe('WebsiteOptionsService', () => {
     expect(groups[1].isDefault).toEqual(false);
     expect(groups[1].data).toEqual(dto.data);
     expect(groups[1].submission.id).toEqual(dto.submissionId);
+    expect(markChanged).toHaveBeenCalledWith(submission.id, true);
 
     expect(record.toDTO()).toEqual({
       data: record.data,
@@ -131,8 +159,7 @@ describe('WebsiteOptionsService', () => {
       accountId: account.id,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
-      account: record.account.toObject(),
-      submissionId: submission.id,
+      account: record.account,
       submission: record.submission.toDTO(),
     });
   });
@@ -154,8 +181,35 @@ describe('WebsiteOptionsService', () => {
     const record = await service.create(dto);
     expect(await service.findAll()).toHaveLength(2); // 2 because default
 
+    markChanged.mockClear();
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(1);
+    expect(markChanged).toHaveBeenCalledWith(submission.id, true);
+  });
+
+  it('immediately publishes bulk option additions and removals once', async () => {
+    const account = await createAccount();
+    const submission = await createSubmission();
+    const data = {
+      title: 'title',
+      tags: DefaultTagValue(),
+      description: DefaultDescriptionValue(),
+      rating: SubmissionRating.GENERAL,
+    };
+    const record = await service.create({
+      accountId: account.id,
+      submissionId: submission.id,
+      data,
+    });
+
+    markChanged.mockClear();
+    await service.updateSubmissionOptions(submission.id, {
+      remove: [record.id],
+      add: [{ accountId: account.id, submissionId: submission.id, data }],
+    });
+
+    expect(markChanged).toHaveBeenCalledTimes(1);
+    expect(markChanged).toHaveBeenCalledWith(submission.id, true);
   });
 
   it('should remove entity when parent is removed', async () => {
@@ -212,52 +266,104 @@ describe('WebsiteOptionsService', () => {
     expect(update.data.title).toEqual('title updated');
   });
 
-  it('filters nested inline content and children blocks', async () => {
-    const nestedBlocks: Description = [
+  it('rejects option updates and removals while its submission is accepted', async () => {
+    const account = await createAccount();
+    const submission = await createSubmission();
+    const record = await service.create({
+      accountId: account.id,
+      submissionId: submission.id,
+      data: {
+        title: 'original',
+        tags: DefaultTagValue(),
+        description: DefaultDescriptionValue(),
+        rating: SubmissionRating.GENERAL,
+      },
+    });
+    await acceptSubmission(submission.id);
+
+    await expect(
+      service.update(record.id, {
+        data: { ...record.data, title: 'blocked' },
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.remove(record.id)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.findByIdOrThrow(record.id)).resolves.toMatchObject({
+      data: { title: 'original' },
+    });
+  });
+
+  it('allows shortcut cleanup while an affected submission is accepted', async () => {
+    const submission = await createSubmission();
+    const option = submission.options[0];
+    const description = DefaultDescriptionValue();
+    description.description.content = [
       {
-        id: 'test-basic-text',
         type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
         content: [
-          { type: 'text', text: 'Hello, ', styles: { bold: true } },
+          { type: 'customShortcut', attrs: { id: 'active-shortcut' } },
+        ],
+      },
+    ];
+    await service.update(option.id, {
+      data: { ...option.data, description },
+    });
+    await acceptSubmission(submission.id);
+    const deleteShortcut = Reflect.get(
+      service,
+      'onCustomShortcutDelete',
+    ) as (id: string) => Promise<void>;
+
+    await expect(
+      deleteShortcut.call(service, 'active-shortcut'),
+    ).resolves.toBeUndefined();
+    await expect(service.findByIdOrThrow(option.id)).resolves.toMatchObject({
+      data: {
+        description: {
+          description: {
+            content: [
+              {
+                content: [],
+              },
+            ],
+          },
+        },
+      },
+    });
+  });
+
+  it('filters nested inline content', async () => {
+    const blocks: TipTapNode[] = [
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'Hello, ', marks: [{ type: 'bold' }] },
           {
             type: 'customShortcut',
-            props: {
+            attrs: {
               id: 'to-delete',
             },
             content: [
               {
                 type: 'text',
                 text: 'User',
-                styles: {},
               },
             ],
           },
         ],
-        children: [],
       },
     ];
 
     const { changed, filtered } = service.filterCustomShortcut(
-      nestedBlocks,
+      blocks,
       'to-delete',
     );
     expect(changed).toBeTruthy();
     expect(filtered).toEqual([
       {
-        id: 'test-basic-text',
         type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
-        content: [{ type: 'text', text: 'Hello, ', styles: { bold: true } }],
-        children: [],
+        content: [{ type: 'text', text: 'Hello, ', marks: [{ type: 'bold' }] }],
       },
     ]);
   });

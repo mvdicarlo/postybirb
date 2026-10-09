@@ -1,26 +1,30 @@
+import { FormFile } from '@postybirb/http/types';
 import { IFileBuffer } from '@postybirb/types';
-import { FormFile } from '../../../../../../libs/http/src/lib/form-file'; // Direct import to avoid electron loading
-import { CancellableToken } from '../../post/models/cancellable-token';
-import { PostingFile } from '../../post/models/posting-file';
+import { CancellationToken } from '../../posting/cancellation-token';
+import { PostingFile } from '../../posting/models/posting-file';
 import { PostBuilder } from './post-builder';
 
 // Mocks
+const mockHttpPost = jest
+  .fn()
+  .mockResolvedValue({ statusCode: 200, body: { id: '123' } });
+
 const mockWebsite = {
   account: { id: 'test-account' },
   constructor: { name: 'MockWebsite' },
+  platform: {
+    http: {
+      post: mockHttpPost,
+    },
+  },
 };
 
 jest.mock('@postybirb/logger', () => ({
   Logger: () => ({
     withMetadata: () => ({ debug: jest.fn() }),
     debug: jest.fn(),
+    error: jest.fn(),
   }),
-}));
-jest.mock('@postybirb/http', () => ({
-  Http: {
-    post: jest.fn().mockResolvedValue({ statusCode: 200, body: { id: '123' } }),
-  },
-  FormFile: FormFile,
 }));
 
 function createPostingFile(overrides = {}) {
@@ -43,10 +47,10 @@ function createPostingFile(overrides = {}) {
 
 describe('PostBuilder', () => {
   let builder: PostBuilder;
-  let token: CancellableToken;
+  let token: CancellationToken;
 
   beforeEach(() => {
-    token = new CancellableToken();
+    token = new CancellationToken();
     builder = new PostBuilder(mockWebsite as any, token);
   });
 
@@ -145,15 +149,16 @@ describe('PostBuilder', () => {
   });
 
   it('should throw if cancelled before send', async () => {
-    token.cancel();
-    await expect(builder.send('http://test')).rejects.toThrow(
-      'Task was cancelled.',
-    );
+    const reason = new Error('Task was cancelled.');
+    token.abort(reason);
+
+    await expect(builder.send('http://test')).rejects.toThrow(reason);
   });
 
-  it('should call Http.post and return value on send', async () => {
+  it('should call platform.http.post and return value on send', async () => {
     const result = await builder.send<{ id: string }>('http://test');
     expect(result.body.id).toBe('123');
+    expect(mockHttpPost).toHaveBeenCalled();
   });
 
   it('should convert PostingFile to FormFile', () => {

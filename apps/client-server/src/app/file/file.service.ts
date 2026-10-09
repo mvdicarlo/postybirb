@@ -1,18 +1,18 @@
 /* eslint-disable no-param-reassign */
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
-  EntityId,
-  FileSubmission,
-  SubmissionFileMetadata,
+    EntityId,
+    FileSubmission,
+    SubmissionFileMetadata,
+    SubmissionId,
 } from '@postybirb/types';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { readFile } from 'fs/promises';
 import { cpus } from 'os';
-import { SubmissionFile } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { ReorderSubmissionFilesDto } from '../submission/dtos/reorder-submission-files.dto';
 import { UpdateAltFileDto } from '../submission/dtos/update-alt-file.dto';
 import { MulterFileInfo, TaskOrigin } from './models/multer-file-info';
@@ -34,13 +34,9 @@ export class FileService {
     Task
   >(this, this.doTask, Math.min(cpus().length, 5));
 
-  private readonly fileBufferRepository = new PostyBirbDatabase(
-    'FileBufferSchema',
-  );
+  private readonly fileBufferRepository = new FileBufferRepository();
 
-  private readonly fileRepository = new PostyBirbDatabase(
-    'SubmissionFileSchema',
-  );
+  private readonly fileRepository = new SubmissionFileRepository();
 
   constructor(
     private readonly createFileService: CreateFileService,
@@ -129,7 +125,10 @@ export class FileService {
     return `${nameParts.join('_')}.${ext}`;
   }
 
-  private async getFile(path: string, taskOrigin: TaskOrigin): Promise<Buffer> {
+  private async getFile(
+    path: string,
+    taskOrigin: TaskOrigin | undefined,
+  ): Promise<Buffer> {
     switch (taskOrigin) {
       case 'directory-watcher':
         return readFile(path);
@@ -145,7 +144,15 @@ export class FileService {
    * @param {EntityId} id
    */
   public async findFile(id: EntityId): Promise<SubmissionFile> {
-    return this.fileRepository.findById(id, { failOnMissing: true });
+    return this.fileRepository.findByIdOrThrow(id);
+  }
+
+  public async findSubmissionIdForBuffer(
+    id: EntityId,
+  ): Promise<SubmissionId> {
+    const buffer = await this.fileBufferRepository.findByIdOrThrow(id);
+    const submissionFile = await this.findFile(buffer.submissionFileId);
+    return submissionFile.submissionId;
   }
 
   /**
@@ -153,9 +160,7 @@ export class FileService {
    * @param {EntityId} id
    */
   async getAltFileSize(id: EntityId): Promise<number> {
-    const altFile = await this.fileBufferRepository.findById(id, {
-      failOnMissing: false,
-    });
+    const altFile = await this.fileBufferRepository.findById(id);
     return altFile?.size ?? 0;
   }
 
@@ -164,9 +169,7 @@ export class FileService {
    * @param {EntityId} id
    */
   async getAltText(id: EntityId): Promise<string> {
-    const altFile = await this.fileBufferRepository.findById(id, {
-      failOnMissing: true,
-    });
+    const altFile = await this.fileBufferRepository.findByIdOrThrow(id);
     if (altFile.size) {
       return altFile.buffer.toString();
     }
@@ -180,17 +183,18 @@ export class FileService {
    * @param {UpdateAltFileDto} update
    */
   async updateAltText(id: EntityId, update: UpdateAltFileDto) {
-    const buffer = Buffer.from(update.html ?? '');
+    const buffer = Buffer.from(update.text ?? '');
     return this.fileBufferRepository.update(id, {
       buffer,
+      mimeType: 'text/plain',
       size: buffer.length,
     });
   }
 
   async updateMetadata(id: string, update: SubmissionFileMetadata) {
     const file = await this.findFile(id);
-    file.metadata = { ...file.metadata, ...update };
-    await this.fileRepository.update(id, file);
+    const merged = { ...file.metadata, ...update };
+    await this.fileRepository.update(id, { metadata: merged });
   }
 
   async reorderFiles(update: ReorderSubmissionFilesDto) {

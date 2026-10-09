@@ -15,6 +15,7 @@ import {
   DefaultDescriptionValue,
   DefaultTagValue,
   DescriptionValue,
+  DynamicObject,
   IWebsiteFormFields,
   SubmissionRating,
   Tag,
@@ -32,7 +33,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     span: 12,
     layout: 'horizontal',
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @TitleField({
     required: true,
@@ -53,6 +54,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     section: 'common',
     order: 4,
     span: 12,
+    required: true,
   })
   description: DescriptionValue = DefaultDescriptionValue();
 
@@ -94,6 +96,9 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
         : {
             overrideDefault: false,
             description: options.description.description,
+            // Use ?? so a per-website option can explicitly disable (false) an
+            // insert flag inherited from the default. Only an unset (undefined)
+            // value inherits the default's setting.
             insertTitle:
               this.description.insertTitle ?? options.description.insertTitle,
             insertTags:
@@ -113,17 +118,26 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     return newInstance;
   }
 
-  public getFormFields(params: Record<string, never> = {}) {
+  public getFormFields(params: DynamicObject = {}) {
     return formBuilder(this, params);
   }
 
-  public getFormFieldFor(key: 'tags'): TagFieldType;
-  public getFormFieldFor(key: 'description'): DescriptionFieldType;
-  public getFormFieldFor(key: 'title'): TitleFieldType;
-  public getFormFieldFor(key: 'rating'): RatingFieldType;
-  public getFormFieldFor(key: 'contentWarning'): TextFieldType;
-  public getFormFieldFor(key: keyof IWebsiteFormFields) {
-    return this.getFormFields()[key];
+  public getFormFieldFor(key: 'tags', data?: DynamicObject): TagFieldType;
+  public getFormFieldFor(
+    key: 'description',
+    data?: DynamicObject,
+  ): DescriptionFieldType;
+  public getFormFieldFor(key: 'title', data?: DynamicObject): TitleFieldType;
+  public getFormFieldFor(key: 'rating', data?: DynamicObject): RatingFieldType;
+  public getFormFieldFor(
+    key: 'contentWarning',
+    data?: DynamicObject,
+  ): TextFieldType;
+  public getFormFieldFor(
+    key: keyof IWebsiteFormFields,
+    data: DynamicObject = {},
+  ) {
+    return this.getFormFields(data)[key];
   }
 
   /**
@@ -132,7 +146,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
    * Calls the `processTag` method to transform each tag.
    */
   public async getProcessedTags(
-    additionalProcessor?: (tag) => Promise<string>,
+    additionalProcessor?: (tag: string) => Promise<string>,
   ): Promise<Tag[]> {
     const tagsField = this.getFormFieldFor('tags');
     if (tagsField.hidden) {

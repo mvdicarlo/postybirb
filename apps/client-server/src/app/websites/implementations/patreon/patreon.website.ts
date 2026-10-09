@@ -1,11 +1,11 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { FormFile, Http } from '@postybirb/http';
+import { FormFile } from '@postybirb/http/types';
 import {
   DynamicObject,
   FileType,
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
   SimpleValidationResult,
@@ -13,8 +13,8 @@ import {
 import parse from 'node-html-parser';
 import { parse as parseFileName } from 'path';
 import { v4 } from 'uuid';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { wait } from '../../../utils/wait.util';
 import { PostBuilder } from '../../commons/post-builder';
@@ -38,6 +38,7 @@ import {
 } from './models/patreon-media-upload-types';
 import { PatreonMessageSubmission } from './models/patreon-message-submission';
 import { PatreonNewPostResponse } from './models/patreon-post-types';
+import { PatreonDescriptionConverter } from './patreon-description-converter';
 
 type PatreonAccessRuleSegment = Array<{
   type: 'access-rule';
@@ -82,6 +83,7 @@ type PatreonTagSegment = Array<{
   acceptedFileSizes: {
     '*': FileSize.megabytes(200),
   },
+  fileBatchSize: 100,
 })
 @SupportsUsernameShortcut({
   id: 'patreon',
@@ -110,8 +112,8 @@ export default class Patreon
       collections: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
-    const membershipPage = await Http.get<string>(
+  public async onLogin(): Promise<LoginResult> {
+    const membershipPage = await this.platform.http.get<string>(
       `${this.BASE_URL}/membership`,
       {
         partition: this.accountId,
@@ -124,7 +126,7 @@ export default class Patreon
       ?.getAttribute('content');
 
     if (csrf) {
-      const badgesResult = await Http.get<{
+      const badgesResult = await this.platform.http.get<{
         data: Array<{
           id: string;
           type: string;
@@ -143,10 +145,11 @@ export default class Patreon
         const campaignId = campaignBadge.id.split(':')[1];
         const campaignQueryString =
           '?fields[rewardItem]=title%2Cdescription%2Coffer_id%2Citem_type%2Cis_deleted%2Cis_ended%2Cis_published&fields[accessRule]=access_rule_type%2Camount_cents%2Cpost_count&include=post_aggregation%2Ccreator.campaign%2Ccreator.pledge_to_current_user.null%2Cconnected_socials%2Ccurrent_user_pledge.reward.null%2Ccurrent_user_pledge.campaign.null%2Crewards.items.null%2Crewards.cadence_options.null%2Crss_auth_token%2Caccess_rules.tier.null%2Cactive_offer.rewards.null%2Cscheduled_offer.rewards.null%2Ccreator.pledges.campaign.null%2Creward_items.template%2Crewards.null%2Crewards.reward_recommendations%2Cthanks_embed%2Cthanks_msg&json-api-version=1.0&json-api-use-default-includes=false';
-        const campaignResult = await Http.get<PatreonCampaignResponse>(
-          `${this.BASE_URL}/api/campaigns/${campaignId}${campaignQueryString}`,
-          { partition: this.accountId },
-        );
+        const campaignResult =
+          await this.platform.http.get<PatreonCampaignResponse>(
+            `${this.BASE_URL}/api/campaigns/${campaignId}${campaignQueryString}`,
+            { partition: this.accountId },
+          );
 
         const username = campaignResult.body.data.attributes.name;
         this.sessionData.username = username;
@@ -157,11 +160,11 @@ export default class Patreon
           folders: this.parseTiers(campaignResult.body),
           collections: await this.loadCollections(campaignId),
         });
-        return this.loginState.setLogin(true, username);
+        return { loggedIn: true, username };
       }
     }
 
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
   }
 
   private parseTiers(campaign: PatreonCampaignResponse): SelectOption[] {
@@ -173,7 +176,7 @@ export default class Patreon
     return accessRules
       .map((accessRule) => {
         const { id, attributes, relationships } = accessRule;
-        let label: string;
+        let label = 'Unknown tier';
         let mutuallyExclusive = false;
         let cost = 0;
 
@@ -221,15 +224,16 @@ export default class Patreon
   }
 
   private async loadCollections(campaignId: string): Promise<SelectOption[]> {
-    const collectionRes = await Http.get<PatreonCollectionResponse>(
-      `${this.BASE_URL}/api/collection?filter[campaign_id]=${campaignId}&filter[must_contain_at_least_one_published_post]=false&json-api-version=1.0&json-api-use-default-includes=false`,
-      {
-        partition: this.accountId,
-        headers: {
-          'X-Csrf-Signature': this.sessionData.csrf,
+    const collectionRes =
+      await this.platform.http.get<PatreonCollectionResponse>(
+        `${this.BASE_URL}/api/collection?filter[campaign_id]=${campaignId}&filter[must_contain_at_least_one_published_post]=false&json-api-version=1.0&json-api-use-default-includes=false`,
+        {
+          partition: this.accountId,
+          headers: {
+            'X-Csrf-Signature': this.sessionData.csrf,
+          },
         },
-      },
-    );
+      );
 
     if (
       collectionRes.statusCode >= 400 &&
@@ -267,12 +271,12 @@ export default class Patreon
     return new PatreonFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
   private async initializePost() {
-    const res = await Http.post<PatreonNewPostResponse>(
+    const res = await this.platform.http.post<PatreonNewPostResponse>(
       `${this.BASE_URL}/api/posts?fields[post]=post_type%2Cpost_metadata&include=drop&json-api-version=1.0&json-api-use-default-includes=false`,
       {
         partition: this.accountId,
@@ -299,7 +303,7 @@ export default class Patreon
     postUrl: string,
     data: DynamicObject,
   ): Promise<void> {
-    const res = await Http.patch(
+    const res = await this.platform.http.patch(
       `${postUrl}?json-api-version=1.0&json-api-use-default-includes=false&include=[]`,
       {
         partition: this.accountId,
@@ -332,7 +336,7 @@ export default class Patreon
     file: FormFile,
     fileType: FileType,
     asAttachment: boolean,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PatreonMediaUploadResponse> {
     const { ext } = parseFileName(file.fileName);
     const fileNameGUID = `${v4().toUpperCase()}${ext}`;
@@ -359,7 +363,7 @@ export default class Patreon
       },
     };
 
-    const init = await Http.post<PatreonMediaUploadResponse>(
+    const init = await this.platform.http.post<PatreonMediaUploadResponse>(
       `${this.BASE_URL}/api/media?json-api-version=1.0&json-api-use-default-includes=false&include=%5B%5D`,
       {
         partition: this.accountId,
@@ -384,7 +388,7 @@ export default class Patreon
 
     const timeout = Date.now() + 90_000;
     while (Date.now() <= timeout) {
-      const state = await Http.get<PatreonMediaUploadResponse>(
+      const state = await this.platform.http.get<PatreonMediaUploadResponse>(
         `${this.BASE_URL}/api/media/${init.body.data.id}?json-api-version=1.0&json-api-use-default-includes=false&include=[]`,
         {
           partition: this.accountId,
@@ -416,9 +420,9 @@ export default class Patreon
   async onPostFileSubmission(
     postData: PostData<PatreonFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const initializedPost = await this.initializePost();
 
     const uploadThumbnail =
@@ -426,13 +430,11 @@ export default class Patreon
 
     const filesToUpload: { file: FormFile; fileType: FileType }[] = [];
 
-    if (
-      uploadThumbnail &&
-      files[0].thumbnail &&
-      files[0].thumbnail.mimeType.startsWith('image')
-    ) {
+    if (uploadThumbnail && files[0].thumbnail?.mimeType.startsWith('image')) {
       filesToUpload.push({
-        file: files[0].thumbnailToPostFormat(),
+        // Check above covers this
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        file: files[0].thumbnailToPostFormat()!,
         fileType: FileType.IMAGE,
       });
     }
@@ -469,6 +471,7 @@ export default class Patreon
         postData.options.allAsAttachment
           ? 'text_only'
           : this.getPostType(files[0].fileType),
+        initializedPost.data.id,
         uploadedFiles
           .filter((f) => f.data.attributes.media_type === 'image') // Metadata only matters for image types
           .map((f) => f.data.id),
@@ -477,7 +480,7 @@ export default class Patreon
       included: [...tags, ...accessTiers],
     };
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     await this.finalizePost(initializedPost.links.self, postAttributes);
 
     return PostResponse.fromWebsite(this)
@@ -501,9 +504,9 @@ export default class Patreon
 
   async onPostMessageSubmission(
     postData: PostData<PatreonMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const initializedPost = await this.initializePost();
 
     const tags = this.createTagsSegment(postData.options.tags || []);
@@ -512,12 +515,18 @@ export default class Patreon
     );
 
     const postAttributes = {
-      data: this.createDataSegment(postData, tags, accessTiers, 'text_only'),
+      data: this.createDataSegment(
+        postData,
+        tags,
+        accessTiers,
+        'text_only',
+        initializedPost.data.id,
+      ),
       meta: this.createDefaultMetadataSegment(),
       included: [...tags, ...accessTiers],
     };
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     await this.finalizePost(initializedPost.links.self, postAttributes);
 
     return PostResponse.fromWebsite(this)
@@ -569,6 +578,7 @@ export default class Patreon
     tagSegment: PatreonTagSegment,
     rulesSegment: PatreonAccessRuleSegment,
     postType: string,
+    postId: string,
     mediaIds?: string[],
   ) {
     const { options } = postData;
@@ -581,6 +591,17 @@ export default class Patreon
       earlyAccess,
       collections,
     } = options;
+
+    // Determine if any selected tier is a paid tier.
+    // Free tiers ("Everyone", free rewards) have cost === 0.
+    const folders = this.getWebsiteData()?.folders ?? [];
+    const selectedTierIds = new Set(rulesSegment.map((rule) => rule.id));
+    const hasPaidTier = folders.some(
+      (folder) =>
+        selectedTierIds.has(String(folder.value)) &&
+        (folder.data as { cost: number })?.cost > 0,
+    );
+
     const dataAttributes = {
       type: 'post',
       attributes: {
@@ -607,8 +628,33 @@ export default class Patreon
         tags: {
           publish: !schedule,
         },
+        content_json_string: PatreonDescriptionConverter.convert(
+          description ?? '<p></p>',
+          {
+            postId,
+            isMonetized: !!charge,
+            isPaidAccessSelected: hasPaidTier,
+            includePaywall: hasPaidTier,
+          },
+        ),
       },
       relationships: {
+        post_tag: tagSegment.length
+          ? {
+              data: {
+                type: 'post_tag',
+                id: tagSegment[tagSegment.length - 1].id,
+              },
+            }
+          : undefined,
+        'access-rule': rulesSegment.length
+          ? {
+              data: {
+                type: 'access-rule',
+                id: rulesSegment[rulesSegment.length - 1].id,
+              },
+            }
+          : undefined,
         user_defined_tags: {
           data: tagSegment.map((tag) => ({
             id: tag.id,

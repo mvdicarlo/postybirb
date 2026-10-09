@@ -6,6 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { EntityId } from '@postybirb/types';
+import { TagConverterRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
 import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
@@ -17,7 +18,7 @@ import { TagConvertersService } from './tag-converters.service';
  */
 @ApiTags('tag-converters')
 @Controller('tag-converters')
-export class TagConvertersController extends PostyBirbController<'TagConverterSchema'> {
+export class TagConvertersController extends PostyBirbController<TagConverterRepository> {
   constructor(readonly service: TagConvertersService) {
     super(service);
   }

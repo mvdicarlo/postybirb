@@ -5,6 +5,8 @@ export default {
   globals: {},
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   coverageDirectory: '../../coverage/libs/http',
-  runner: '@kayahr/jest-electron-runner/main',
   testEnvironment: 'node',
+  moduleNameMapper: {
+    '^electron$': '<rootDir>/src/__mocks__/electron.js',
+  },
 };

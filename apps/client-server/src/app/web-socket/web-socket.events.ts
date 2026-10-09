@@ -6,8 +6,8 @@ import { SettingsEventTypes } from '../settings/settings.events';
 import { SubmissionEventTypes } from '../submission/submission.events';
 import { TagConverterEventTypes } from '../tag-converters/tag-converter.events';
 import { TagGroupEventTypes } from '../tag-groups/tag-group.events';
+import { UpdateEventTypes } from '../update/update.events';
 import { UserConverterEventTypes } from '../user-converters/user-converter.events';
-import { WebsiteEventTypes } from '../websites/website.events';
 
 export type WebSocketEvents =
   | AccountEventTypes
@@ -16,7 +16,7 @@ export type WebSocketEvents =
   | SubmissionEventTypes
   | TagGroupEventTypes
   | TagConverterEventTypes
+  | UpdateEventTypes
   | UserConverterEventTypes
-  | WebsiteEventTypes
   | NotificationEventTypes
   | CustomShortcutEventTypes;

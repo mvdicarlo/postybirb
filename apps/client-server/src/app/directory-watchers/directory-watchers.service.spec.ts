@@ -1,13 +1,21 @@
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
 import { mkdir, readdir, rename, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
+import {
+    EntityCreatedEvent,
+    EntityUpdatedEvent,
+    getEntityCrudEventNames,
+} from '../common/events/entity-crud.events';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
+import { DIRECTORY_WATCHER_EVENT_PREFIX } from './directory-watcher.events';
 import { DirectoryWatchersService } from './directory-watchers.service';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
@@ -25,9 +33,12 @@ describe('DirectoryWatchersService', () => {
   let submissionService: SubmissionService;
   let accountService: AccountService;
   let module: TestingModule;
+  const emit = jest.fn();
+  const eventNames = getEntityCrudEventNames(DIRECTORY_WATCHER_EVENT_PREFIX);
 
   beforeEach(async () => {
     clearDatabase();
+    emit.mockClear();
 
     // Setup mocks
     (readdir as jest.Mock).mockResolvedValue([]);
@@ -36,8 +47,16 @@ describe('DirectoryWatchersService', () => {
     (writeFile as jest.Mock).mockResolvedValue(undefined);
 
     module = await Test.createTestingModule({
-      imports: [SubmissionModule, NotificationsModule],
-      providers: [DirectoryWatchersService],
+      imports: [
+        EventEmitterModule.forRoot(),
+        TestPlatformModule,
+        SubmissionModule,
+        NotificationsModule,
+      ],
+      providers: [
+        DirectoryWatchersService,
+        { provide: EventEmitter2, useValue: { emit } },
+      ],
     }).compile();
 
     service = module.get<DirectoryWatchersService>(DirectoryWatchersService);
@@ -92,6 +111,10 @@ describe('DirectoryWatchersService', () => {
     const record = entities[0];
     expect(record.path).toBe(dto.path);
     expect(record.importAction).toBe(dto.importAction);
+
+    expect(emit).toHaveBeenCalledWith(eventNames.created, [
+      new EntityCreatedEvent(record.toDTO()),
+    ]);
   });
 
   it('should update entities', async () => {
@@ -107,6 +130,10 @@ describe('DirectoryWatchersService', () => {
     updateDto.path = 'updated-path';
     const updatedRecord = await service.update(record.id, updateDto);
     expect(updatedRecord.path).toBe(updateDto.path);
+
+    expect(emit).toHaveBeenCalledWith(eventNames.updated, [
+      new EntityUpdatedEvent(updatedRecord.toDTO()),
+    ]);
 
     // Verify directory structure was created for new path
     expect(mkdir).toHaveBeenCalledWith(join('updated-path', 'processing'), {
@@ -132,11 +159,24 @@ describe('DirectoryWatchersService', () => {
       id: updatedRecord.id,
       importAction: DirectoryWatcherImportAction.NEW_SUBMISSION,
       path: 'path',
+      template: template.id,
       templateId: template.id,
     });
 
+    const reloadedRecord = await service.findByIdOrThrow(updatedRecord.id);
+    expect(reloadedRecord.toDTO().template).toBe(template.id);
+
+    const clearDto = new UpdateDirectoryWatcherDto();
+    clearDto.templateId = null;
+    const clearedRecord = await service.update(record.id, clearDto);
+    expect(clearedRecord.templateId).toBeNull();
+    expect(clearedRecord.toDTO().template).toBeNull();
+
+    updateDto.templateId = template.id;
+    await service.update(record.id, updateDto);
+
     await submissionService.remove(template.id);
-    const rec = await service.findById(updatedRecord.id);
+    const rec = await service.findByIdOrThrow(updatedRecord.id);
     expect(rec.templateId).toBe(null);
   });
 

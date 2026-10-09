@@ -1,15 +1,15 @@
-import { Http } from '@postybirb/http';
 import {
-  ILoginState,
   ImageResizeProps,
   IPostResponse,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
 } from '@postybirb/types';
+import { calculateImageResize } from '@postybirb/utils/file-type';
 import { parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -59,9 +59,9 @@ export default class HentaiFoundry
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
-      const res = await Http.get<string>(this.BASE_URL, {
+      const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
       });
 
@@ -70,13 +70,13 @@ export default class HentaiFoundry
         const username =
           res.body.match(/class=.navlink. href=.\/user\/(.*?)\//)?.[1] ||
           'Unknown';
-        return this.loginState.setLogin(true, username);
+        return { loggedIn: true, username };
       }
 
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     } catch (e) {
       this.logger.error('Failed to login', e);
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
   }
 
@@ -89,29 +89,25 @@ export default class HentaiFoundry
   }
 
   calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
-    if (
-      file.width > 1500 ||
-      file.height > 1500 ||
-      file.size > FileSize.megabytes(2)
-    ) {
-      return {
-        height: 1500,
-        width: 1500,
-        maxBytes: FileSize.megabytes(2),
-      };
-    }
-    return undefined;
+    return calculateImageResize(file, {
+      maxWidth: 1500,
+      maxHeight: 1500,
+      maxBytes: FileSize.megabytes(2),
+    });
   }
 
   async onPostFileSubmission(
     postData: PostData<HentaiFoundryFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     // Get the form page first
-    const page = await Http.get<string>(`${this.BASE_URL}/pictures/create`, {
-      partition: this.accountId,
-    });
+    const page = await this.platform.http.get<string>(
+      `${this.BASE_URL}/pictures/create`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     PostResponse.validateBody(this, page);
 
@@ -194,7 +190,12 @@ export default class HentaiFoundry
       )
       .setConditional('Pictures[rating_rape]', postData.options.rape, '1', '0')
       .setField('Pictures[media_id]', postData.options.media)
-      .setField('Pictures[time_taken]', postData.options.timeTaken || '')
+      .setField(
+        'Pictures[time_taken]',
+        postData.options.timeTaken != null
+          ? String(postData.options.timeTaken)
+          : '',
+      )
       .setField('Pictures[reference]', postData.options.reference || '')
       .setField('Pictures[license_id]', '0');
 
@@ -216,11 +217,14 @@ export default class HentaiFoundry
 
   async onPostMessageSubmission(
     postData: PostData<HentaiFoundryMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
-    const page = await Http.get<string>(`${this.BASE_URL}/UserBlogs/create`, {
-      partition: this.accountId,
-    });
+    const page = await this.platform.http.get<string>(
+      `${this.BASE_URL}/UserBlogs/create`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     PostResponse.validateBody(this, page);
 

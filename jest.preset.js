@@ -8,20 +8,25 @@ const basePath = __dirname.split(/(app|lib)/)[0];
 const config = {
   ...nxPreset,
   setupFiles: [join(basePath, 'jest.setup.ts')],
-  prettierPath: require.resolve('prettier-2'),
   reporters: ['summary', join(basePath, 'jest.reporter.js')],
   slowTestThreshold: 7000,
   cacheDirectory: join(process.cwd(), '.jest'),
-  transformIgnorePatterns: [], // There is a lot of esm packages and swc is fast enough to transform everything
+  testEnvironment: 'node',
+  transformIgnorePatterns: [
+    // These packages are CJS already and give warnings about swc not being able to read source maps for them in CI
+    '/diagnostic-channel/',
+    '/diagnostic-channel-publishers',
+    '/cron/',
+  ], // There is a lot of ESM packages and swc is fast enough to transform everything
   transform: {
     '^.+\\.(ts|tsx|jsx|js|html)$': [
       '@swc/jest',
       {
         jsc: {
           // https://github.com/swc-project/swc/discussions/5151#discussioncomment-3149154
-          experimental: { plugins: [['swc_mut_cjs_exports', {}]] },
+          experimental: { plugins: [['@swc-contrib/mut-cjs-exports', {}]] },
           loose: true,
-          target: 'es2020',
+          target: 'es2024', 
           parser: {
             syntax: 'typescript',
             tsx: true,

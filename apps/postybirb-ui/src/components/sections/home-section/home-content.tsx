@@ -1,0 +1,142 @@
+/**
+ * HomeContent - Main dashboard content for the home view.
+ * Displays stats, queue control, and status panels.
+ */
+
+import { Trans, useLingui } from '@lingui/react/macro';
+import {
+  ActionIcon,
+  Container,
+  Group,
+  ScrollArea,
+  SimpleGrid,
+  Stack,
+  Title,
+  Tooltip,
+} from '@mantine/core';
+import { SubmissionType } from '@postybirb/types';
+import {
+  IconCalendar,
+  IconFile,
+  IconHelp,
+  IconMessage,
+  IconStack2,
+} from '@tabler/icons-react';
+import {
+  useQueuedSubmissions,
+  useScheduledSubmissions,
+  useSubmissionsByType,
+} from '../../../stores/entity/submission-store';
+import { useDrawerActions } from '../../../stores/ui/drawer-store';
+import { useViewStateActions } from '../../../stores/ui/navigation-store';
+import { useTourActions } from '../../../stores/ui/tour-store';
+import '../../../styles/layout.css';
+import {
+  createFileSubmissionsViewState,
+  createMessageSubmissionsViewState,
+} from '../../../types/view-state';
+import { HOME_TOUR_ID } from '../../onboarding-tour/tours/home-tour';
+import { AccountHealthPanel } from './account-health-panel';
+import { PostingActivityPanel } from './posting-activity-panel';
+import { QueueControlCard } from './queue-control-card';
+import { RecentActivityPanel } from './recent-activity-panel';
+import { ScheduleCalendarPanel } from './schedule-calendar-panel';
+import { StatCard } from './stat-card';
+import { UpcomingPostsPanel } from './upcoming-posts-panel';
+import { ValidationIssuesPanel } from './validation-issues-panel';
+
+export function HomeContent() {
+  const { t } = useLingui();
+  const { setViewState } = useViewStateActions();
+  const { openDrawer } = useDrawerActions();
+  const fileSubmissions = useSubmissionsByType(SubmissionType.FILE);
+  const messageSubmissions = useSubmissionsByType(SubmissionType.MESSAGE);
+  const queuedSubmissions = useQueuedSubmissions();
+  const scheduledSubmissions = useScheduledSubmissions();
+
+  const { startTour } = useTourActions();
+
+  // Filter to only non-template submissions for stats
+  const fileCount = fileSubmissions
+    .filter((s) => !s.isTemplate)
+    .filter((s) => !s.isMultiSubmission).length;
+  const messageCount = messageSubmissions
+    .filter((s) => !s.isTemplate)
+    .filter((s) => !s.isMultiSubmission).length;
+
+  return (
+    <ScrollArea h="100%" type="hover" scrollbarSize={6}>
+      <Container size="xl" py="md">
+        <Stack gap="md">
+          {/* Header */}
+          <Group justify="space-between" align="center">
+            <Title order={3}>
+              <Trans>Dashboard</Trans>
+            </Title>
+            <Tooltip label={<Trans>Dashboard Tour</Trans>}>
+              <ActionIcon
+                aria-label={t`Dashboard Tour`}
+                variant="subtle"
+                size="sm"
+                onClick={() => startTour(HOME_TOUR_ID)}
+              >
+                <IconHelp size={18} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
+
+          <QueueControlCard />
+          <PostingActivityPanel />
+          {/* Stats Row */}
+          <SimpleGrid
+            cols={{ base: 2, md: 4 }}
+            spacing="md"
+            data-tour-id="home-stat-cards"
+          >
+            <StatCard
+              icon={<IconFile size={20} />}
+              count={fileCount}
+              label={<Trans>File Submissions</Trans>}
+              color="blue"
+              onClick={() => setViewState(createFileSubmissionsViewState())}
+            />
+            <StatCard
+              icon={<IconMessage size={20} />}
+              count={messageCount}
+              label={<Trans>Message Submissions</Trans>}
+              color="teal"
+              onClick={() => setViewState(createMessageSubmissionsViewState())}
+            />
+            <StatCard
+              icon={<IconStack2 size={20} />}
+              count={queuedSubmissions.length}
+              label={<Trans>Queued</Trans>}
+              color="grape"
+              onClick={() => openDrawer('schedule')}
+            />
+            <StatCard
+              icon={<IconCalendar size={20} />}
+              count={scheduledSubmissions.length}
+              label={<Trans>Scheduled</Trans>}
+              color="violet"
+              onClick={() => openDrawer('schedule')}
+            />
+          </SimpleGrid>
+
+          {/* Panels Row */}
+          <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md">
+            <ScheduleCalendarPanel />
+            <RecentActivityPanel />
+          </SimpleGrid>
+
+          {/* Upcoming Posts & Validation Row */}
+          <SimpleGrid cols={{ base: 1, md: 3 }} spacing="md">
+            <UpcomingPostsPanel />
+            <ValidationIssuesPanel />
+            <AccountHealthPanel />
+          </SimpleGrid>
+        </Stack>
+      </Container>
+    </ScrollArea>
+  );
+}

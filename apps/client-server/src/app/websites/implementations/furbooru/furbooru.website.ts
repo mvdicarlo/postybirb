@@ -1,6 +1,6 @@
 import { PostData, PostResponse } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -38,7 +38,7 @@ export default class Furbooru extends PhilomenaWebsite<FurbooruFileSubmission> {
   async onPostFileSubmission(
     postData: PostData<FurbooruFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     try {
       const result = await super.onPostFileSubmission(

@@ -18,16 +18,32 @@ export function formBuilder(
       if (sym) break;
     }
   }
+
   if (!sym) throw new Error('No metadata symbol found');
-  const metadata = JSON.parse(
-    JSON.stringify(Reflect.getMetadata(sym, target.constructor)),
+
+  const rawMetadata = Reflect.getMetadata(
+    sym,
+    target.constructor,
   ) as FormBuilderMetadata;
 
-  for (const value of Object.values(metadata)) {
+  const metadata = JSON.parse(
+    JSON.stringify(rawMetadata),
+  ) as FormBuilderMetadata;
+
+  for (const [valueKey, value] of Object.entries(metadata)) {
     if (value.defaultFrom) value.defaultValue = data[value.defaultFrom];
     value.derive?.forEach((d) => {
-      (value as PrimitiveRecord)[d.populate] = data[d.key];
+      if (typeof data[d.key] !== 'undefined') {
+        (value as PrimitiveRecord)[d.populate] = data[d.key];
+      }
     });
+
+    const customDerive = rawMetadata[valueKey]?.customDerive;
+    if (customDerive) {
+      (
+        customDerive as (metadata: FormBuilderMetadata, target: object) => void
+      ).call(value, metadata, target);
+    }
   }
 
   return metadata;

@@ -1,17 +1,16 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
-  ILoginState,
   ImageResizeProps,
   IPostResponse,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -53,15 +52,18 @@ export default class KoFi
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
       // Retrieve settings page to check login status
-      const res = await Http.get<string>(`${this.BASE_URL}/settings`, {
-        partition: this.accountId,
-      });
+      const res = await this.platform.http.get<string>(
+        `${this.BASE_URL}/settings`,
+        {
+          partition: this.accountId,
+        },
+      );
 
       // Check if logged in by looking for login button
-      if (!res.body.includes('btn-login')) {
+      if (res.body.includes('profile-tab')) {
         const html = parse(res.body);
         const username = html
           .querySelector('input[name="DisplayName"]')
@@ -79,13 +81,13 @@ export default class KoFi
           this.logger.error('Failed to retrieve Ko-fi account Id');
         }
 
-        return this.loginState.setLogin(true, username || 'Unknown');
+        return { loggedIn: true, username: username || 'Unknown' };
       }
 
-      return this.loginState.logout();
+      return { loggedIn: false };
     } catch (e) {
       this.logger.error('Failed to login', e);
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 
@@ -93,14 +95,14 @@ export default class KoFi
     return undefined;
   }
 
-  private extractId(html: string): string | null {
+  private extractId(html: string): string | undefined {
     const match = html.match(/pageId:\s*'([^']+)'/);
-    return match ? match[1] : null;
+    return match ? match[1] : undefined;
   }
 
   private async retrieveAlbums(id: string): Promise<void> {
     try {
-      const { body } = await Http.get<string>(
+      const { body } = await this.platform.http.get<string>(
         `${this.BASE_URL}/${id}/gallery`,
         {
           partition: this.accountId,
@@ -118,10 +120,12 @@ export default class KoFi
       for (const match of albumElements) {
         const label = match.innerText.trim();
         const albumId = match.getAttribute('href')?.replace('/album/', '');
-        albums.push({
-          label,
-          value: albumId,
-        });
+        if (albumId) {
+          albums.push({
+            label,
+            value: albumId,
+          });
+        }
       }
 
       await this.websiteDataStore.setData({ folders: albums });
@@ -141,7 +145,7 @@ export default class KoFi
   async onPostFileSubmission(
     postData: PostData<KoFiFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     // Upload each file and collect image upload IDs
     const imageUploadIds = [];
@@ -164,14 +168,6 @@ export default class KoFi
           .withException(new Error('Failed to parse upload response'))
           .withAdditionalInfo(upload.body);
       }
-
-      if (typeof upload.body !== 'string') {
-        imageUploadIds.push(upload.body[0].ExternalId);
-      } else {
-        return PostResponse.fromWebsite(this)
-          .withException(new Error('Failed to parse upload response'))
-          .withAdditionalInfo(upload.body);
-      }
     }
 
     // Create the gallery post
@@ -180,11 +176,14 @@ export default class KoFi
       .setField('Album', postData.options.album || '')
       .setField('Audience', postData.options.audience)
       .setField('Description', postData.options.description)
+      .setField('DisableNewComments', false)
       .setField('EnableHiRes', postData.options.hiRes)
       .setField('GalleryItemId', '')
       .setField('ImageUploadIds', imageUploadIds)
       .setField('PostToTwitter', false)
       .setField('ScheduleEnabled', false)
+      .setField('ScheduledDate', '')
+      .setField('ScheduledTime', '')
       .setField('Title', postData.options.title)
       .setField('UploadAsIndividualImages', false)
       .withHeaders({
@@ -209,7 +208,7 @@ export default class KoFi
       let sourceUrl: string | undefined;
       try {
         // Try to find the source url
-        sourceUrl = await BrowserWindowUtils.runScriptOnPage(
+        sourceUrl = await this.platform.browser.runScriptOnPage(
           this.accountId,
           `${this.BASE_URL}/${this.sessionData.kofiAccountId}/posts`,
           `return document.querySelector('#postsContainerDiv .feeditem-unit .dropdown-share-list input').value`,
@@ -235,7 +234,7 @@ export default class KoFi
 
   async onPostMessageSubmission(
     postData: PostData<KoFiMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     const builder = new PostBuilder(this, cancellationToken)
       .asMultipart()

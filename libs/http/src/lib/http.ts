@@ -12,6 +12,22 @@ import FormData from 'form-data';
 import urlEncoded from 'form-urlencoded';
 import { encode as encodeQueryString } from 'querystring';
 import { FormFile } from './form-file';
+import {
+  BinaryPostOptions,
+  CloudflareChallengeOptions,
+  HttpOptions,
+  HttpResponse,
+  PostOptions,
+} from './types';
+
+export type {
+  BinaryPostOptions,
+  CloudflareChallengeOptions,
+  HttpOptions,
+  HttpRequestOptions,
+  HttpResponse,
+  PostOptions
+} from './types';
 
 // https://www.electronjs.org/docs/api/client-request#instance-methods
 const RESTRICTED_HEADERS: string[] = [
@@ -31,50 +47,35 @@ const DEFAULT_HEADERS: Record<string, string> = {
   'Accept-Encoding': 'gzip, deflate, br',
 };
 
-export interface HttpRequestOptions {
-  // Skips adding index to url encoded data for arrays
-  skipUrlEncodedIndexing?: boolean;
-}
-
-interface HttpOptions {
-  headers?: Record<string, string>;
-  queryParameters?: Record<
-    string,
-    | string
-    | number
-    | boolean
-    | readonly string[]
-    | readonly number[]
-    | readonly boolean[]
-  >;
-  partition?: string | undefined;
-  options?: HttpRequestOptions;
-}
-
-export interface PostOptions extends HttpOptions {
-  type: 'multipart' | 'json' | 'urlencoded';
-  data: Record<string, unknown>;
-}
-
-interface BinaryPostOptions extends HttpOptions {
-  type: 'binary';
-  data: Buffer;
-}
-
-export interface HttpResponse<T> {
-  body: T;
-  statusCode: number;
-  statusMessage: string;
-  responseUrl: string;
-}
-
 interface CreateBodyData {
   contentType: string;
   buffer: Buffer;
 }
 
+interface CloudflareAwareHttpResponse<T> extends HttpResponse<T> {
+  isCloudflareChallenge: boolean;
+}
+
+const DEFAULT_CLOUDFLARE_CHALLENGE_TIMEOUT = 5 * 60 * 1000;
+const DEFAULT_REQUEST_TIMEOUT = 60 * 1000;
+const DEFAULT_UPLOAD_TIMEOUT = 15 * 60 * 1000;
+const CLOUDFLARE_INVISIBLE_CHALLENGE_TIMEOUT = 3 * 1000;
+const CLOUDFLARE_CHALLENGE_CHECK_INTERVAL = 1000;
+
 function getPartitionKey(partition: string): string {
   return `persist:${partition}`;
+}
+
+function getRequestUrl(url: string, options: HttpOptions): string {
+  if (!options.queryParameters) {
+    return url;
+  }
+
+  const requestUrl = new URL(url);
+  requestUrl.search = new URLSearchParams(
+    encodeQueryString(options.queryParameters),
+  ).toString();
+  return requestUrl.toString();
 }
 
 /**
@@ -85,6 +86,17 @@ function getPartitionKey(partition: string): string {
  */
 export class Http {
   private static logger: Logger = new Logger(Http.name);
+
+  private static toHttpResponse<T>(
+    response: CloudflareAwareHttpResponse<T>,
+  ): HttpResponse<T> {
+    return {
+      body: response.body,
+      statusCode: response.statusCode,
+      statusMessage: response.statusMessage,
+      responseUrl: response.responseUrl,
+    };
+  }
 
   /**
    * Tracks an HTTP request as a dependency in Application Insights
@@ -101,12 +113,12 @@ export class Http {
   ): void {
     try {
       const urlObj = new URL(url);
-      const target = urlObj.hostname;
+      const target = urlObj.origin;
       const name = `${method} ${urlObj.pathname}`;
 
       // Track as HTTP dependency
-      // Using hostname as the target creates sub-dependency trees
-      // hostname -> method + pathname hierarchy in Application Map
+      // Using origin as the target creates sub-dependency trees
+      // origin -> method + pathname hierarchy in Application Map
       trackDependency(
         name,
         target,
@@ -156,13 +168,7 @@ export class Http {
       clientRequestOptions.partition = getPartitionKey(options.partition);
     }
 
-    if (options.queryParameters) {
-      const url = new URL(clientRequestOptions.url);
-      url.search = new URLSearchParams(
-        encodeQueryString(options.queryParameters),
-      ).toString();
-      clientRequestOptions.url = url.toString();
-    }
+    clientRequestOptions.url = getRequestUrl(clientRequestOptions.url, options);
 
     const req = net.request(clientRequestOptions);
     if (
@@ -268,10 +274,74 @@ export class Http {
     });
   }
 
+  private static timeoutError(timeoutMs: number): Error {
+    return Object.assign(new Error(`HTTP request timed out after ${timeoutMs}ms`), {
+      name: 'TimeoutError',
+    });
+  }
+
+  private static request<T>(
+    url: string,
+    options: HttpOptions,
+    crOptions: ClientRequestConstructorOptions & { url: string },
+    body?: CreateBodyData,
+  ): Promise<CloudflareAwareHttpResponse<T>> {
+    const timeoutMs = body ? DEFAULT_UPLOAD_TIMEOUT : DEFAULT_REQUEST_TIMEOUT;
+
+    return new Promise((resolve, reject) => {
+      const request = Http.createClientRequest(options, crOptions);
+      let settled = false;
+
+      const cleanup = () => {
+        clearTimeout(timer);
+      };
+      const rejectRequest = (reason?: Error) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(reason);
+      };
+      const abortRequest = (reason: Error = new Error('HTTP request aborted')) => {
+        if (settled) return;
+        rejectRequest(reason);
+        request.abort();
+      };
+      const timer = setTimeout(() => {
+        abortRequest(Http.timeoutError(timeoutMs));
+      }, timeoutMs);
+
+      Http.handleError(request, abortRequest);
+      Http.handleResponse<T>(url, request, (response) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        resolve(response);
+      }, abortRequest);
+      request.on('abort', () => rejectRequest(new Error('HTTP request aborted')));
+      // request.on('close', () => rejectRequest(
+      //   new Error('HTTP request closed before the response completed'),
+      // ));
+
+      try {
+        if (body) {
+          request.setHeader('Content-Type', body.contentType);
+          request.write(body.buffer);
+        }
+        request.end();
+      } catch (error) {
+        abortRequest(error instanceof Error ? error : new Error(String(error)));
+      }
+    });
+  }
+
   private static handleResponse<T>(
     url: string,
     req: ClientRequest,
-    resolve: (value: HttpResponse<T> | PromiseLike<HttpResponse<T>>) => void,
+    resolve: (
+      value:
+        | CloudflareAwareHttpResponse<T>
+        | PromiseLike<CloudflareAwareHttpResponse<T>>,
+    ) => void,
     reject: (reason?: Error) => void,
   ): void {
     let responseUrl: undefined | string;
@@ -299,6 +369,10 @@ export class Http {
         const message = Buffer.concat(chunks);
 
         let body: T | string = message.toString();
+        const isCloudflareChallenge = Http.isCloudflareChallengeResponse(
+          headers,
+          body,
+        );
         if (
           headers['content-type'] &&
           (headers['content-type'].includes('application/json') ||
@@ -318,6 +392,7 @@ export class Http {
           statusMessage,
           body: body as T,
           responseUrl: responseUrl as unknown as string,
+          isCloudflareChallenge,
         });
       });
 
@@ -370,29 +445,24 @@ export class Http {
     let error: Error | undefined;
 
     try {
-      const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
-        const req = Http.createClientRequest(options, {
-          ...(crOptions ?? {}),
-          url,
-        });
-        Http.handleError(req, reject);
-        Http.handleResponse(url, req, resolve, reject);
-        req.end();
+      const response = await Http.request<T>(url, options, {
+        ...(crOptions ?? {}),
+        url,
       });
 
-      const { body } = response;
       statusCode = response.statusCode ?? 0;
       success = statusCode >= 200 && statusCode < 400;
 
-      if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
-        console.log('Cloudflare detected. Attempting to bypass...');
-        return await Http.performBrowserWindowGetRequest<T>(
+      if (response.isCloudflareChallenge) {
+        Http.logger.warn(`Cloudflare challenge detected for GET ${url}`);
+        const browserResponse = await Http.performBrowserWindowGetRequest<T>(
           url,
           options,
           crOptions,
         );
+        return browserResponse ?? Http.toHttpResponse(response);
       }
-      return response;
+      return Http.toHttpResponse(response);
     } catch (err) {
       error = err instanceof Error ? err : new Error(String(err));
       throw err;
@@ -470,34 +540,51 @@ export class Http {
     let error: Error | undefined;
 
     try {
-      const response = await new Promise<HttpResponse<T>>((resolve, reject) => {
-        const req = Http.createClientRequest(options, {
-          ...(crOptions ?? {}),
+      const body = Http.createPostBody(options);
+      // When uploadAsRawData is set, bypass net.request and send via
+      // BrowserWindow.loadURL with the body as raw bytes.
+      if (options.uploadAsRawData) {
+        const response = await Http.performBrowserWindowPostRequest<T>(
           url,
-          method,
-        });
-        Http.handleError(req, reject);
-        Http.handleResponse(url, req, resolve, reject);
+          options,
+          crOptions ?? {},
+          false,
+          body,
+        );
+        if (!response) {
+          throw new Error(
+            'Cloudflare challenge detected. Enable the interactive Cloudflare challenge window in settings to continue.',
+          );
+        }
+        statusCode = response.statusCode ?? 0;
+        success = statusCode >= 200 && statusCode < 400;
+        return response;
+      }
 
-        const { contentType, buffer } = Http.createPostBody(options);
-        req.setHeader('Content-Type', contentType);
-        req.write(buffer);
-        req.end();
-      });
+      const response = await Http.request<T>(
+        url,
+        options,
+        { ...(crOptions ?? {}), url, method },
+        body,
+      );
 
-      const { body } = response;
       statusCode = response.statusCode ?? 0;
       success = statusCode >= 200 && statusCode < 400;
 
-      if (typeof body === 'string' && Http.isOnCloudFlareChallengePage(body)) {
-        console.log('Cloudflare detected. Attempting to bypass...');
-        return await Http.performBrowserWindowPostRequest<T>(
+      if (response.isCloudflareChallenge) {
+        Http.logger.warn(
+          `Cloudflare challenge detected for ${method.toUpperCase()} ${url}`,
+        );
+        const browserResponse = await Http.performBrowserWindowPostRequest<T>(
           url,
           options,
           crOptions,
+          true,
+          body,
         );
+        return browserResponse ?? Http.toHttpResponse(response);
       }
-      return response;
+      return Http.toHttpResponse(response);
     } catch (err) {
       error = err instanceof Error ? err : new Error(String(err));
       throw err;
@@ -518,33 +605,20 @@ export class Http {
     url: string,
     options: HttpOptions,
     crOptions?: ClientRequestConstructorOptions,
-  ): Promise<HttpResponse<T>> {
-    const window = new BrowserWindow({
-      show: false,
-      webPreferences: {
-        partition: options.partition
-          ? getPartitionKey(options.partition)
-          : undefined,
-      },
-    });
-
-    try {
-      await window.loadURL(url);
-      return await Http.handleCloudFlareChallengePage<T>(window);
-    } catch (err) {
-      console.error(err);
-      return await Promise.reject(err);
-    } finally {
-      window.destroy();
-    }
+  ): Promise<HttpResponse<T> | undefined> {
+    return Http.performBrowserWindowRequest<T>(
+      url, options, DEFAULT_CLOUDFLARE_CHALLENGE_TIMEOUT, undefined, true,
+    );
   }
 
   private static async performBrowserWindowPostRequest<T>(
     url: string,
     options: PostOptions | BinaryPostOptions,
     crOptions: ClientRequestConstructorOptions,
-  ): Promise<HttpResponse<T>> {
-    const { contentType, buffer } = Http.createPostBody(options);
+    challengeExpected = false,
+    body = Http.createPostBody(options),
+  ): Promise<HttpResponse<T> | undefined> {
+    const { contentType, buffer } = body;
     const headers = Object.entries({
       ...(options.headers ?? {}),
       'Content-Type': contentType,
@@ -552,6 +626,19 @@ export class Http {
       .map(([key, value]) => `${key}: ${value}`)
       .join('\n');
 
+    return Http.performBrowserWindowRequest<T>(url, options, DEFAULT_UPLOAD_TIMEOUT, {
+      extraHeaders: headers,
+      postData: [{ type: 'rawData', bytes: buffer }],
+    }, challengeExpected);
+  }
+
+  private static async performBrowserWindowRequest<T>(
+    url: string,
+    options: HttpOptions,
+    timeoutMs: number,
+    loadOptions?: Parameters<BrowserWindow['loadURL']>[1],
+    challengeExpected = false,
+  ): Promise<HttpResponse<T> | undefined> {
     const window = new BrowserWindow({
       show: false,
       webPreferences: {
@@ -562,57 +649,122 @@ export class Http {
     });
 
     try {
-      await window.loadURL(url, {
-        extraHeaders: headers,
-        postData: [
-          {
-            type: 'rawData',
-            bytes: buffer,
-          },
-        ],
+      return await new Promise<HttpResponse<T> | undefined>((resolve, reject) => {
+        let settled = false;
+        const cleanup = () => {
+          clearTimeout(timer);
+        };
+        const stop = (reason: unknown) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          if (!window.isDestroyed()) window.destroy();
+          reject(reason);
+        };
+        const timer = setTimeout(() => stop(Http.timeoutError(timeoutMs)), timeoutMs);
+
+        const load = async () => {
+          await window.loadURL(getRequestUrl(url, options), loadOptions);
+          if (window.isDestroyed()) throw new Error('HTTP request window was closed');
+          return Http.handleCloudflareChallengePage<T>(
+            window,
+            options.cloudflareChallenge,
+            challengeExpected,
+          );
+        };
+        load().then((response) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(response);
+        }, stop);
       });
-      return await Http.handleCloudFlareChallengePage<T>(window);
-    } catch (err) {
-      console.error(err);
-      return await Promise.reject(err);
     } finally {
-      window.destroy();
+      if (!window.isDestroyed()) {
+        window.destroy();
+      }
     }
   }
 
-  private static isOnCloudFlareChallengePage(html: string): boolean {
-    if (
-      html.includes('challenge-error-title') ||
-      html.includes('<title>Just a moment...</title>')
-    ) {
-      return true;
+  private static isCloudflareChallengeResponse(
+    headers: Record<string, string | string[]>,
+    body: string,
+  ): boolean {
+    const mitigatedHeader = Object.entries(headers).find(
+      ([name]) => name.toLowerCase() === 'cf-mitigated',
+    )?.[1];
+    const values = Array.isArray(mitigatedHeader)
+      ? mitigatedHeader
+      : [mitigatedHeader];
+
+    return (
+      values.some((value) => value?.trim().toLowerCase() === 'challenge') ||
+      Http.isOnCloudflareChallengePage(body)
+    );
+  }
+
+  private static isOnCloudflareChallengePage(html: string): boolean {
+    return [
+      /<title[^>]*>\s*just a moment(?:\.\.\.)?\s*<\/title>/i,
+      /(?:id|class)=["'][^"']*challenge-error-title/i,
+      /window\._cf_chl_opt/i,
+    ].some((pattern) => pattern.test(html));
+  }
+
+  private static async waitForCloudflareChallengeResolution(
+    window: BrowserWindow,
+    timeoutMs: number,
+  ): Promise<boolean> {
+    const attempts = Math.ceil(
+      timeoutMs / CLOUDFLARE_CHALLENGE_CHECK_INTERVAL,
+    );
+
+    for (let i = 0; i < attempts; i++) {
+      await Http.awaitCheckInterval(CLOUDFLARE_CHALLENGE_CHECK_INTERVAL);
+      if (window.isDestroyed()) {
+        throw new Error('Cloudflare challenge window was closed.');
+      }
+      const html = await window.webContents.executeJavaScript(
+        'document.documentElement?.outerHTML ?? ""',
+      );
+      if (!Http.isOnCloudflareChallengePage(html)) {
+        return true;
+      }
     }
+
     return false;
   }
 
-  private static async awaitCloudFlareChallengePage(
+  private static async awaitCloudflareChallengePage(
     window: BrowserWindow,
-  ): Promise<void> {
-    const checkInterval = 1000; // 1 second
-
-    let isShown = false;
-    for (let i = 0; i < 60; i++) {
-      await Http.awaitCheckInterval(checkInterval);
-      const html = await window.webContents.executeJavaScript(
-        'document.body.parentElement.innerHTML',
+    options?: CloudflareChallengeOptions,
+  ): Promise<boolean> {
+    const resolvedInvisibly =
+      await Http.waitForCloudflareChallengeResolution(
+        window,
+        CLOUDFLARE_INVISIBLE_CHALLENGE_TIMEOUT,
       );
-      if (i >= 3 && !isShown) {
-        // Try to let it solve itself for 3 seconds before showing the window.
-        window.show();
-        window.focus();
-        isShown = true;
-      }
-      if (!Http.isOnCloudFlareChallengePage(html)) {
-        return;
-      }
+    if (resolvedInvisibly) {
+      return true;
     }
 
-    throw new Error('Unable to bypass Cloudflare challenge.');
+    if (!options?.openBrowserWindow) {
+      return false;
+    }
+
+    window.show();
+    window.focus();
+
+    const resolvedInteractively =
+      await Http.waitForCloudflareChallengeResolution(
+        window,
+        options.timeoutMs ?? DEFAULT_CLOUDFLARE_CHALLENGE_TIMEOUT,
+      );
+    if (resolvedInteractively) {
+      return true;
+    }
+
+    throw new Error('Timed out waiting for the Cloudflare challenge.');
   }
 
   private static async awaitCheckInterval(interval: number): Promise<void> {
@@ -623,17 +775,25 @@ export class Http {
     });
   }
 
-  private static async handleCloudFlareChallengePage<T>(
+  private static async handleCloudflareChallengePage<T>(
     window: BrowserWindow,
-  ): Promise<HttpResponse<T>> {
+    options?: CloudflareChallengeOptions,
+    challengeExpected = false,
+  ): Promise<HttpResponse<T> | undefined> {
     let html = await window.webContents.executeJavaScript(
-      'document.body.parentElement.innerHTML',
+      'document.documentElement?.outerHTML ?? ""',
     );
 
-    if (Http.isOnCloudFlareChallengePage(html)) {
-      await Http.awaitCloudFlareChallengePage(window);
+    if (challengeExpected || Http.isOnCloudflareChallengePage(html)) {
+      const challengeResolved = await Http.awaitCloudflareChallengePage(
+        window,
+        options,
+      );
+      if (!challengeResolved) {
+        return undefined;
+      }
       html = await window.webContents.executeJavaScript(
-        'document.body.parentElement.innerHTML',
+        'document.documentElement?.outerHTML ?? ""',
       );
     }
 

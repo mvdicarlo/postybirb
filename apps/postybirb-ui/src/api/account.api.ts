@@ -16,7 +16,7 @@ class AccountApi extends BaseApi<
     super('account');
   }
 
-  clear(id: AccountId) {
+  async clear(id: AccountId) {
     return this.client.post<undefined>(`clear/${id}`);
   }
 
@@ -24,7 +24,7 @@ class AccountApi extends BaseApi<
     return this.client.post<undefined>('account-data', request);
   }
 
-  refreshLogin(id: AccountId) {
+  async refreshLogin(id: AccountId) {
     return this.client.get<undefined>(`refresh/${id}`);
   }
 }

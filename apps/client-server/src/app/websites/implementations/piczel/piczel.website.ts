@@ -1,14 +1,12 @@
-import { Http } from '@postybirb/http';
 import {
-  ILoginState,
   ImageResizeProps,
+  LoginResult,
   PostData,
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import parse from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -39,18 +37,7 @@ import { PiczelFileSubmission } from './models/piczel-file-submission';
   url: 'https://piczel.tv/gallery/$1',
 })
 export default class Piczel
-  extends Website<
-    PiczelAccountData,
-    {
-      preloadedData?: {
-        auth?: {
-          client: string;
-          uid: string;
-          'access-token': string;
-        };
-      };
-    }
-  >
+  extends Website<PiczelAccountData>
   implements FileWebsite<PiczelFileSubmission>
 {
   protected BASE_URL = 'https://piczel.tv';
@@ -60,42 +47,33 @@ export default class Piczel
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(`${this.BASE_URL}/gallery/upload`, {
-      partition: this.accountId,
-    });
+  public async onLogin(): Promise<LoginResult> {
+    const res = await this.platform.http.get<{ id: number; username: string }>(
+      'https://api.piczel.tv/users/me',
+      {
+        partition: this.accountId,
+      },
+    );
 
-    if (res.body.includes('/signup')) {
-      return this.loginState.logout();
+    if (!res.body || !res.body.username) {
+      return { loggedIn: false };
     }
 
     try {
-      const $ = parse(res.body);
-      const preloadedData = JSON.parse(
-        $.getElementById('_R_').textContent.split(
-          'window.__PRELOADED_STATE__ = ',
-        )[1],
-      );
-      const { username } = preloadedData.currentUser.data;
-      if (!username) {
-        return this.loginState.logout();
-      }
-      // Store the preloaded data in session data for authentication
-      this.sessionData.preloadedData = preloadedData;
-
+      const { username } = res.body;
       // Fetch folders
-      await this.getFolders(username);
+      await this.getFolders();
 
-      return this.loginState.setLogin(true, username);
+      return { loggedIn: true, username };
     } catch (error) {
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 
-  private async getFolders(username: string): Promise<void> {
+  private async getFolders(): Promise<void> {
     try {
-      const res = await Http.get<{ id: number; name: string }[]>(
-        `${this.BASE_URL}/api/users/${username}/gallery/folders`,
+      const res = await this.platform.http.get<{ id: number; name: string }[]>(
+        'https://api.piczel.tv/users/me/gallery/folders',
         {
           partition: this.accountId,
         },
@@ -126,45 +104,31 @@ export default class Piczel
   async onPostFileSubmission(
     postData: PostData<PiczelFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
-    const { preloadedData } = this.sessionData;
-    if (!preloadedData?.auth) {
-      throw new Error('No authentication data found');
-    }
-
-    const { auth } = preloadedData;
+    cancellationToken.throwIfAborted();
     const { options } = postData;
     const builder = new PostBuilder(this, cancellationToken)
-      .asJson()
-      .setField('nsfw', options.rating !== SubmissionRating.GENERAL)
+      .asMultipart()
+      .setConditional(
+        'nsfw',
+        options.rating === SubmissionRating.GENERAL,
+        'false',
+        'true',
+      )
       .setField('description', options.description || '')
       .setField('title', options.title || 'New Submission')
-      .setField('tags', options.tags)
+      .setField('tags[]', options.tags)
       .setField('uploadMode', 'PUBLISH')
-      .setField('queue', false)
-      .setField('publish_at', '')
-      .setField('thumbnail_id', '0')
-      .setField(
-        'files',
-        files.map((file) => ({
-          name: file.fileName,
-          size: file.buffer.length,
-          type: file.mimeType,
-          data: `data:${file.mimeType};base64,${file.buffer.toString('base64')}`,
-        })),
-      )
+      .setField('thumbnail_id', 0)
+      .addFiles('files[]', files)
       .setConditional('folder_id', !!options.folder, options.folder)
       .withHeaders({
         Accept: '*/*',
-        client: auth.client,
-        uid: auth.uid,
-        'access-token': auth['access-token'],
       });
 
     const result = await builder.send<{ id?: string }>(
-      `${this.BASE_URL}/api/gallery`,
+      'https://api.piczel.tv/gallery',
     );
 
     if (result.body?.id) {

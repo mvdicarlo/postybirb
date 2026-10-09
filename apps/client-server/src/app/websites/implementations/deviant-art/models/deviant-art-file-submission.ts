@@ -18,26 +18,26 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
   @RatingField({
     hidden: true,
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @TitleField({
     maxLength: 50,
   })
-  title: string;
+  declare title: string;
 
   @TagField({
     maxTags: 30,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @DescriptionField({
-    descriptionType: DescriptionType.HTML,
+    descriptionType: DescriptionType.CUSTOM,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @SelectField({
     section: 'website',
-    span: 6,
+    span: 12,
     label: 'folder',
     derive: [
       {
@@ -49,6 +49,18 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
     allowMultiple: true,
   })
   folders: string[] = [];
+
+  @SelectField({
+    label: 'allowModifications',
+    options: [
+      { value: 'yes', label: 'Yes' },
+      { value: 'share', label: 'Share Alike' },
+      { value: 'no', label: 'No' },
+    ],
+    section: 'website',
+    span: 6,
+  })
+  allowModifications = 'no';
 
   @SelectField({
     label: 'displayResolution',
@@ -118,16 +130,4 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
     span: 6,
   })
   isCommercialUse = false;
-
-  @SelectField({
-    label: 'allowModifications',
-    options: [
-      { value: 'yes', label: 'Yes' },
-      { value: 'share', label: 'Share Alike' },
-      { value: 'no', label: 'No' },
-    ],
-    section: 'website',
-    span: 6,
-  })
-  allowModifications = 'no';
 }

@@ -6,8 +6,8 @@ import {
   PostData,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { UnknownWebsite } from '../../website';
 import { BaseWebsiteOptions } from '../base-website-options';
 
@@ -15,9 +15,17 @@ export const FileWebsiteKey = 'createFileModel';
 
 export type ImplementedFileWebsite = FileWebsite & UnknownWebsite;
 
+export interface PostBatchSourceUrl {
+  url: string;
+  /** Unit timestamp from when the source URL was persisted. */
+  timestamp: string;
+}
+
 export interface PostBatchData {
   index: number;
   totalBatches: number;
+  /** Unique URLs produced by prior non-evicted units for this account. */
+  sourceUrls?: PostBatchSourceUrl[];
 }
 
 /**
@@ -38,13 +46,13 @@ export interface FileWebsite<
    * @param {PostData<T>} postData
    * @param {PostingFile[]} files - The files to post
    * @param {number} batchIndex - The index of the batch (if batching is required)
-   * @param {CancellableToken} cancellationToken
+   * @param {CancellationToken} cancellationToken
    * @return {*}  {Promise<IPostResponse>}
    */
   onPostFileSubmission(
     postData: PostData<T>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     batch: PostBatchData,
   ): Promise<IPostResponse>;
 

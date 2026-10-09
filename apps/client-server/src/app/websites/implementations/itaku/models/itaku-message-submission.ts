@@ -1,8 +1,8 @@
 import {
-    DescriptionField,
-    SelectField,
-    TagField,
-    TextField,
+  DescriptionField,
+  SelectField,
+  TagField,
+  TextField,
 } from '@postybirb/form-builder';
 import { DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
@@ -12,14 +12,14 @@ export class ItakuMessageSubmission extends BaseWebsiteOptions {
   @TagField({
     maxTagLength: 59,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
     maxDescriptionLength: 5000,
     required: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TextField({
     label: 'contentWarning',

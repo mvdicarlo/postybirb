@@ -2,29 +2,28 @@ import {
     BadRequestException,
     Injectable,
     OnModuleInit,
-    Optional,
 } from '@nestjs/common';
-import { SETTINGS_UPDATES } from '@postybirb/socket-events';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Settings, SettingsRepository } from '@postybirb/database';
 import { EntityId, SettingsConstants } from '@postybirb/types';
 import {
+    isLinux,
     StartupOptions,
-    getStartupOptions,
-    setStartupOptions,
-} from '@postybirb/utils/electron';
+    StartupOptionsManager,
+} from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Settings } from '../drizzle/models';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { UpdateSettingsDto } from './dtos/update-settings.dto';
+import { SETTINGS_EVENT_PREFIX } from './settings.events';
 
 @Injectable()
 export class SettingsService
-  extends PostyBirbService<'SettingsSchema'>
+  extends PostyBirbService<SettingsRepository>
   implements OnModuleInit
 {
-  constructor(@Optional() webSocket: WSGateway) {
-    super('SettingsSchema', webSocket);
-    this.repository.subscribe('SettingsSchema', () => this.emit());
+  constructor(eventEmitter: EventEmitter2) {
+    super(new SettingsRepository());
+    this.configureCrudEvents(SETTINGS_EVENT_PREFIX, eventEmitter);
   }
 
   /**
@@ -34,7 +33,7 @@ export class SettingsService
    */
   async onModuleInit() {
     const defaultSettingsCount = await this.repository.count(
-      eq(this.schema.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
+      eq(this.table.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
     );
 
     if (!defaultSettingsCount) {
@@ -51,8 +50,13 @@ export class SettingsService
           const updatedSettings = { ...existingSettings.settings };
 
           // Recursively merge missing fields
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const mergeObjects = (target: any, source: any, path = ''): boolean => {
+          const mergeObjects = (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            target: any,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            source: any,
+            path = '',
+          ): boolean => {
             let changed = false;
 
             Object.keys(source).forEach((key) => {
@@ -91,9 +95,10 @@ export class SettingsService
           // Update database if there were changes
           if (hasChanges) {
             this.logger.debug('Updating default settings with missing fields');
-            await this.repository.update(existingSettings.id, {
+            const updated = await this.repository.update(existingSettings.id, {
               settings: updatedSettings,
             });
+            this.publishUpdated(updated.toDTO());
           }
         }
       });
@@ -117,6 +122,7 @@ export class SettingsService
       })
       .then((entity) => {
         this.logger.withMetadata(entity).debug('Default settings created');
+        this.publishCreated(entity.toDTO());
       })
       .catch((err: Error) => {
         this.logger.withError(err).error('Unable to create default settings');
@@ -124,20 +130,10 @@ export class SettingsService
   }
 
   /**
-   * Emits settings.
-   */
-  async emit() {
-    super.emit({
-      event: SETTINGS_UPDATES,
-      data: (await this.findAll()).map((entity) => entity.toDTO()),
-    });
-  }
-
-  /**
    * Gets the startup settings.
    */
   public getStartupSettings() {
-    return getStartupOptions();
+    return StartupOptionsManager.get();
   }
 
   /**
@@ -147,7 +143,7 @@ export class SettingsService
     return this.repository.findOne({
       where: (setting, { eq: equals }) =>
         equals(setting.profile, SettingsConstants.DEFAULT_PROFILE_NAME),
-    });
+    }) as Promise<Settings>;
   }
 
   /**
@@ -159,6 +155,15 @@ export class SettingsService
       startUpOptions.appDataPath = startUpOptions.appDataPath.trim();
     }
 
+    if (isLinux() && startUpOptions.startAppOnSystemStartup) {
+      // eslint-disable-next-line no-param-reassign
+      startUpOptions.startAppOnSystemStartup = false;
+      this.logger.warn('Startup on system startup is not supported on Linux');
+      throw new BadRequestException(
+        'Startup on system startup is not supported on Linux',
+      );
+    }
+
     if (startUpOptions.port) {
       // eslint-disable-next-line no-param-reassign
       startUpOptions.port = startUpOptions.port.trim();
@@ -168,7 +173,8 @@ export class SettingsService
       }
     }
 
-    setStartupOptions({ ...startUpOptions });
+    StartupOptionsManager.set({ ...startUpOptions });
+    return StartupOptionsManager.get();
   }
 
   /**
@@ -183,7 +189,9 @@ export class SettingsService
       .withMetadata(updateSettingsDto)
       .info(`Updating Settings '${id}'`);
 
-    return this.repository.update(id, updateSettingsDto);
+    const entity = await this.repository.update(id, updateSettingsDto);
+    this.publishUpdated(entity.toDTO());
+    return entity;
   }
 
   /**
@@ -225,7 +233,8 @@ export class SettingsService
         if (result === true) {
           return {
             success: true,
-            message: 'Connection successful! Host is reachable and password is correct.',
+            message:
+              'Connection successful! Host is reachable and password is correct.',
           };
         }
       }
@@ -245,7 +254,8 @@ export class SettingsService
         case 500:
           return {
             success: false,
-            message: 'Host server error. The remote host may not be configured properly.',
+            message:
+              'Host server error. The remote host may not be configured properly.',
           };
         default:
           return {
@@ -259,11 +269,12 @@ export class SettingsService
       if (error instanceof TypeError && error.message.includes('fetch')) {
         return {
           success: false,
-          message: 'Network error. Please check the host URL and ensure the host is running.',
+          message:
+            'Network error. Please check the host URL and ensure the host is running.',
         };
       }
 
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         return {
           success: false,
           message: 'Connection timeout. The host may be unreachable.',
@@ -272,7 +283,7 @@ export class SettingsService
 
       return {
         success: false,
-        message: `Connection test failed: ${error.message}`,
+        message: `Connection test failed: ${(error as Error).message}`,
       };
     }
   }

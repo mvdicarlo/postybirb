@@ -1,13 +1,14 @@
 import {
-  BooleanField,
-  DateTimeField,
-  DescriptionField,
-  RadioField,
-  RatingField,
-  SelectField,
-  TagField,
-  TextField,
-  TitleField,
+    BooleanField,
+    DateTimeField,
+    DescriptionField,
+    NumberField,
+    RadioField,
+    RatingField,
+    SelectField,
+    TagField,
+    TextField,
+    TitleField,
 } from '../decorators';
 import { ExtractFieldTypeFromDecorator } from '../utils/assign-metadata';
 
@@ -26,10 +27,12 @@ export type RadioFieldType = ExtractFieldTypeFromDecorator<typeof RadioField>;
 export type DateTimeFieldType = ExtractFieldTypeFromDecorator<
   typeof DateTimeField
 >;
+export type NumberFieldType = ExtractFieldTypeFromDecorator<typeof NumberField>;
 
 export type FieldAggregateType =
   | BooleanFieldType
   | DateTimeFieldType
+  | NumberFieldType
   | TextFieldType
   | RadioFieldType
   | RatingFieldType

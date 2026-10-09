@@ -12,7 +12,7 @@ export function getMetadataKey(name: string) {
 }
 
 export function getParentMetadataKeys(proto: object) {
-  const chain = [];
+  const chain: string[] = [];
   let currentProto = proto.constructor;
   while (currentProto && currentProto.name) {
     chain.push(currentProto.name);
@@ -80,11 +80,7 @@ export function createFieldDecorator<
      *
      * @param options - Options to be changed
      */
-    onCreate?: (
-      options: FieldType<FieldValue, TypeKey>,
-      target: any,
-      propertyKey: string | symbol,
-    ) => void;
+    onCreate?: (options: FieldType<FieldValue, TypeKey> & ExtraFields) => void;
   }) {
     function decorator<Data extends unknown | PrimitiveRecord = unknown>(
       options: PartialOnly<
@@ -119,7 +115,7 @@ export function createFieldDecorator<
           fieldOptions.defaultValue = propKeyValue as FieldValue;
         }
 
-        const chain = [];
+        const chain: string[] = [];
         let currentProto = proto;
         while (currentProto && currentProto.name) {
           chain.push(currentProto.name);
@@ -133,31 +129,43 @@ export function createFieldDecorator<
         const fields: FormBuilderMetadata =
           Reflect.getMetadata(sym, proto) || {};
 
-        field.onCreate?.(
-          fieldOptions as unknown as FieldType<FieldValue, TypeKey>,
-          target,
-          propertyKey,
-        );
-
         const chainedFields = chain
-          .reverse()
           .filter((c) => c !== target.constructor.name)
-          .map((c) => Reflect.getMetadata(target[getMetadataKey(c)], proto));
+          .map(
+            (c) =>
+              Reflect.getMetadata(
+                target[getMetadataKey(c)],
+                proto,
+              ) as FormBuilderMetadata,
+          );
 
         // Iterate over all chained parent classes and merge their fields
         // Uniqueness is maintained by use of the Symbol(key)
         for (const c of chainedFields) {
           if (c) {
             Object.entries(c).forEach(([fieldKey, value]) => {
-              if (value !== undefined) {
-                fields[fieldKey] = Object.assign(
-                  JSON.parse(JSON.stringify(value)),
-                  fields[fieldKey] ?? {},
-                ) as unknown as FieldAggregateType;
+              if (value === undefined) return;
+
+              const clonedValue = JSON.parse(
+                JSON.stringify(value),
+              ) as typeof value;
+
+              if (value.customDerive) {
+                clonedValue.customDerive = value.customDerive;
               }
+
+              fields[fieldKey] = Object.assign(
+                clonedValue,
+                fields[fieldKey] ?? {},
+              ) as unknown as FieldAggregateType;
             });
           }
         }
+
+        field.onCreate?.(
+          fieldOptions as unknown as FieldType<FieldValue, TypeKey> &
+            ExtraFields,
+        );
 
         fields[propertyKey] = Object.assign(
           fields[propertyKey] ?? {},

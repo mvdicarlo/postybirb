@@ -3,7 +3,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { getRemoteConfig } from '@postybirb/utils/electron';
+import { RemoteConfigManager } from '@postybirb/utils/common';
 import { Server } from 'socket.io';
 import { WebSocketEvents } from './web-socket.events';
 
@@ -14,7 +14,7 @@ export class WSGateway implements OnGatewayInit {
 
   afterInit(server: Server) {
     server.use(async (socket, next) => {
-      const remoteConfig = await getRemoteConfig();
+      const remoteConfig = await RemoteConfigManager.get();
       if (socket.handshake.headers.authorization === remoteConfig.password) {
         return next();
       }

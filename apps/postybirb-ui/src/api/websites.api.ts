@@ -1,6 +1,6 @@
 import {
   IOAuthWebsiteRequestDto,
-  IWebsiteInfoDto,
+  IWebsiteDefinitionDto,
   OAuthRoutes,
   WebsiteId,
 } from '@postybirb/types';
@@ -9,8 +9,8 @@ import { HttpClient } from '../transports/http-client';
 class WebsitesApi {
   private readonly client: HttpClient = new HttpClient('websites');
 
-  getWebsiteInfo() {
-    return this.client.get<IWebsiteInfoDto[]>('info');
+  getWebsiteDefinitions() {
+    return this.client.get<IWebsiteDefinitionDto[]>('info');
   }
 
   async performOAuthStep<T extends OAuthRoutes, R extends keyof T = keyof T>(

@@ -8,14 +8,11 @@ import {
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import {
-  IsTestEnvironment,
-  PostyBirbEnvConfig
-} from '@postybirb/utils/electron';
+import { IsTestEnvironment, PostyBirbEnvConfig } from '@postybirb/utils/common';
 import compression from 'compression';
-import sharp from 'sharp';
+import { DatabaseEntity } from '@postybirb/database';
 import { AppModule } from './app/app.module';
-import { DatabaseEntity } from './app/drizzle/models';
+import { EntityNotFoundExceptionFilter } from './app/common/filters/entity-not-found.filter';
 import { SSL } from './app/security-and-authentication/ssl';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 
@@ -32,12 +29,26 @@ class CustomClassSerializer extends ClassSerializerInterceptor {
   }
 }
 
-async function bootstrap() {
+export type BootstrapOptions = {
+  /**
+   * Path used to read/write the SSL key+cert. Required for non-test runs.
+   * Supplied by the caller (e.g. apps/postybirb's electron main) so this
+   * module does not need to instantiate a platform service directly.
+   */
+  userDataPath?: string;
+};
+
+async function bootstrap(options: BootstrapOptions = {}) {
   let app: INestApplication;
   if (!IsTestEnvironment()) {
-    // TLS/SSL on non-test
-    const { cert, key } = await SSL.getOrCreateSSL();
+    if (!options.userDataPath) {
+      throw new Error(
+        'bootstrapClientServer: userDataPath is required outside of tests',
+      );
+    }
+    const { cert, key } = await SSL.getOrCreateSSL(options.userDataPath);
     app = await NestFactory.create(AppModule, {
+      logger: ['error', 'warn'],
       httpsOptions: {
         key,
         cert,
@@ -52,6 +63,9 @@ async function bootstrap() {
   app.useWebSocketAdapter(new WebSocketAdapter(app));
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalInterceptors(new CustomClassSerializer(app.get(Reflector)));
+  app.useGlobalFilters(
+    new EntityNotFoundExceptionFilter(app.getHttpAdapter()),
+  );
   app.useGlobalPipes(
     new ValidationPipe({
       forbidUnknownValues: true,
@@ -65,6 +79,10 @@ async function bootstrap() {
     .setTitle('PostyBirb')
     .setDescription('PostyBirb API')
     .setVersion('1.0')
+    .addApiKey(
+      { type: 'apiKey', name: 'x-remote-password', in: 'header' },
+      'x-remote-password',
+    )
     .addTag('account')
     .addTag('custom-shortcut')
     .addTag('directory-watchers')
@@ -82,9 +100,8 @@ async function bootstrap() {
     .addTag('websites')
     .build();
   const document = SwaggerModule.createDocument(app, config);
+  document.security = [{ 'x-remote-password': [] }];
   SwaggerModule.setup('api', app, document);
-
-  sharp.cache({ files: 0 });
 
   const { port } = PostyBirbEnvConfig;
 

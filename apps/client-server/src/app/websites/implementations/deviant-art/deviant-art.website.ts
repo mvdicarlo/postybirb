@@ -1,17 +1,18 @@
 import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SelectOptionUtil } from '../../../utils/select-option.util';
 import { PostBuilder } from '../../commons/post-builder';
@@ -23,6 +24,7 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { DeviantArtDescriptionConverter } from './deviant-art-description-converter';
 import { DeviantArtAccountData } from './models/deviant-art-account-data';
@@ -31,7 +33,7 @@ import { DeviantArtMessageSubmission } from './models/deviant-art-message-submis
 
 interface DeviantArtFolder {
   description: string;
-  folderId: string;
+  folderId: number;
   hasSubfolders: boolean;
   name: string;
   parentId: string | null;
@@ -48,6 +50,7 @@ interface DeviantArtFolder {
   url: 'https://deviantart.com/$1',
 })
 @SupportsFiles({
+  fileBatchSize: 10,
   acceptedFileSizes: {
     [FileType.VIDEO]: FileSize.megabytes(200),
     [FileType.IMAGE]: FileSize.megabytes(30),
@@ -72,7 +75,8 @@ export default class DeviantArt
   extends Website<DeviantArtAccountData>
   implements
     FileWebsite<DeviantArtFileSubmission>,
-    MessageWebsite<DeviantArtMessageSubmission>
+    MessageWebsite<DeviantArtMessageSubmission>,
+    WithCustomDescriptionParser
 {
   protected BASE_URL = 'https://www.deviantart.com';
 
@@ -83,40 +87,49 @@ export default class DeviantArt
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(this.BASE_URL, {
+  public async onLogin(): Promise<LoginResult> {
+    const res = await this.platform.http.get<string>(this.BASE_URL, {
       partition: this.accountId,
     });
-    const cookies = await Http.getWebsiteCookies(this.accountId, this.BASE_URL);
+    const cookies = await this.platform.http.getWebsiteCookies(
+      this.accountId,
+      this.BASE_URL,
+    );
     const userInfoCookie = cookies.find((c) => c.name === 'userinfo');
     if (userInfoCookie) {
       const userInfo = JSON.parse(
         decodeURIComponent(userInfoCookie.value).split(';')[1],
       );
-      await this.getFolders();
       if (userInfo && userInfo.username) {
-        return this.loginState.setLogin(true, userInfo.username);
+        await this.getFolders(userInfo.username);
+        return { loggedIn: true, username: userInfo.username };
       }
     }
 
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
+  }
+
+  getDescriptionConverter(): BaseConverter {
+    return new DeviantArtDescriptionConverter();
   }
 
   private async getCSRF(accountId = this.accountId) {
-    const url = await Http.get<string>(this.BASE_URL, {
+    const url = await this.platform.http.get<string>(this.BASE_URL, {
       partition: accountId,
     });
     return url.body.match(/window.__CSRF_TOKEN__ = '(.*)'/)?.[1];
   }
 
-  private async getFolders() {
+  private async getFolders(username: string) {
     try {
       const csrf = await this.getCSRF();
-      const { body } = await Http.get<{ results: DeviantArtFolder[] }>(
+      const { body } = await this.platform.http.get<{
+        results: DeviantArtFolder[];
+      }>(
         `${
           this.BASE_URL
         }/_puppy/dashared/gallection/folders?offset=0&limit=250&type=gallery&with_all_folder=true&with_permissions=true&username=${encodeURIComponent(
-          this.loginState.username,
+          username,
         )}&da_minor_version=20230710&csrf_token=${csrf}`,
         { partition: this.accountId },
       );
@@ -140,20 +153,20 @@ export default class DeviantArt
         const children = childrenByParentId[parentKey] || [];
 
         return children.map((folder) => {
-          const subChildren = buildTree(folder.folderId);
+          const subChildren = buildTree(folder.folderId.toString());
 
           if (subChildren.length > 0) {
             // This folder has children, create a group
             return {
               label: folder.name,
-              value: folder.folderId,
+              value: folder.folderId.toString(),
               items: subChildren,
             };
           }
           // This is a leaf folder
           return {
             label: folder.name,
-            value: folder.folderId,
+            value: folder.folderId.toString(),
           };
         });
       };
@@ -165,7 +178,7 @@ export default class DeviantArt
         folders,
       });
     } catch (e) {
-      this.logger.error('Failed to get folders', e);
+      this.logger.withError(e).error('Failed to get folders');
     }
   }
 
@@ -173,16 +186,16 @@ export default class DeviantArt
     return new DeviantArtFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
   async onPostFileSubmission(
     postData: PostData<DeviantArtFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // File upload step
     const uploadBuilder = new PostBuilder(this, cancellationToken)
@@ -209,6 +222,36 @@ export default class DeviantArt
         .withException(new Error('Failed to upload file.'));
     }
 
+    const additionalUploads: Array<{
+      deviationId: number;
+      fileId: number;
+      attachment: object;
+      deviation: object;
+    }> = [];
+    if (files.length > 1) {
+      let index = 0;
+      const csrf = await this.getCSRF();
+      for (const file of files.slice(1)) {
+        index++;
+        cancellationToken.throwIfAborted();
+        const upload = await new PostBuilder(this, cancellationToken)
+          .asMultipart()
+          .addFile('attachment_file', file)
+          .setField('da_minor_version', this.DA_API_VERSION)
+          .setField('type', 'additional_media')
+          .setField('position', index)
+          .setField('csrf_token', csrf)
+          .setField('deviationid', fileUpload.body.deviationId)
+          .send<{
+            deviationId: number;
+            fileId: number;
+            attachment: object;
+            deviation: object;
+          }>(`${this.BASE_URL}/_puppy/dashared/deviation/attachments/add`);
+        additionalUploads.push(upload.body);
+      }
+    }
+
     // Determine if submission is mature
     const mature =
       postData.options.isMature ||
@@ -228,7 +271,7 @@ export default class DeviantArt
         deviationid: fileUpload.body.deviationId,
         da_minor_version: this.DA_API_VERSION,
         display_resolution: 0,
-        editorRaw: DeviantArtDescriptionConverter.convert(
+        editorRaw: DeviantArtDescriptionConverter.getDocument(
           postData.options.description,
         ),
         editor_v3: '',
@@ -301,8 +344,8 @@ export default class DeviantArt
     const selectedFolders = options.folders ?? [];
     const validFolders = this.websiteDataStore.getData().folders ?? [];
     if (selectedFolders.length) {
-      const hasMissingFolders = selectedFolders.some((folder) =>
-        SelectOptionUtil.findOptionById(validFolders, folder),
+      const hasMissingFolders = selectedFolders.some(
+        (folder) => !SelectOptionUtil.findOptionById(validFolders, folder),
       );
 
       if (hasMissingFolders) {
@@ -319,9 +362,9 @@ export default class DeviantArt
 
   async onPostMessageSubmission(
     postData: PostData<DeviantArtMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const commonFormData = {
       csrf_token: await this.getCSRF(),
       da_minor_version: this.DA_API_VERSION,
@@ -329,7 +372,7 @@ export default class DeviantArt
 
     const builder = new PostBuilder(this, cancellationToken).asJson().withData({
       ...commonFormData,
-      editorRaw: DeviantArtDescriptionConverter.convert(
+      editorRaw: DeviantArtDescriptionConverter.getDocument(
         postData.options.description,
       ),
       title: this.stripInvalidCharacters(postData.options.title),
@@ -385,7 +428,7 @@ export default class DeviantArt
   onValidateMessageSubmission = validatorPassthru;
 
   private stripInvalidCharacters(title: string) {
-    const validRegex = /^[A-Za-z0-9\s_$!?:.,'+\-=~`@#%^*[\]()/{}\\|]*$/g;
+    const validRegex = /^[A-Za-z0-9\s_$!?:.,'+\-=~`@#%^*[\]()/{}\\|]$/;
     if (!title) return '';
     let sanitized = '';
     for (let i = 0; i < title.length; i++) {

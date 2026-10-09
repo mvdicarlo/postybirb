@@ -1,16 +1,21 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
-import { Insert } from '@postybirb/database';
+import { OnEvent } from '@nestjs/event-emitter';
+import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
 import {
   AccountId,
   Description,
+  DescriptionType,
   DescriptionValue,
   DynamicObject,
   EntityId,
+  IDescriptionPreviewResult,
   ISubmission,
   ISubmissionMetadata,
   IWebsiteFormFields,
@@ -18,55 +23,130 @@ import {
   SubmissionId,
   SubmissionMetadataType,
   SubmissionType,
+  TipTapNode,
   ValidationResult,
 } from '@postybirb/types';
+import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
+import {
+  EntityRemovedEvent,
+  getEntityCrudEventNames,
+} from '../common/events/entity-crud.events';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { Submission, WebsiteOptions } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { CUSTOM_SHORTCUT_EVENT_PREFIX } from '../custom-shortcuts/custom-shortcut.events';
+
 import { FormGeneratorService } from '../form-generator/form-generator.service';
+import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { PostingActivityService } from '../posting/posting-activity.service';
 import { SubmissionService } from '../submission/services/submission.service';
-import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
+import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
+import {
+  isBlockNoteFormat,
+  migrateDescription,
+} from '../utils/blocknote-to-tiptap';
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
+import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
+import { PreviewDescriptionDto } from './dtos/preview-description.dto';
 import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
 import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
 import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 
 @Injectable()
-export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchema'> {
-  private readonly submissionRepository = new PostyBirbDatabase(
-    'SubmissionSchema',
-  );
+export class WebsiteOptionsService
+  extends PostyBirbService<WebsiteOptionsRepository>
+  implements OnModuleInit
+{
+  private readonly submissionRepository = new SubmissionRepository();
 
   constructor(
     @Inject(forwardRef(() => SubmissionService))
     private readonly submissionService: SubmissionService,
     private readonly accountService: AccountService,
-    private readonly userSpecifiedOptionsService: UserSpecifiedWebsiteOptionsService,
+    private readonly accountTemplateDefaultsService: AccountTemplateDefaultsService,
     private readonly formGeneratorService: FormGeneratorService,
     private readonly validationService: ValidationService,
+    private readonly postParsersService: PostParsersService,
+    private readonly websiteRegistry: WebsiteRegistryService,
+    private readonly submissionEventPublisher: SubmissionEventPublisher,
+    private readonly postingActivity: PostingActivityService,
   ) {
-    super(
-      new PostyBirbDatabase('WebsiteOptionsSchema', {
-        account: true,
-        submission: true,
-      }),
-    );
+    super(new WebsiteOptionsRepository());
+  }
 
-    this.repository.subscribe('CustomShortcutSchema', (ids, action) => {
-      if (action === 'delete') {
-        for (const id of ids) {
-          this.onCustomShortcutDelete(id).catch((err) =>
-            this.logger.error(
-              `Error handling custom shortcut delete for id '${id}': ${err.message}`,
-              err.stack,
-            ),
-          );
-        }
-      }
+  async onModuleInit() {
+    await this.migrateBlockNoteDescriptions();
+  }
+
+  @OnEvent(getEntityCrudEventNames(CUSTOM_SHORTCUT_EVENT_PREFIX).removed)
+  private onCustomShortcutRemoved(events: EntityRemovedEvent[]): void {
+    events.forEach((event) => {
+      this.onCustomShortcutDelete(event.id).catch((err) =>
+        this.logger.error(
+          `Error handling custom shortcut delete for id '${event.id}': ${err.message}`,
+          err.stack,
+        ),
+      );
     });
+  }
+
+  private markChanged(
+    ids: SubmissionId | SubmissionId[],
+    immediate = false,
+  ): void {
+    this.submissionEventPublisher?.markChanged(ids, immediate);
+  }
+
+  /**
+   * One-time migration: convert any BlockNote-format descriptions
+   * (stored as arrays) to TipTap format ({ type: 'doc', content: [] }).
+   * Covers website options and custom shortcuts.
+   */
+  private async migrateBlockNoteDescriptions() {
+    let migrated = 0;
+
+    // 1. Migrate website options
+    const options = await this.findAll();
+    for (const option of options) {
+      const descValue = option.data?.description as
+        | DescriptionValue
+        | undefined;
+      const desc = descValue?.description;
+      if (desc && isBlockNoteFormat(desc)) {
+        const converted = migrateDescription(desc);
+        await this.repository.update(option.id, {
+          data: {
+            ...option.data,
+            description: {
+              ...descValue,
+              description: converted,
+            },
+          },
+        });
+        migrated++;
+      }
+    }
+
+    // 2. Migrate custom shortcuts
+    const customShortcutRepo = new CustomShortcutRepository();
+    const shortcuts = await customShortcutRepo.findAll();
+    for (const shortcut of shortcuts) {
+      const desc = (shortcut as DynamicObject).shortcut;
+      if (desc && isBlockNoteFormat(desc)) {
+        const converted = migrateDescription(desc);
+        await customShortcutRepo.update(shortcut.id, {
+          shortcut: converted,
+        });
+        migrated++;
+      }
+    }
+
+    if (migrated > 0) {
+      this.logger.info(
+        `Migrated ${migrated} BlockNote description(s) to TipTap format`,
+      );
+    }
   }
 
   /**
@@ -85,13 +165,16 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     data: DynamicObject,
     title?: string,
   ): Promise<WebsiteOptions> {
+    await this.postingActivity.assertSubmissionsMutable(submission.id);
     const option = await this.createOptionInsertObject(
       submission,
       accountId,
       data,
       title,
     );
-    return this.repository.insert(option);
+    const result = await this.repository.insert(option);
+    this.markChanged(submission.id);
+    return result;
   }
 
   /**
@@ -108,16 +191,15 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     data: DynamicObject,
     title?: string,
   ): Promise<Insert<'WebsiteOptionsSchema'>> {
-    const account = await this.accountService.findById(accountId, {
-      failOnMissing: true,
-    });
+    const account = await this.accountService.findByIdOrThrow(accountId);
     const isDefault = accountId === NULL_ACCOUNT_ID;
 
-    const userDefinedDefaultOptions =
-      await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
-        accountId,
-        submission.type,
-      );
+    const userDefinedDefaultOptions = submission.isTemplate
+      ? undefined
+      : await this.accountTemplateDefaultsService.resolveDefaults(
+          accountId,
+          submission.type,
+        );
 
     const formFields = isDefault
       ? await this.formGeneratorService.getDefaultForm(submission.type)
@@ -140,10 +222,16 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     const mergedData: IWebsiteFormFields = {
       ...(isDefault ? new DefaultWebsiteOptions() : {}), // Only merge default options if this is the default option
       ...websiteData, // Merge default form fields
-      ...(userDefinedDefaultOptions?.options ?? {}), // Merge user defined options
+      ...(userDefinedDefaultOptions ?? {}), // Merge template-sourced account defaults
       ...data, // Merge user defined data
       title, // Override title (optional)
     };
+
+    // For non-default options, keep rating as undefined to represent
+    // "inherit from default" mode unless explicitly provided in data.
+    if (!isDefault && !data.rating) {
+      mergedData.rating = undefined as unknown as typeof mergedData.rating;
+    }
 
     const option: Insert<'WebsiteOptionsSchema'> = {
       submissionId: submission.id,
@@ -164,15 +252,13 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
    * @return {*}
    */
   async create(createDto: CreateWebsiteOptionsDto) {
-    const account = await this.accountService.findById(createDto.accountId, {
-      failOnMissing: true,
-    });
+    await this.postingActivity.assertSubmissionsMutable(createDto.submissionId);
+    const account = await this.accountService.findByIdOrThrow(createDto.accountId);
 
     let submission: ISubmission<SubmissionMetadataType>;
     try {
-      submission = await this.submissionRepository.findById(
+      submission = await this.submissionRepository.findByIdOrThrow(
         createDto.submissionId,
-        { failOnMissing: true },
       );
     } catch (err) {
       throw new NotFoundException(
@@ -210,20 +296,30 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
       ),
     };
 
+    const isDefault = account.id === NULL_ACCOUNT_ID;
+
+    // For non-default options, keep rating as undefined to represent
+    // "inherit from default" mode unless explicitly provided in the DTO.
+    if (!isDefault && createDto.data?.rating === undefined) {
+      websiteData.rating = undefined as unknown as typeof websiteData.rating;
+    }
+
     const record = await this.repository.insert({
       submissionId: submission.id,
       data: websiteData,
       accountId: account.id,
-      isDefault: account.id === NULL_ACCOUNT_ID,
+      isDefault,
     });
-    this.submissionService.emit();
+    this.markChanged(submission.id, true);
     return record;
   }
 
   async update(id: EntityId, update: UpdateWebsiteOptionsDto) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
+    const option = await this.repository.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(option.submissionId);
     const result = await this.repository.update(id, update);
-    this.submissionService.emit();
+    this.markChanged(result.submissionId);
     return result;
   }
 
@@ -244,6 +340,7 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     this.logger
       .withMetadata({ id: submission.id })
       .info('Creating Default Website Options');
+    await this.postingActivity.assertSubmissionsMutable(submission.id);
 
     const options: Insert<'WebsiteOptionsSchema'> = {
       isDefault: true,
@@ -257,7 +354,20 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
       ),
     };
 
-    return this.repository.insert(options);
+    const result = await this.repository.insert(options);
+    this.markChanged(submission.id);
+    return result;
+  }
+
+  public override async remove(id: EntityId): Promise<void> {
+    const option = await this.repository.findById(id);
+    if (option) {
+      await this.postingActivity.assertSubmissionsMutable(option.submissionId);
+    }
+    await super.remove(id);
+    if (option) {
+      this.markChanged(option.submissionId, true);
+    }
   }
 
   private async populateDefaultWebsiteOptions(
@@ -266,17 +376,8 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     title?: string,
     defaultOptions?: Partial<IWebsiteFormFields>,
   ): Promise<IWebsiteFormFields> {
-    const userSpecifiedOptions =
-      (
-        await this.userSpecifiedOptionsService.findByAccountAndSubmissionType(
-          NULL_ACCOUNT_ID,
-          type,
-        )
-      )?.options ?? {};
-
     const websiteFormFields: IWebsiteFormFields = {
       ...new DefaultWebsiteOptions(),
-      ...userSpecifiedOptions,
       title,
     };
 
@@ -308,12 +409,15 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
     validate: ValidateWebsiteOptionsDto,
   ): Promise<ValidationResult> {
     const { websiteOptionId, submissionId } = validate;
-    const submission = await this.submissionService.findById(submissionId, {
-      failOnMissing: true,
-    });
+    const submission = await this.submissionService.findByIdOrThrow(submissionId);
     const websiteOption = submission.options.find(
       (option) => option.id === websiteOptionId,
     );
+    if (!websiteOption)
+      throw new BadRequestException(
+        `Website options with id ${websiteOptionId} not found`,
+      );
+
     return this.validationService.validate(submission, websiteOption);
   }
 
@@ -329,18 +433,76 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
   ): Promise<ValidationResult[]> {
     const submission =
       typeof submissionOrId === 'string'
-        ? await this.submissionService.findById(submissionOrId)
+        ? await this.submissionService.findByIdOrThrow(submissionOrId)
         : submissionOrId;
     return this.validationService.validateSubmission(submission);
+  }
+
+  /**
+   * Previews the parsed description for a specific website option.
+   * Parses the description the same way it would be parsed during posting,
+   * and returns both the output format type and the rendered string.
+   * @param {PreviewDescriptionDto} dto
+   * @return {Promise<IDescriptionPreviewResult>}
+   */
+  async previewDescription(
+    dto: PreviewDescriptionDto,
+  ): Promise<IDescriptionPreviewResult> {
+    const { websiteOptionId, submissionId } = dto;
+    const submission = await this.submissionService.findByIdOrThrow(submissionId);
+    const websiteOption = submission.options.find(
+      (option) => option.id === websiteOptionId,
+    );
+    if (!websiteOption) {
+      throw new NotFoundException(
+        `Website option ${websiteOptionId} not found`,
+      );
+    }
+
+    const website = websiteOption.isDefault
+      ? this.websiteRegistry.createDefaultWebsiteInstance(
+          new Account(websiteOption.account),
+        )
+      : this.websiteRegistry.findInstance(websiteOption.account);
+
+    if (!website) {
+      throw new NotFoundException(
+        `Website instance for account ${websiteOption.accountId} not found`,
+      );
+    }
+
+    const data = await this.postParsersService.parse(
+      submission,
+      website,
+      websiteOption,
+    );
+
+    // Determine the description output type using the same logic as the parser
+    const defaultOptions = submission.options.find((o) => o.isDefault);
+    if (!defaultOptions) throw new Error('No default options found!');
+
+    const defaultOpts = Object.assign(new DefaultWebsiteOptions(), {
+      ...defaultOptions.data,
+    });
+    const websiteOpts = Object.assign(website.getModelFor(submission.type), {
+      ...websiteOption.data,
+    });
+    const mergedOptions = websiteOpts.mergeDefaults(defaultOpts);
+    const { descriptionType } = mergedOptions.getFormFieldFor('description');
+
+    return {
+      descriptionType: descriptionType as DescriptionType,
+      description: data.options.description ?? '',
+    };
   }
 
   async updateSubmissionOptions(
     submissionId: SubmissionId,
     updateDto: UpdateSubmissionWebsiteOptionsDto,
   ) {
-    const submission = await this.submissionService.findById(submissionId, {
-      failOnMissing: true,
-    });
+    await this.postingActivity.assertSubmissionsMutable(submissionId);
+    const submission = await this.submissionService.findByIdOrThrow(submissionId);
+    let optionsChanged = false;
 
     const { remove, add } = updateDto;
     if (remove?.length) {
@@ -356,6 +518,7 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
         `Removing option(s) [${removableIds.join(', ')}] from submission ${submissionId}`,
       );
       await this.repository.deleteById(removableIds);
+      optionsChanged ||= removableIds.length > 0;
     }
 
     if (add?.length) {
@@ -365,18 +528,24 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
         ),
       );
       await this.repository.insert(options);
+      optionsChanged ||= options.length > 0;
     }
 
-    this.submissionService.emit();
-    return this.submissionService.findById(submissionId);
+    this.markChanged(submissionId, optionsChanged);
+    return this.submissionService.findByIdOrThrow(submissionId);
   }
 
   private async onCustomShortcutDelete(id: EntityId) {
     const websiteOptions = await this.findAll();
+    const updates: Array<{
+      option: WebsiteOptions;
+      description: DescriptionValue;
+    }> = [];
     for (const option of websiteOptions) {
       const { data } = option;
       const descValue: DescriptionValue | undefined = data?.description;
-      const blocks: Description | undefined = descValue?.description;
+      const doc: Description | undefined = descValue?.description;
+      const blocks = doc?.content;
 
       if (!blocks || !Array.isArray(blocks) || blocks.length === 0) {
         continue;
@@ -387,32 +556,37 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
         String(id),
       );
       if (changed) {
-        const updatedDescription: DescriptionValue = {
-          ...(descValue as DescriptionValue),
-          description: filtered,
-        };
-
-        await this.repository.update(option.id, {
-          data: {
-            ...data,
-            description: updatedDescription,
+        updates.push({
+          option,
+          description: {
+            ...(descValue as DescriptionValue),
+            description: { type: 'doc', content: filtered },
           },
         });
-        this.submissionService.emit();
       }
+    }
+
+    for (const { option, description } of updates) {
+      await this.repository.update(option.id, {
+        data: {
+          ...option.data,
+          description,
+        },
+      });
+      this.markChanged(option.submissionId);
     }
   }
 
   /**
-   * Removes inline customShortcut items matching the given id from a Description document.
+   * Removes inline customShortcut items matching the given id from a TipTap content array.
    * Simple recursive filter without whitespace normalization.
    */
   public filterCustomShortcut(
-    blocks: Description,
+    blocks: TipTapNode[],
     deleteId: string,
   ): {
     changed: boolean;
-    filtered: Description;
+    filtered: TipTapNode[];
   } {
     let changed = false;
 
@@ -429,15 +603,15 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
 
         const {
           type,
-          props,
+          attrs,
           content: nodeContent,
         } = node as {
           type?: string;
-          props?: Record<string, unknown>;
+          attrs?: Record<string, unknown>;
           content?: unknown[];
         };
 
-        if (type === 'customShortcut' && String(props?.id ?? '') === deleteId) {
+        if (type === 'customShortcut' && String(attrs?.id ?? '') === deleteId) {
           changed = true;
           continue; // drop this inline
         }
@@ -456,20 +630,11 @@ export class WebsiteOptionsService extends PostyBirbService<'WebsiteOptionsSchem
       return out;
     };
 
-    const filterBlocks = (arr: Description): Description =>
+    const filterBlocks = (arr: TipTapNode[]): TipTapNode[] =>
       arr.map((blk) => {
-        const clone: typeof blk = { ...blk } as typeof blk & {
-          content?: unknown[];
-          children?: unknown;
-        };
+        const clone: TipTapNode = { ...blk };
         if (Array.isArray(clone.content)) {
-          (clone as unknown as { content: unknown[] }).content = filterInline(
-            clone.content,
-          );
-        }
-        if (Array.isArray(clone.children)) {
-          (clone as unknown as { children: Description }).children =
-            filterBlocks(clone.children as unknown as Description);
+          clone.content = filterInline(clone.content) as TipTapNode[];
         }
         return clone;
       });

@@ -30,5 +30,5 @@ export interface IDirectoryWatcher extends IEntity {
    * Template FK.
    * @type {SubmissionId}
    */
-  templateId?: SubmissionId;
+  templateId?: SubmissionId | null;
 }

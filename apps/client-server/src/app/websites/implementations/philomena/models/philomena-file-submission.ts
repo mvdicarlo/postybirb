@@ -9,8 +9,9 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 export class PhilomenaFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.MARKDOWN,
+    expectsInlineTitle: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     minTags: 3,
@@ -18,5 +19,5 @@ export class PhilomenaFileSubmission extends BaseWebsiteOptions {
     minTagLength: 1,
     maxTagLength: 100,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 }

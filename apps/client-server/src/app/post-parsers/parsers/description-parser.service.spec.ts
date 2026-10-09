@@ -3,10 +3,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import { DescriptionField } from '@postybirb/form-builder';
 import {
-  Description,
-  DescriptionType,
-  DescriptionValue,
-  IWebsiteOptions,
+    Description,
+    DescriptionType,
+    DescriptionValue,
+    IWebsiteOptions,
+    TipTapNode,
 } from '@postybirb/types';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
@@ -15,7 +16,6 @@ import { UserConvertersService } from '../../user-converters/user-converters.ser
 import { BaseWebsiteOptions } from '../../websites/models/base-website-options';
 import { DefaultWebsiteOptions } from '../../websites/models/default-website-options';
 import { UnknownWebsite } from '../../websites/website';
-import { IDescriptionBlockNode } from '../models/description-node/description-node.types';
 import { DescriptionParserService } from './description-parser.service';
 
 describe('DescriptionParserService', () => {
@@ -24,39 +24,34 @@ describe('DescriptionParserService', () => {
   let settingsService: SettingsService;
   let customShortcutsService: CustomShortcutsService;
   let userConvertersService: UserConvertersService;
-  const testDescription: Description = [
-    {
-      id: 'test-basic-text',
-      type: 'paragraph',
-      props: {
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
+
+  const testDescription: Description = {
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'Hello, ', marks: [{ type: 'bold' }] },
+          { type: 'text', text: 'World!' },
+        ],
       },
-      content: [
-        { type: 'text', text: 'Hello, ', styles: { bold: true } },
-        { type: 'text', text: 'World!', styles: {} },
-      ],
-      children: [],
-    },
-    {
-      id: 'testlink',
-      type: 'paragraph',
-      props: {
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: 'A link',
+            marks: [
+              {
+                type: 'link',
+                attrs: { href: 'https://postybirb.com' },
+              },
+            ],
+          },
+        ],
       },
-      content: [
-        {
-          type: 'link',
-          href: 'https://postybirb.com',
-          content: [{ type: 'text', text: 'A link', styles: {} }],
-        },
-      ],
-      children: [],
-    },
-  ];
+    ],
+  };
 
   beforeEach(async () => {
     clearDatabase();
@@ -127,6 +122,7 @@ describe('DescriptionParserService', () => {
 
   it('should parse plaintext description', async () => {
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
         metadata: {
@@ -137,7 +133,7 @@ describe('DescriptionParserService', () => {
 
     class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-      description: DescriptionValue;
+      declare description: DescriptionValue;
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -157,6 +153,7 @@ describe('DescriptionParserService', () => {
 
   it('should parse html description', async () => {
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
         metadata: {
@@ -175,12 +172,13 @@ describe('DescriptionParserService', () => {
       '',
     );
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div>"`,
+      `"<div><b>Hello, </b>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div>"`,
     );
   });
 
   it('should parse markdown description', async () => {
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
         metadata: {
@@ -191,7 +189,7 @@ describe('DescriptionParserService', () => {
 
     class MarkdownBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.MARKDOWN })
-      description: DescriptionValue;
+      declare description: DescriptionValue;
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -204,13 +202,15 @@ describe('DescriptionParserService', () => {
       '',
     );
     expect(description).toMatchInlineSnapshot(`
-      "**Hello,** World!  
+      "**Hello,** World!
+
       [A link](https://postybirb.com)"
     `);
   });
 
   it('should return empty for description type NONE', async () => {
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
       },
@@ -218,7 +218,7 @@ describe('DescriptionParserService', () => {
 
     class NoneBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.NONE })
-      description: DescriptionValue;
+      declare description: DescriptionValue;
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
@@ -242,6 +242,7 @@ describe('DescriptionParserService', () => {
       },
     });
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
         metadata: {
@@ -261,7 +262,7 @@ describe('DescriptionParserService', () => {
     );
 
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div><div></div><div><a target="_blank" href="https://postybirb.com">Posted using PostyBirb</a></div>"`,
+      `"<div><b>Hello, </b>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div><div></div><div><a target=\"_blank\" href=\"https://postybirb.com\">Posted using PostyBirb</a></div>"`,
     );
   });
 
@@ -274,6 +275,7 @@ describe('DescriptionParserService', () => {
       },
     });
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: false,
         metadata: {
@@ -293,121 +295,49 @@ describe('DescriptionParserService', () => {
     );
 
     expect(description).toMatchInlineSnapshot(
-      `"<div><span><b>Hello, </b></span>World!<br><a target="_blank" href="https://postybirb.com">A link</a></div>"`,
+      `"<div><b>Hello, </b>World!</div><div><a target=\"_blank\" href=\"https://postybirb.com\">A link</a></div>"`,
     );
   });
 
-  it('should merge similar description blocks', async () => {
-    const unmerged = [
+  it('should pass blocks through without merging', () => {
+    const blocks: TipTapNode[] = [
       {
-        id: '5ab98087-8624-43fc-987f-80f0bdcf84d9',
         type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
         content: [
           {
             type: 'text',
             text: 'Test\nIn the same block!',
-            styles: {},
           },
         ],
-        children: [],
       },
       {
-        id: '6930a7e1-e6d2-4480-9ecb-34e1089580a2',
         type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
         content: [
           {
             type: 'text',
             text: 'New block',
-            styles: {},
           },
         ],
-        children: [],
       },
       {
-        id: '8573e2d6-9294-4a89-b08a-c751f8847913',
         type: 'paragraph',
-        props: {
-          textColor: 'yellow',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
+        attrs: { textAlign: 'center' },
         content: [
           {
             type: 'text',
             text: 'block',
-            styles: {},
           },
         ],
-        children: [],
       },
     ];
 
-    const expected = [
-      {
-        id: '5ab98087-8624-43fc-987f-80f0bdcf84d9',
-        type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
-        content: [
-          {
-            type: 'text',
-            text: 'Test\nIn the same block!',
-            styles: {},
-          },
-          {
-            type: 'text',
-            text: '\n',
-            styles: {},
-            props: {},
-          },
-          {
-            type: 'text',
-            text: 'New block',
-            styles: {},
-          },
-        ],
-        children: [],
-      },
-      {
-        id: '8573e2d6-9294-4a89-b08a-c751f8847913',
-        type: 'paragraph',
-        props: {
-          textColor: 'yellow',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        },
-        content: [
-          {
-            type: 'text',
-            text: 'block',
-            styles: {},
-          },
-        ],
-        children: [],
-      },
-    ];
-
-    const merged = service.mergeBlocks(
-      unmerged as unknown as Array<IDescriptionBlockNode>,
-    );
-    expect(merged).toEqual(expected);
+    const result = service.mergeBlocks(blocks);
+    expect(result).toBe(blocks);
   });
 
   it('should insert default when available', async () => {
     const instance = {
+      getFormProperties: () => ({}),
       decoratedProps: {
         allowAd: true,
         metadata: {
@@ -418,31 +348,24 @@ describe('DescriptionParserService', () => {
 
     class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
       @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-      description: DescriptionValue;
+      declare description: DescriptionValue;
     }
 
     const defaultOptions = createWebsiteOptions(testDescription);
-    const websiteOptions = createWebsiteOptions([
-      {
-        id: 'test-basic-default',
-        type: 'defaultShortcut',
-        props: {} as never,
-        content: [] as never,
-        children: [],
-      },
-      {
-        id: 'test-basic-text',
-        type: 'paragraph',
-        props: {
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
+    const websiteDesc: Description = {
+      type: 'doc',
+      content: [
+        {
+          type: 'defaultShortcut',
         },
-        content: [{ type: 'text', text: 'Hello, Basic', styles: {} }],
-        children: [],
-      },
-    ]);
-    websiteOptions.data.description.overrideDefault = true;
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Hello, Basic' }],
+        },
+      ],
+    };
+    const websiteOptions = createWebsiteOptions(websiteDesc);
+    websiteOptions.data.description!.overrideDefault = true;
     const description = await service.parse(
       instance as unknown as UnknownWebsite,
       new DefaultWebsiteOptions(defaultOptions.data),
@@ -460,6 +383,7 @@ describe('DescriptionParserService', () => {
   describe('Custom Shortcuts', () => {
     it('should inject single custom shortcut', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -468,21 +392,21 @@ describe('DescriptionParserService', () => {
         },
       };
 
-      const shortcutContent: Description = [
-        {
-          id: 'shortcut-1',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const shortcutContent: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'Commission Info',
+                marks: [{ type: 'bold' }],
+              },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Commission Info', styles: { bold: true } },
-          ],
-          children: [],
-        },
-      ];
+        ],
+      };
 
       customShortcutsService.findById = jest.fn().mockResolvedValue({
         id: 'cs-1',
@@ -490,22 +414,18 @@ describe('DescriptionParserService', () => {
         shortcut: shortcutContent,
       });
 
-      const descriptionWithShortcut: Description = [
-        {
-          id: 'test-with-shortcut',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithShortcut: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Check out my ' },
+              { type: 'customShortcut', attrs: { id: 'cs-1' } },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Check out my ', styles: {} },
-            { type: 'customShortcut', props: { id: 'cs-1' }, content: [] },
-          ],
-          children: [],
-        },
-      ];
+        ],
+      };
 
       const defaultOptions = createWebsiteOptions(descriptionWithShortcut);
       const websiteOptions = createWebsiteOptions(undefined);
@@ -519,12 +439,13 @@ describe('DescriptionParserService', () => {
 
       expect(customShortcutsService.findById).toHaveBeenCalledWith('cs-1');
       expect(description).toMatchInlineSnapshot(
-        `"<div>Check out my <div><span><b>Commission Info</b></span></div></div>"`,
+        `"<div>Check out my <b>Commission Info</b></div>"`,
       );
     });
 
     it('should inject multiple custom shortcuts', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -533,33 +454,25 @@ describe('DescriptionParserService', () => {
         },
       };
 
-      const commissionShortcut: Description = [
-        {
-          id: 'shortcut-1',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const commissionShortcut: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Commissions Open!' }],
           },
-          content: [{ type: 'text', text: 'Commissions Open!', styles: {} }],
-          children: [],
-        },
-      ];
+        ],
+      };
 
-      const priceShortcut: Description = [
-        {
-          id: 'shortcut-2',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const priceShortcut: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: '$50 per hour' }],
           },
-          content: [{ type: 'text', text: '$50 per hour', styles: {} }],
-          children: [],
-        },
-      ];
+        ],
+      };
 
       customShortcutsService.findById = jest
         .fn()
@@ -579,23 +492,19 @@ describe('DescriptionParserService', () => {
           return Promise.resolve(null);
         });
 
-      const descriptionWithShortcuts: Description = [
-        {
-          id: 'test-multiple',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithShortcuts: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'customShortcut', attrs: { id: 'cs-1' } },
+              { type: 'text', text: ' - ' },
+              { type: 'customShortcut', attrs: { id: 'cs-2' } },
+            ],
           },
-          content: [
-            { type: 'customShortcut', props: { id: 'cs-1' }, content: [] },
-            { type: 'text', text: ' - ', styles: {} },
-            { type: 'customShortcut', props: { id: 'cs-2' }, content: [] },
-          ],
-          children: [],
-        },
-      ];
+        ],
+      };
 
       const defaultOptions = createWebsiteOptions(descriptionWithShortcuts);
       const websiteOptions = createWebsiteOptions(undefined);
@@ -610,12 +519,13 @@ describe('DescriptionParserService', () => {
       expect(customShortcutsService.findById).toHaveBeenCalledWith('cs-1');
       expect(customShortcutsService.findById).toHaveBeenCalledWith('cs-2');
       expect(description).toMatchInlineSnapshot(
-        `"<div><div>Commissions Open!</div> - <div>$50 per hour</div></div>"`,
+        `"<div>Commissions Open! - $50 per hour</div>"`,
       );
     });
 
     it('should handle missing custom shortcut gracefully', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -626,27 +536,22 @@ describe('DescriptionParserService', () => {
 
       customShortcutsService.findById = jest.fn().mockResolvedValue(null);
 
-      const descriptionWithMissing: Description = [
-        {
-          id: 'test-missing',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithMissing: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Before ' },
+              {
+                type: 'customShortcut',
+                attrs: { id: 'cs-missing' },
+              },
+              { type: 'text', text: ' After' },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Before ', styles: {} },
-            {
-              type: 'customShortcut',
-              props: { id: 'cs-missing' },
-              content: [],
-            },
-            { type: 'text', text: ' After', styles: {} },
-          ],
-          children: [],
-        },
-      ];
+        ],
+      };
 
       const defaultOptions = createWebsiteOptions(descriptionWithMissing);
       const websiteOptions = createWebsiteOptions(undefined);
@@ -661,12 +566,12 @@ describe('DescriptionParserService', () => {
       expect(customShortcutsService.findById).toHaveBeenCalledWith(
         'cs-missing',
       );
-      // Missing shortcut should be ignored/skipped
       expect(description).toMatchInlineSnapshot(`"<div>Before  After</div>"`);
     });
 
     it('should resolve custom shortcuts with different output formats', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -677,24 +582,24 @@ describe('DescriptionParserService', () => {
 
       class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
         @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-        description: DescriptionValue;
+        declare description: DescriptionValue;
       }
 
-      const shortcutContent: Description = [
-        {
-          id: 'shortcut-1',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const shortcutContent: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'Bold Text',
+                marks: [{ type: 'bold' }],
+              },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Bold Text', styles: { bold: true } },
-          ],
-          children: [],
-        },
-      ];
+        ],
+      };
 
       customShortcutsService.findById = jest.fn().mockResolvedValue({
         id: 'cs-1',
@@ -702,22 +607,18 @@ describe('DescriptionParserService', () => {
         shortcut: shortcutContent,
       });
 
-      const descriptionWithShortcut: Description = [
-        {
-          id: 'test-plaintext',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithShortcut: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Text: ' },
+              { type: 'customShortcut', attrs: { id: 'cs-1' } },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Text: ', styles: {} },
-            { type: 'customShortcut', props: { id: 'cs-1' }, content: [] },
-          ],
-          children: [],
-        },
-      ];
+        ],
+      };
 
       const defaultOptions = createWebsiteOptions(descriptionWithShortcut);
       const websiteOptions = createWebsiteOptions(undefined);
@@ -734,6 +635,7 @@ describe('DescriptionParserService', () => {
 
     it('should resolve custom shortcuts with links and styling', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -742,28 +644,28 @@ describe('DescriptionParserService', () => {
         },
       };
 
-      const shortcutWithLink: Description = [
-        {
-          id: 'shortcut-link',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const shortcutWithLink: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Visit my ' },
+              {
+                type: 'text',
+                text: 'portfolio',
+                marks: [
+                  { type: 'bold' },
+                  {
+                    type: 'link',
+                    attrs: { href: 'https://portfolio.example.com' },
+                  },
+                ],
+              },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Visit my ', styles: {} },
-            {
-              type: 'link',
-              href: 'https://portfolio.example.com',
-              content: [
-                { type: 'text', text: 'portfolio', styles: { bold: true } },
-              ],
-            },
-          ],
-          children: [],
-        },
-      ];
+        ],
+      };
 
       customShortcutsService.findById = jest.fn().mockResolvedValue({
         id: 'cs-link',
@@ -771,21 +673,15 @@ describe('DescriptionParserService', () => {
         shortcut: shortcutWithLink,
       });
 
-      const descriptionWithShortcut: Description = [
-        {
-          id: 'test-link',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithShortcut: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'customShortcut', attrs: { id: 'cs-link' } }],
           },
-          content: [
-            { type: 'customShortcut', props: { id: 'cs-link' }, content: [] },
-          ],
-          children: [],
-        },
-      ];
+        ],
+      };
 
       const defaultOptions = createWebsiteOptions(descriptionWithShortcut);
       const websiteOptions = createWebsiteOptions(undefined);
@@ -798,7 +694,7 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div><div>Visit my <a target="_blank" href="https://portfolio.example.com"><span><b>portfolio</b></span></a></div></div>"`,
+        `"<div>Visit my <a target="_blank" href="https://portfolio.example.com"><b>portfolio</b></a></div>"`,
       );
     });
   });
@@ -806,6 +702,7 @@ describe('DescriptionParserService', () => {
   describe('System Inline Shortcuts', () => {
     it('should render titleShortcut with submission title', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -814,22 +711,18 @@ describe('DescriptionParserService', () => {
         },
       };
 
-      const descriptionWithTitle = [
-        {
-          id: 'test-title',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithTitle: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Artwork: ' },
+              { type: 'titleShortcut', attrs: {} },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Artwork: ', styles: {} },
-            { type: 'titleShortcut', props: {} },
-          ],
-          children: [],
-        },
-      ] as Description;
+        ],
+      };
 
       const defaultOptions = createWebsiteOptions(descriptionWithTitle);
       const websiteOptions = createWebsiteOptions(undefined);
@@ -842,12 +735,13 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div>Artwork: <span>My Amazing Art</span></div>"`,
+        `"<div>Artwork: My Amazing Art</div>"`,
       );
     });
 
     it('should render tagsShortcut with submission tags', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -856,22 +750,18 @@ describe('DescriptionParserService', () => {
         },
       };
 
-      const descriptionWithTags = [
-        {
-          id: 'test-tags',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithTags: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Tags: ' },
+              { type: 'tagsShortcut', attrs: {} },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Tags: ', styles: {} },
-            { type: 'tagsShortcut', props: {} },
-          ],
-          children: [],
-        },
-      ] as Description;
+        ],
+      };
 
       const defaultOptions = createWebsiteOptions(descriptionWithTags);
       const websiteOptions = createWebsiteOptions(undefined);
@@ -884,12 +774,13 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div>Tags: <span>art digital fantasy</span></div>"`,
+        `"<div>Tags: #art #digital #fantasy</div>"`,
       );
     });
 
     it('should render contentWarningShortcut with content warning', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -898,25 +789,24 @@ describe('DescriptionParserService', () => {
         },
       };
 
-      const descriptionWithCW = [
-        {
-          id: 'test-cw',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithCW: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Content Warning: ' },
+              { type: 'contentWarningShortcut', attrs: {} },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Content Warning: ', styles: {} },
-            { type: 'contentWarningShortcut', props: {} },
-          ],
-          children: [],
-        },
-      ] as Description;
+        ],
+      };
 
       const defaultOptions = new DefaultWebsiteOptions({
-        description: { description: descriptionWithCW, overrideDefault: false },
+        description: {
+          description: descriptionWithCW,
+          overrideDefault: false,
+        },
         contentWarning: 'Mild Violence',
       });
       const websiteOptions = new BaseWebsiteOptions({});
@@ -929,12 +819,13 @@ describe('DescriptionParserService', () => {
       );
 
       expect(description).toMatchInlineSnapshot(
-        `"<div>Content Warning: <span>Mild Violence</span></div>"`,
+        `"<div>Content Warning: Mild Violence</div>"`,
       );
     });
 
     it('should not double-insert title when titleShortcut is present and insertTitle is true', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -943,25 +834,21 @@ describe('DescriptionParserService', () => {
         },
       };
 
-      const descriptionWithTitle = [
-        {
-          id: 'test-title-no-double',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithTitle: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Title: ' },
+              { type: 'titleShortcut', attrs: {} },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Title: ', styles: {} },
-            { type: 'titleShortcut', props: {} },
-          ],
-          children: [],
-        },
-      ] as Description;
+        ],
+      };
 
       const defaultOptions = createWebsiteOptions(descriptionWithTitle);
-      defaultOptions.data.description.insertTitle = true;
+      defaultOptions.data.description!.insertTitle = true;
       const websiteOptions = createWebsiteOptions(undefined);
       const description = await service.parse(
         instance as unknown as UnknownWebsite,
@@ -971,15 +858,13 @@ describe('DescriptionParserService', () => {
         'My Title',
       );
 
-      // Title should only appear once (from the shortcut), not twice
-      expect(description).toMatchInlineSnapshot(
-        `"<div>Title: <span>My Title</span></div>"`,
-      );
-      expect((description.match(/My Title/g) || []).length).toBe(1);
+      expect(description).toMatchInlineSnapshot(`"<div>Title: My Title</div>"`);
+      expect((description!.match(/My Title/g) || []).length).toBe(1);
     });
 
     it('should not double-insert tags when tagsShortcut is present and insertTags is true', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -988,25 +873,21 @@ describe('DescriptionParserService', () => {
         },
       };
 
-      const descriptionWithTags = [
-        {
-          id: 'test-tags-no-double',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithTags: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Tags: ' },
+              { type: 'tagsShortcut', attrs: {} },
+            ],
           },
-          content: [
-            { type: 'text', text: 'Tags: ', styles: {} },
-            { type: 'tagsShortcut', props: {} },
-          ],
-          children: [],
-        },
-      ] as Description;
+        ],
+      };
 
       const defaultOptions = createWebsiteOptions(descriptionWithTags);
-      defaultOptions.data.description.insertTags = true;
+      defaultOptions.data.description!.insertTags = true;
       const websiteOptions = createWebsiteOptions(undefined);
       const description = await service.parse(
         instance as unknown as UnknownWebsite,
@@ -1016,15 +897,95 @@ describe('DescriptionParserService', () => {
         '',
       );
 
-      // Tags should only appear once (from the shortcut), not twice
       expect(description).toMatchInlineSnapshot(
-        `"<div>Tags: <span>tag1 tag2</span></div>"`,
+        `"<div>Tags: #tag1 #tag2</div>"`,
       );
-      expect((description.match(/tag1 tag2/g) || []).length).toBe(1);
+      expect((description!.match(/#tag1 #tag2/g) || []).length).toBe(1);
+    });
+
+    it('should let a per-website option disable inherited insertTags', async () => {
+      const instance = {
+        getFormProperties: () => ({}),
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const plainDescription: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Body' }],
+          },
+        ],
+      };
+
+      // Default enables inserting tags at end...
+      const defaultOptions = createWebsiteOptions(plainDescription);
+      defaultOptions.data.description!.insertTags = true;
+
+      // ...but the per-website option explicitly disables it.
+      const websiteOptions = createWebsiteOptions(undefined);
+      websiteOptions.data.description!.insertTags = false;
+
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        ['tag1', 'tag2'],
+        '',
+      );
+
+      expect(description).not.toContain('#tag1');
+      expect(description).not.toContain('#tag2');
+    });
+
+    it('should insert tags inherited from default when per-website option is unset', async () => {
+      const instance = {
+        getFormProperties: () => ({}),
+        decoratedProps: {
+          allowAd: false,
+          metadata: {
+            name: 'Test',
+          },
+        },
+      };
+
+      const plainDescription: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: 'Body' }],
+          },
+        ],
+      };
+
+      const defaultOptions = createWebsiteOptions(plainDescription);
+      defaultOptions.data.description!.insertTags = true;
+
+      // Per-website option leaves insertTags unset -> inherits the default.
+      const websiteOptions = createWebsiteOptions(undefined);
+
+      const description = await service.parse(
+        instance as unknown as UnknownWebsite,
+        new DefaultWebsiteOptions(defaultOptions.data),
+        new BaseWebsiteOptions(websiteOptions.data),
+        ['tag1', 'tag2'],
+        '',
+      );
+
+      expect(description).toContain('#tag1');
+      expect(description).toContain('#tag2');
     });
 
     it('should render all system shortcuts together in plaintext', async () => {
       const instance = {
+        getFormProperties: () => ({}),
         decoratedProps: {
           allowAd: false,
           metadata: {
@@ -1035,38 +996,27 @@ describe('DescriptionParserService', () => {
 
       class PlaintextBaseWebsiteOptions extends BaseWebsiteOptions {
         @DescriptionField({ descriptionType: DescriptionType.PLAINTEXT })
-        description: DescriptionValue;
+        declare description: DescriptionValue;
       }
 
-      const descriptionWithAll = [
-        {
-          id: 'test-all-shortcuts',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+      const descriptionWithAll: Description = {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'titleShortcut', attrs: {} },
+              { type: 'text', text: ' (' },
+              { type: 'contentWarningShortcut', attrs: {} },
+              { type: 'text', text: ')' },
+            ],
           },
-          content: [
-            { type: 'titleShortcut', props: {} },
-            { type: 'text', text: ' (', styles: {} },
-            { type: 'contentWarningShortcut', props: {} },
-            { type: 'text', text: ')', styles: {} },
-          ],
-          children: [],
-        },
-        {
-          id: 'test-tags-line',
-          type: 'paragraph',
-          props: {
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
+          {
+            type: 'paragraph',
+            content: [{ type: 'tagsShortcut', attrs: {} }],
           },
-          content: [{ type: 'tagsShortcut', props: {} }],
-          children: [],
-        },
-      ] as Description;
+        ],
+      };
 
       const defaultOptions = new DefaultWebsiteOptions({
         description: {
@@ -1086,7 +1036,7 @@ describe('DescriptionParserService', () => {
 
       expect(description).toMatchInlineSnapshot(`
         "My Art (NSFW)
-        art digital"
+        #art #digital"
       `);
     });
   });

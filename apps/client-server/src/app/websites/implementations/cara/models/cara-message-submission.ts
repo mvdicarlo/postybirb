@@ -1,19 +1,26 @@
-import { DescriptionField } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue } from '@postybirb/types';
+import { DescriptionField, TagField } from '@postybirb/form-builder';
+import {
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class CaraMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.PLAINTEXT,
     maxDescriptionLength: 5000,
+    expectsInlineTags: true,
+    expectsInlineTitle: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
-  override processTag(tag: string): string {
-    if (tag.startsWith('#')) {
-      return tag;
-    }
-
-    return `#${tag}`;
-  }
+  @TagField({
+    section: 'common',
+    order: 3,
+    span: 12,
+    spaceReplacer: ' ',
+  })
+  tags: TagValue = DefaultTagValue();
 }

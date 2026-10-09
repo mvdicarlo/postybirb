@@ -8,13 +8,13 @@ implement the `MessageWebsite<T>` interface.
 ```ts
 class FooMessageSubmission implements IWebsiteFormFields {
   @TextField({ label: 'title', required: true, row: 0, col: 1 })
-  title: string;
+  declare title: string;
 
   @DescriptionField({ row: 3, col: 1 })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @RatingField({ required: true, row: 0, col: 0 })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 }
 
 @WebsiteMetadata({

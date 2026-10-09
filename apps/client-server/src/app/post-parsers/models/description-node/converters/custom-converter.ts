@@ -1,16 +1,9 @@
-import {
-    ConversionContext,
-    IDescriptionBlockNodeClass,
-    IDescriptionInlineNodeClass,
-    IDescriptionTextNodeClass,
-} from '../description-node.base';
+import { ConversionContext } from '../description-node.base';
+import { TipTapNode } from '../description-node.types';
 import { BaseConverter } from './base-converter';
 
 export type CustomNodeHandler = (
-  node:
-    | IDescriptionBlockNodeClass
-    | IDescriptionInlineNodeClass
-    | IDescriptionTextNodeClass,
+  node: TipTapNode,
   context: ConversionContext,
 ) => string;
 
@@ -31,33 +24,21 @@ export class CustomConverter extends BaseConverter {
     return '\n';
   }
 
-  convertBlockNode(
-    node: IDescriptionBlockNodeClass,
-    context: ConversionContext,
-  ): string {
+  convertBlockNode(node: TipTapNode, context: ConversionContext): string {
     return this.blockHandler(node, context);
   }
 
-  convertInlineNode(
-    node: IDescriptionInlineNodeClass,
-    context: ConversionContext,
-  ): string {
+  convertInlineNode(node: TipTapNode, context: ConversionContext): string {
     if (this.inlineHandler) {
       return this.inlineHandler(node, context);
     }
-    // Default: just concatenate children
-    return (node.content as IDescriptionTextNodeClass[])
-      .map((child) => this.convertTextNode(child, context))
-      .join('');
+    return this.convertContent(node.content, context);
   }
 
-  convertTextNode(
-    node: IDescriptionTextNodeClass,
-    context: ConversionContext,
-  ): string {
+  convertTextNode(node: TipTapNode, context: ConversionContext): string {
     if (this.textHandler) {
       return this.textHandler(node, context);
     }
-    return node.text;
+    return node.text ?? '';
   }
 }

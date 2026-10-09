@@ -9,17 +9,17 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class FurAffinityMessageSubmission extends BaseWebsiteOptions {
   @TitleField({ maxLength: 60 })
-  title: string;
+  declare title: string;
 
   @DescriptionField({
     descriptionType: DescriptionType.BBCODE,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     hidden: true,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @BooleanField({
     section: 'website',

@@ -17,6 +17,8 @@
 /.swc
 /.jest
 /.eslint
+.jest
+.swc
 
 # dependencies
 /node_modules
@@ -55,3 +57,9 @@ Thumbs.db
 # Public UI dependencies
 .nx/cache
 .nx/workspace-data
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
+postybirb-plus

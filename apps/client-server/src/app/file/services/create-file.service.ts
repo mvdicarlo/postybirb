@@ -1,6 +1,18 @@
+// @ts-expect-error No types on npm
 import * as rtf from '@iarna/rtf-to-html';
 import { Injectable } from '@nestjs/common';
-import { Insert, Select } from '@postybirb/database';
+import {
+  FileBuffer,
+  FileBufferRepository,
+  FileBufferRow,
+  Insert,
+  Select,
+  SubmissionFile,
+  SubmissionFileRepository,
+  SubmissionFileRow,
+  TransactionContext,
+  withTransactionContext,
+} from '@postybirb/database';
 import { removeFile } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
 import {
@@ -12,25 +24,15 @@ import {
 import { getFileType } from '@postybirb/utils/file-type';
 import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
-import { html as htmlBeautify } from 'js-beautify';
+import { htmlToText } from 'html-to-text';
 import * as mammoth from 'mammoth';
 import { parse } from 'path';
-import { Sharp } from 'sharp';
 import { promisify } from 'util';
 import { v4 as uuid } from 'uuid';
 
-import {
-  FileBuffer,
-  fromDatabaseRecord,
-  SubmissionFile,
-} from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import {
-  TransactionContext,
-  withTransactionContext,
-} from '../../drizzle/transaction-context';
+import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
-import { ImageUtil } from '../utils/image.util';
+import { MediaUtils } from '../utils/media.util';
 
 /**
  * A Service that defines operations for creating a SubmissionFile.
@@ -40,23 +42,16 @@ import { ImageUtil } from '../utils/image.util';
 export class CreateFileService {
   private readonly logger = Logger();
 
-  private readonly fileBufferRepository = new PostyBirbDatabase(
-    'FileBufferSchema',
-  );
+  private readonly fileBufferRepository = new FileBufferRepository();
 
-  private readonly fileRepository = new PostyBirbDatabase(
-    'SubmissionFileSchema',
-  );
+  private readonly fileRepository = new SubmissionFileRepository();
+
+  constructor(private readonly sharpInstanceManager: SharpInstanceManager) {}
 
   /**
    * Creates file entity and stores it.
    * @todo extra data (image resize per website)
    * @todo figure out what to do about non-image
-   *
-   * @param {MulterFileInfo} file
-   * @param {MulterFileInfo} submission
-   * @param {Buffer} buf
-   * @return {*}  {Promise<SubmissionFile>}
    */
   public async create(
     file: MulterFileInfo,
@@ -76,12 +71,24 @@ export class CreateFileService {
             buf,
           );
 
-          if (ImageUtil.isImage(file.mimetype, true)) {
-            this.logger.info('[Mutation] Populating as Image');
-            entity = await this.populateAsImageFile(ctx, entity, file, buf);
+          const fileType = getFileType(file.originalname);
+
+          if (
+            fileType === FileType.VIDEO ||
+            fileType === FileType.AUDIO ||
+            fileType === FileType.IMAGE
+          ) {
+            this.logger.info(`[Mutation] Populating as ${fileType}`);
+            entity = await this.populateMediaFileMetadata(
+              ctx,
+              entity,
+              file,
+              buf,
+              fileType,
+            );
           }
 
-          if (getFileType(file.originalname) === FileType.TEXT) {
+          if (fileType === FileType.TEXT) {
             await this.createSubmissionTextAltFile(ctx, entity, file, buf);
           }
 
@@ -92,9 +99,9 @@ export class CreateFileService {
           );
           await ctx
             .getDb()
-            .update(this.fileRepository.schemaEntity)
+            .update(this.fileRepository.table)
             .set({ primaryFileId: primaryFile.id })
-            .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+            .where(eq(this.fileRepository.table.id, entity.id));
           this.logger
             .withMetadata({ id: entity.id })
             .info('SubmissionFile Created');
@@ -102,9 +109,9 @@ export class CreateFileService {
           return entity;
         },
       );
-      return await this.fileRepository.findById(newSubmission.id);
+      return await this.fileRepository.findByIdOrThrow(newSubmission.id);
     } catch (err) {
-      this.logger.error(err.message, err.stack);
+      this.logger.error(err);
       throw err;
     } finally {
       if (!file.origin) {
@@ -138,18 +145,27 @@ export class CreateFileService {
       file.originalname.endsWith('.doc')
     ) {
       this.logger.info('[Mutation] Creating Alt File for Text Document: DOCX');
-      altText = (await mammoth.convertToHtml({ buffer: buf })).value;
+      altText = (await mammoth.extractRawText({ buffer: buf })).value;
     } else if (
       file.mimetype === 'application/rtf' ||
       file.originalname.endsWith('.rtf')
     ) {
       this.logger.info('[Mutation] Creating Alt File for Text Document: RTF');
-      const promisifiedRtf = promisify(rtf.fromString);
-      altText = await promisifiedRtf(buf.toString(), {
+      const promisifiedRtf = promisify(
+        rtf.fromString as (
+          input: string,
+          options: {
+            template(_: unknown, __: unknown, content: string): string;
+          },
+          callback: (err: Error, result: string) => void,
+        ) => void,
+      );
+      const rtfHtml = await promisifiedRtf(buf.toString(), {
         template(_, __, content: string) {
           return content;
         },
       });
+      altText = htmlToText(rtfHtml, { wordwrap: false });
     } else if (
       file.mimetype === 'text/plain' ||
       file.originalname.endsWith('.txt')
@@ -162,26 +178,24 @@ export class CreateFileService {
       );
     }
 
-    const prettifiedBuf = Buffer.from(
-      altText ? htmlBeautify(altText, { wrap_line_length: 120 }) : '',
-    );
+    const prettifiedBuf = Buffer.from(altText ?? '');
     const altFile = await this.createFileBufferEntity(
       ctx,
       entity,
       prettifiedBuf,
       {
-        mimeType: 'text/html',
-        fileName: `${entity.fileName}.html`,
+        mimeType: 'text/plain',
+        fileName: `${entity.fileName}.txt`,
       },
     );
     await ctx
       .getDb()
-      .update(this.fileRepository.schemaEntity)
+      .update(this.fileRepository.table)
       .set({
         altFileId: altFile.id,
         hasAltFile: true,
       })
-      .where(eq(this.fileRepository.schemaEntity.id, entity.id));
+      .where(eq(this.fileRepository.table.id, entity.id));
     this.logger.withMetadata({ id: altFile.id }).info('Alt File Created');
   }
 
@@ -212,13 +226,12 @@ export class CreateFileService {
       metadata: DefaultSubmissionFileMetadata(),
       order: Date.now(),
     };
-    const sf = fromDatabaseRecord(
-      SubmissionFile,
-      await ctx
+    const sf = SubmissionFile.fromRows(
+      (await ctx
         .getDb()
-        .insert(this.fileRepository.schemaEntity)
+        .insert(this.fileRepository.table)
         .values(submissionFile)
-        .returning(),
+        .returning()) as SubmissionFileRow[],
     );
 
     const entity = sf[0];
@@ -235,28 +248,28 @@ export class CreateFileService {
    * @param {Buffer} buf
    * @return {*}  {Promise<void>}
    */
-  private async populateAsImageFile(
+  private async populateMediaFileMetadata(
     ctx: TransactionContext,
     entity: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
+    fileType: FileType,
   ): Promise<SubmissionFile> {
-    const sharpInstance = ImageUtil.load(buf);
+    const meta = await this.getMetadata(fileType, file, buf);
 
-    const meta = await sharpInstance.metadata();
-    const thumbnail = await this.createFileThumbnail(
-      ctx,
-      entity,
-      file,
-      sharpInstance,
-    );
-    const update: Select<typeof this.fileRepository.schemaEntity> = {
+    let thumbnail;
+    if (fileType === FileType.IMAGE) {
+      thumbnail = await this.createFileThumbnail(ctx, entity, file, buf);
+    }
+
+    const update: Partial<Select<'SubmissionFileSchema'>> = {
       width: meta.width ?? 0,
       height: meta.height ?? 0,
-      hasThumbnail: true,
-      thumbnailId: thumbnail.id,
+      hasThumbnail: !!thumbnail,
+      thumbnailId: thumbnail ? thumbnail.id : undefined,
       metadata: {
         ...entity.metadata,
+        duration: 'duration' in meta ? meta.duration : 0,
         dimensions: {
           default: {
             width: meta.width ?? 0,
@@ -266,43 +279,61 @@ export class CreateFileService {
       },
     };
 
-    return fromDatabaseRecord(
-      SubmissionFile,
-      await ctx
+    return SubmissionFile.fromRows(
+      (await ctx
         .getDb()
-        .update(this.fileRepository.schemaEntity)
+        .update(this.fileRepository.table)
         .set(update)
-        .where(eq(this.fileRepository.schemaEntity.id, entity.id))
-        .returning(),
+        .where(eq(this.fileRepository.table.id, entity.id))
+        .returning()) as SubmissionFileRow[],
     )[0];
+  }
+
+  private async getMetadata(
+    fileType: FileType,
+    file: MulterFileInfo,
+    buf: Buffer,
+  ) {
+    if (fileType === FileType.IMAGE) {
+      return this.sharpInstanceManager.getMetadata(buf);
+    }
+
+    if (fileType === FileType.VIDEO || fileType === FileType.AUDIO) {
+      try {
+        return await MediaUtils.getMetadata(file, buf);
+      } catch (e) {
+        this.logger
+          .withError(e)
+          .error(`Failed to get metadata for ${file.filename}`);
+      }
+    }
+
+    return {
+      width: 0,
+      height: 0,
+    };
   }
 
   /**
    * Returns a thumbnail entity for a file.
    *
    * @param {SubmissionFile} fileEntity
-   * @param {File} fileEntity
    * @param {MulterFileInfo} file
-   * @param {Sharp} sharpInstance
+   * @param {Buffer} imageBuffer - The source image buffer
    * @return {*}  {Promise<IFileBuffer>}
    */
   public async createFileThumbnail(
     ctx: TransactionContext,
     fileEntity: SubmissionFile,
     file: MulterFileInfo,
-    sharpInstance: Sharp,
+    imageBuffer: Buffer,
   ): Promise<IFileBuffer> {
     const {
       buffer: thumbnailBuf,
       height,
       width,
       mimeType: thumbnailMimeType,
-    } = await this.generateThumbnail(
-      sharpInstance,
-      fileEntity.height,
-      fileEntity.width,
-      file.mimetype,
-    );
+    } = await this.generateThumbnail(imageBuffer, file.mimetype);
 
     // Remove existing extension and add the appropriate thumbnail extension
     const fileNameWithoutExt = parse(fileEntity.fileName).name;
@@ -318,64 +349,45 @@ export class CreateFileService {
 
   /**
    * Generates a thumbnail for display at specific dimension requirements.
+   * Delegates to the sharp worker pool for crash isolation.
    *
-   * @param {Sharp} sharpInstance
-   * @param {number} fileHeight
-   * @param {number} fileWidth
+   * @param {Buffer} imageBuffer - The source image buffer
    * @param {string} sourceMimeType - The mimetype of the source image
-   * @return {*}  {Promise<{ width: number; height: number; buffer: Buffer; mimeType: string }>}
+   * @param {number} [preferredDimension=400] - The preferred thumbnail dimension
    */
   public async generateThumbnail(
-    sharpInstance: Sharp,
-    fileHeight: number,
-    fileWidth: number,
+    imageBuffer: Buffer,
     sourceMimeType: string,
+    preferredDimension = 400,
   ): Promise<{
     width: number;
     height: number;
     buffer: Buffer;
     mimeType: string;
   }> {
-    const preferredDimension = 400;
-
-    // Resize with aspect ratio preserved - Sharp will calculate the other dimension
-    const resized = sharpInstance.resize(
+    const result = await this.sharpInstanceManager.generateThumbnail(
+      imageBuffer,
+      sourceMimeType,
+      'thumbnail',
       preferredDimension,
-      preferredDimension,
-      {
-        fit: 'inside', // Ensure image fits within the box while maintaining aspect ratio
-        withoutEnlargement: true, // Don't enlarge if image is smaller than target
-      },
     );
 
-    const isJpeg =
-      sourceMimeType === 'image/jpeg' || sourceMimeType === 'image/jpg';
-    const buffer = isJpeg
-      ? await resized.jpeg({ quality: 99, force: true }).toBuffer()
-      : await resized.png({ quality: 99, force: true }).toBuffer();
-    const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
-
-    // Get the actual dimensions after the buffer is generated
-    const metadata = await ImageUtil.load(buffer).metadata();
-    const width = metadata.width ?? preferredDimension;
-    const height = metadata.height ?? preferredDimension;
-
-    return { buffer, height, width, mimeType };
+    return {
+      buffer: result.buffer,
+      height: result.height,
+      width: result.width,
+      mimeType: result.mimeType,
+    };
   }
 
   /**
    * Creates a file buffer entity for storing blob data of a file.
-   *
-   * @param {File} fileEntity
-   * @param {Buffer} buf
-   * @param {string} type - thumbnail/alt/primary
-   * @return {*}  {IFileBuffer}
    */
   public async createFileBufferEntity(
     ctx: TransactionContext,
     fileEntity: SubmissionFile,
     buf: Buffer,
-    opts: Select<'FileBufferSchema'> = {} as Select<'FileBufferSchema'>,
+    opts: Partial<Select<'FileBufferSchema'>> = {},
   ): Promise<FileBuffer> {
     const { mimeType, height, width, fileName } = fileEntity;
     const data: Insert<'FileBufferSchema'> = {
@@ -390,13 +402,12 @@ export class CreateFileService {
       ...opts,
     };
 
-    const result = fromDatabaseRecord(
-      FileBuffer,
-      await ctx
+    const result = FileBuffer.fromRows(
+      (await ctx
         .getDb()
-        .insert(this.fileBufferRepository.schemaEntity)
+        .insert(this.fileBufferRepository.table)
         .values(data)
-        .returning(),
+        .returning()) as FileBufferRow[],
     )[0];
 
     ctx.track('FileBufferSchema', result.id);

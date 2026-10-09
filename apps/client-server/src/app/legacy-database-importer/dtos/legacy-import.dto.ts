@@ -13,6 +13,12 @@ export class LegacyImportDto {
   @IsBoolean()
   tagConverters: boolean;
 
+  @IsBoolean()
+  submissions: boolean;
+
+  @IsBoolean()
+  templates: boolean;
+
   @IsOptional()
   @IsString()
   customPath?: string;

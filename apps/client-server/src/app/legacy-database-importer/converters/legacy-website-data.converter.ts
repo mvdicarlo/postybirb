@@ -1,4 +1,4 @@
-import { SchemaKey } from '@postybirb/database';
+import { SchemaKey, WebsiteData } from '@postybirb/database';
 import { LegacyWebsiteData } from '../legacy-entities/legacy-website-data';
 import { LegacyConverter } from './legacy-converter';
 
@@ -14,7 +14,7 @@ import { LegacyConverter } from './legacy-converter';
  * will produce records. Websites using browser cookies for authentication
  * (e.g., FurAffinity, DeviantArt) will be skipped.
  */
-export class LegacyWebsiteDataConverter extends LegacyConverter {
+export class LegacyWebsiteDataConverter extends LegacyConverter<WebsiteData> {
   modernSchemaKey: SchemaKey = 'WebsiteDataSchema';
 
   LegacyEntityConstructor = LegacyWebsiteData;

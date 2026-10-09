@@ -7,11 +7,10 @@ const config = {
     'airbnb',
     'airbnb-typescript',
     'plugin:jest/recommended',
-    'plugin:@nrwl/nx/typescript',
+    'plugin:@nx/typescript',
     'eslint-config-prettier',
   ],
-  plugins: ['@nrwl/nx', 'jest'],
-  parserOptions: { project: './tsconfig.base.json' },
+  plugins: ['@nx', 'jest'],
   overrides: [
     {
       files: ['*.tsx'],
@@ -20,7 +19,7 @@ const config = {
     },
   ],
   rules: {
-    '@nrwl/nx/enforce-module-boundaries': [
+    '@nx/enforce-module-boundaries': [
       'error',
       {
         enforceBuildableLibDependency: true,

@@ -2,35 +2,25 @@ import { WebsiteId } from '../website/website.type';
 
 /**
  * Setting properties.
- * @interface
  */
 export interface ISettingsOptions {
   /**
    * Websites that should not be display in the UI.
-   * @type {string[]}
    */
   hiddenWebsites: WebsiteId[];
-  /**
-   * Language that is used by i18next
-   * @type {string}
-   */
-  language: string;
 
   /**
    * Whether to allow ad for postybirb to be added to the description.
-   * @type {boolean}
    */
   allowAd: boolean;
 
   /**
    * Whether the queue is paused by the user.
-   * @type {boolean}
    */
   queuePaused: boolean;
 
   /**
    * Desktop notification settings.
-   * @type {DesktopNotificationSettings}
    */
   desktopNotifications: DesktopNotificationSettings;
 
@@ -38,6 +28,11 @@ export interface ISettingsOptions {
    * Global tag search provider id
    */
   tagSearchProvider: TagSearchProviderSettings;
+
+  /**
+   * Cloudflare challenge handling preferences.
+   */
+  cloudflareChallenge?: CloudflareChallengeSettings;
 }
 
 export type TagSearchProviderSettings = {
@@ -51,4 +46,11 @@ export type DesktopNotificationSettings = {
   showOnPostError: boolean;
   showOnDirectoryWatcherError: boolean;
   showOnDirectoryWatcherSuccess: boolean;
+};
+
+export type CloudflareChallengeSettings = {
+  /**
+   * Shows the hidden challenge BrowserWindow when user intervention is needed.
+   */
+  openBrowserWindow: boolean;
 };

@@ -1,3 +1,8 @@
+/**
+ * Specialized error boundary components for different use cases.
+ * Adapted from src/components/error-boundary.
+ */
+
 import { Trans } from '@lingui/react/macro';
 import { Alert, Button, Stack, Text } from '@mantine/core';
 import { IconRefresh } from '@tabler/icons-react';
@@ -40,7 +45,7 @@ function FormErrorFallback({
  */
 const formErrorFallback = (
   error: Error,
-  errorInfo: { componentStack: string },
+  _errorInfo: { componentStack: string },
   retry: () => void,
 ) => <FormErrorFallback error={error} retry={retry} />;
 
@@ -52,10 +57,8 @@ export function PageErrorBoundary({ children }: { children: ReactNode }) {
     <ErrorBoundary
       level="page"
       onError={(error, errorInfo) => {
-        // Log page-level errors to analytics
         // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
         console.error('Page Error:', error, errorInfo);
-        // Could send to error reporting service
       }}
       resetOnPropsChange
     >

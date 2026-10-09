@@ -1,10 +1,10 @@
 import { Description, IUpdateCustomShortcutDto } from '@postybirb/types';
-import { IsArray, IsString } from 'class-validator';
+import { IsObject, IsString } from 'class-validator';
 
 export class UpdateCustomShortcutDto implements IUpdateCustomShortcutDto {
   @IsString()
   name: string;
 
-  @IsArray()
+  @IsObject()
   shortcut: Description;
 }

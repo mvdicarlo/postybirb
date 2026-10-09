@@ -14,13 +14,14 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class TelegramFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
-    descriptionType: DescriptionType.HTML,
-    maxDescriptionLength: 4096,
+    descriptionType: DescriptionType.CUSTOM,
+    expectsInlineTitle: true,
+    expectsInlineTags: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({})
-  tags: TagValue;
+  declare tags: TagValue;
 
   @SelectField<TelegramAccountData>({
     label: 'channel',
@@ -30,7 +31,7 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
     minSelected: 1,
     required: true,
     section: 'website',
-    span: 6,
+    span: 12,
   })
   channels: string[];
 
@@ -41,6 +42,10 @@ export class TelegramFileSubmission extends BaseWebsiteOptions {
   })
   silent = false;
 
-  @BooleanField({ label: 'spoiler', section: 'website', span: 6 })
+  @BooleanField({
+    label: 'spoiler',
+    section: 'website',
+    span: 6,
+  })
   spoiler = false;
 }

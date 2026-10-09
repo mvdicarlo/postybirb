@@ -6,17 +6,23 @@ import {
   TagField,
   TextField,
 } from '@postybirb/form-builder';
-import { DefaultTagValue, DescriptionType, DescriptionValue, TagValue } from '@postybirb/types';
+import {
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  TagValue,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class PatreonFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.HTML,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
-    maxTagLength: 25
+    maxTagLength: 25,
+    spaceReplacer: ' ',
   })
   tags: TagValue = DefaultTagValue();
 

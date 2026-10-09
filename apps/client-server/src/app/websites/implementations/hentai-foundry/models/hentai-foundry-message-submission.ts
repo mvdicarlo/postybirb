@@ -6,5 +6,5 @@ export class HentaiFoundryMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.BBCODE,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 }

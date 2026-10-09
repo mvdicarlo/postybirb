@@ -1,7 +1,12 @@
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
-import { Account } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { Account, AccountRepository, clearDatabase } from '@postybirb/database';
+import {
+  ACCOUNT_STATE_CHANGED,
+} from '../account/account.events';
+import { EntityUpdatedEvent } from '../common/events/entity-crud.events';
+import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
+import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from './implementations/provider';
 import TestWebsite from './implementations/test/test.website';
 import { WebsiteRegistryService } from './website-registry.service';
@@ -9,16 +14,25 @@ import { WebsiteRegistryService } from './website-registry.service';
 describe('WebsiteRegistryService', () => {
   let service: WebsiteRegistryService;
   let module: TestingModule;
-  let accountRepository: PostyBirbDatabase<'AccountSchema'>;
+  let accountRepository: AccountRepository;
+  let eventEmitter: EventEmitter2;
+  let emit: jest.SpyInstance;
 
   beforeEach(async () => {
     clearDatabase();
+    eventEmitter = new EventEmitter2();
+    emit = jest.spyOn(eventEmitter, 'emit');
     module = await Test.createTestingModule({
-      providers: [WebsiteRegistryService, WebsiteImplProvider],
+      providers: [
+        WebsiteRegistryService,
+        WebsiteImplProvider,
+        { provide: EventEmitter2, useValue: eventEmitter },
+        ...[noopPlatformProvider],
+      ],
     }).compile();
 
     service = module.get<WebsiteRegistryService>(WebsiteRegistryService);
-    accountRepository = new PostyBirbDatabase('AccountSchema');
+    accountRepository = new AccountRepository();
   });
 
   afterAll(async () => {
@@ -50,6 +64,31 @@ describe('WebsiteRegistryService', () => {
     expect(service.getInstancesOf(TestWebsite)).toHaveLength(1);
   });
 
+  it('should share concurrent instance initialization', async () => {
+    const account = await accountRepository.insert(
+      new Account({ name: 'test', id: 'test', website: 'test' }),
+    );
+
+    const [first, second] = await Promise.all([
+      service.create(account),
+      service.create(account),
+    ]);
+
+    expect(first).toBe(second);
+    expect(service.getInstancesOf(TestWebsite)).toHaveLength(1);
+  });
+
+  it('should return serializable account-free Website definitions', () => {
+    const definition = service
+      .getWebsiteDefinitions()
+      .find((website) => website.id === 'test');
+
+    expect(definition).toBeDefined();
+    expect(definition).not.toHaveProperty('accounts');
+    expect(typeof definition?.usernameShortcut?.id).not.toBe('function');
+    expect(JSON.parse(JSON.stringify(definition))).toEqual(definition);
+  });
+
   it('should successfully remove website instance', async () => {
     const account = await accountRepository.insert(
       new Account({
@@ -60,9 +99,36 @@ describe('WebsiteRegistryService', () => {
     );
 
     const instance = await service.create(account);
-    await instance.onLogin();
+    await instance.login();
     expect(instance instanceof TestWebsite).toBe(true);
+    await waitUntil(
+      () =>
+        emit.mock.calls.some(([event]) => event === ACCOUNT_STATE_CHANGED),
+      10,
+    );
+    expect(emit).toHaveBeenCalledWith(ACCOUNT_STATE_CHANGED, [
+      new EntityUpdatedEvent(
+        expect.objectContaining({ id: account.id }) as never,
+      ),
+    ]);
     await service.remove(account);
+    expect(instance.isDisposed).toBe(true);
     expect(service.getInstancesOf(TestWebsite)).toHaveLength(0);
   }, 30_000);
+
+  it('should recreate a fresh instance after removal is rolled back', async () => {
+    const account = await accountRepository.insert(
+      new Account({ name: 'test', id: 'test', website: 'test' }),
+    );
+    const original = await service.create(account);
+
+    await service.remove(account);
+    const recreated = await service.create(account);
+
+    expect(original.isDisposed).toBe(true);
+    expect(recreated).not.toBe(original);
+    expect(recreated.isDisposed).toBe(false);
+    expect(service.findInstance(account)).toBe(recreated);
+  });
+
 });

@@ -1,32 +1,28 @@
 // eslint-disable-next-line max-classes-per-file
 import { TagField, TextField } from '@postybirb/form-builder';
 import {
-  DefaultDescriptionValue,
-  DefaultTagValue,
-  Description,
-  SubmissionRating,
-  TagValue,
+    DefaultDescriptionValue,
+    DefaultTagValue,
+    Description,
+    SubmissionRating,
+    TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from './base-website-options';
 import { DefaultWebsiteOptions } from './default-website-options';
 
 describe('BaseWebsiteOptions', () => {
-  const defaultDescriptionValue: Description = [
-    {
-      id: 'test-basic-text',
-      type: 'paragraph',
-      props: {
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
+  const defaultDescriptionValue: Description = {
+    type: 'doc',
+    content: [
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'Hello, ', marks: [{ type: 'bold' }] },
+          { type: 'text', text: 'World!' },
+        ],
       },
-      content: [
-        { type: 'text', text: 'Hello, ', styles: { bold: true } },
-        { type: 'text', text: 'World!', styles: {} },
-      ],
-      children: [],
-    },
-  ];
+    ],
+  };
 
   it('should create an instance with default values', () => {
     const options = new BaseWebsiteOptions();
@@ -66,7 +62,7 @@ describe('BaseWebsiteOptions', () => {
       tags: { overrideDefault: true, tags: ['tag1', 'tag2'] },
       description: {
         overrideDefault: true,
-        description: [...defaultDescriptionValue],
+        description: defaultDescriptionValue,
         insertTitle: true,
         insertTags: true,
       },
@@ -92,7 +88,7 @@ describe('BaseWebsiteOptions', () => {
       tags: { overrideDefault: false, tags: ['defaultTag'] },
       description: {
         overrideDefault: false,
-        description: [],
+        description: { type: 'doc', content: [] },
         insertTitle: false,
         insertTags: false,
       },
@@ -104,7 +100,7 @@ describe('BaseWebsiteOptions', () => {
       tags: { overrideDefault: true, tags: ['newTag'] },
       description: {
         overrideDefault: true,
-        description: [...defaultDescriptionValue],
+        description: defaultDescriptionValue,
         insertTitle: true,
         insertTags: true,
       },
@@ -131,7 +127,7 @@ describe('BaseWebsiteOptions', () => {
     const defaultOptions = new DefaultWebsiteOptions({
       description: {
         overrideDefault: false,
-        description: [...defaultDescriptionValue],
+        description: defaultDescriptionValue,
         insertTitle: false,
         insertTags: false,
       },
@@ -140,7 +136,7 @@ describe('BaseWebsiteOptions', () => {
     const options = new BaseWebsiteOptions({
       description: {
         overrideDefault: false,
-        description: [],
+        description: { type: 'doc', content: [] },
         insertTitle: true,
         insertTags: true,
       },
@@ -156,6 +152,56 @@ describe('BaseWebsiteOptions', () => {
     });
   });
 
+  it('should let a per-website option disable inherited insert flags', () => {
+    const defaultOptions = new DefaultWebsiteOptions({
+      description: {
+        overrideDefault: false,
+        description: defaultDescriptionValue,
+        insertTitle: true,
+        insertTags: true,
+      },
+    });
+
+    const options = new BaseWebsiteOptions({
+      description: {
+        overrideDefault: false,
+        description: { type: 'doc', content: [] },
+        insertTitle: false,
+        insertTags: false,
+      },
+    });
+
+    const mergedOptions = options.mergeDefaults(defaultOptions);
+
+    expect(mergedOptions.description.insertTitle).toBe(false);
+    expect(mergedOptions.description.insertTags).toBe(false);
+  });
+
+  it('should inherit insert flags from defaults when unset', () => {
+    const defaultOptions = new DefaultWebsiteOptions({
+      description: {
+        overrideDefault: false,
+        description: defaultDescriptionValue,
+        insertTitle: true,
+        insertTags: true,
+      },
+    });
+
+    const options = new BaseWebsiteOptions({
+      description: {
+        overrideDefault: false,
+        description: { type: 'doc', content: [] },
+        insertTitle: undefined,
+        insertTags: undefined,
+      },
+    });
+
+    const mergedOptions = options.mergeDefaults(defaultOptions);
+
+    expect(mergedOptions.description.insertTitle).toBe(true);
+    expect(mergedOptions.description.insertTags).toBe(true);
+  });
+
   it('should get form fields', () => {
     const options = new BaseWebsiteOptions();
     const formFields = options.getFormFields();
@@ -169,7 +215,7 @@ describe('BaseWebsiteOptions', () => {
         minTagLength: 2,
         maxTags: 3,
       })
-      tags: TagValue;
+      declare tags: TagValue;
 
       protected processTag(tag: string): string {
         return super.processTag(tag).toUpperCase();

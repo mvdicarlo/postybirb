@@ -1,11 +1,10 @@
 import {
-    IPostResponse,
-    IWebsiteFormFields,
-    PostData,
-    SimpleValidationResult,
+  IPostResponse,
+  IWebsiteFormFields,
+  PostData,
+  SimpleValidationResult,
 } from '@postybirb/types';
-
-import { CancellableToken } from '../../../post/models/cancellable-token';
+import { CancellationToken } from '../../../posting/cancellation-token';
 import { UnknownWebsite } from '../../website';
 import { BaseWebsiteOptions } from '../base-website-options';
 
@@ -22,7 +21,7 @@ export interface MessageWebsite<
 
   onPostMessageSubmission(
     postData: PostData<T>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse>;
 
   onValidateMessageSubmission(

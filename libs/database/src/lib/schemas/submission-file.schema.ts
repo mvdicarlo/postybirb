@@ -1,27 +1,33 @@
 import { relations } from 'drizzle-orm';
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import {
+  AnySQLiteColumn,
+  integer,
+  sqliteTable,
+  text,
+} from 'drizzle-orm/sqlite-core';
 import { CommonSchema, id } from './common.schema';
 import { FileBufferSchema } from './file-buffer.schema';
 import { SubmissionSchema } from './submission.schema';
-// eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { SubmissionFileMetadata } from '../../../../types/src/index';
 
 export const SubmissionFileSchema = sqliteTable('submission-file', {
   ...CommonSchema(),
   submissionId: id()
     .notNull()
-    .references(() => SubmissionSchema.id, {
+    .references((): AnySQLiteColumn => SubmissionSchema.id, {
       onDelete: 'cascade',
     }),
-  primaryFileId: id().references(() => FileBufferSchema.id),
-  thumbnailId: id().references(() => FileBufferSchema.id),
-  altFileId: id().references(() => FileBufferSchema.id),
+  primaryFileId: id().references((): AnySQLiteColumn => FileBufferSchema.id),
+  thumbnailId: id().references((): AnySQLiteColumn => FileBufferSchema.id),
+  altFileId: id().references((): AnySQLiteColumn => FileBufferSchema.id),
   fileName: text().notNull(),
   hasAltFile: integer({ mode: 'boolean' }).notNull().default(false),
   hasCustomThumbnail: integer({ mode: 'boolean' }).notNull().default(false),
   hasThumbnail: integer({ mode: 'boolean' }).notNull(),
   hash: text().notNull(),
   height: integer().notNull(),
+  duration: integer().default(0).notNull(),
   mimeType: text().notNull(),
   size: integer().notNull(),
   width: integer().notNull(),

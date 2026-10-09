@@ -1,10 +1,10 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
   SimpleValidationResult,
@@ -12,9 +12,10 @@ import {
 } from '@postybirb/types';
 import parse from 'node-html-parser';
 import { v4 as uuid } from 'uuid';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
+import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -136,6 +137,7 @@ type CaraUploadResult = CaraMediaItem[];
     return undefined;
   },
 })
+@DisableAds()
 export default class Cara
   extends Website<CaraAccountData>
   implements
@@ -147,8 +149,8 @@ export default class Cara
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<CaraAccountData> =
     {};
 
-  public async onLogin(): Promise<ILoginState> {
-    const { body, responseUrl } = await Http.get<string>(
+  public async onLogin(): Promise<LoginResult> {
+    const { body, responseUrl } = await this.platform.http.get<string>(
       `${this.BASE_URL}/settings`,
       {
         partition: this.accountId,
@@ -160,17 +162,17 @@ export default class Cara
       const username =
         $.querySelector('input[name="slug"]')?.getAttribute('value') ??
         'Unknown';
-      return this.loginState.setLogin(true, username);
+      return { loggedIn: true, username };
     }
 
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   createFileModel(): CaraFileSubmission {
     return new CaraFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -180,7 +182,7 @@ export default class Cara
   private async getS3UploadCredentials(
     uploadRequest: S3UploadRequest,
   ): Promise<S3UploadCredentials> {
-    const response = await Http.post<S3UploadCredentials>(
+    const response = await this.platform.http.post<S3UploadCredentials>(
       `${this.BASE_URL}/api/s3-upload`,
       {
         partition: this.accountId,
@@ -241,9 +243,9 @@ export default class Cara
     username: string,
     uploadCover: boolean,
     order: number,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<CaraUploadResult> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Upload primary image
     const primaryImageRequest: S3UploadRequest = {
@@ -258,11 +260,11 @@ export default class Cara
     const primaryCredentials =
       await this.getS3UploadCredentials(primaryImageRequest);
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     await this.uploadToS3(primaryCredentials, file.buffer, file.mimeType);
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Create primary media item
     const primaryMedia: CaraMediaItem = {
@@ -292,7 +294,7 @@ export default class Cara
       const coverCredentials =
         await this.getS3UploadCredentials(coverImageRequest);
 
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       const thumbnailBuffer = file.thumbnail?.buffer || file.buffer;
       const thumbnailMimeType = file.thumbnail?.mimeType || file.mimeType;
@@ -326,13 +328,13 @@ export default class Cara
   async onPostFileSubmission(
     postData: PostData<CaraFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const hasImage = files.some((f) => f.fileType === FileType.IMAGE);
 
     // Generate a post ID for the upload
     const postId = uuid();
-    const username = this.loginState.username || 'unknown';
+    const username = this.username || 'unknown';
 
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
@@ -416,7 +418,7 @@ export default class Cara
 
   async onPostMessageSubmission(
     postData: PostData<CaraMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()

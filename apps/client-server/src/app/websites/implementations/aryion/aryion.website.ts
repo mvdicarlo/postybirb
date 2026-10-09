@@ -1,16 +1,16 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
-  ILoginState,
   ImageResizeProps,
+  LoginResult,
   PostData,
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SelectOptionUtil } from '../../../utils/select-option.util';
 import { PostBuilder } from '../../commons/post-builder';
@@ -66,10 +66,13 @@ export default class Aryion
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(`${this.BASE_URL}/g4/treeview.php`, {
-      partition: this.accountId,
-    });
+  public async onLogin(): Promise<LoginResult> {
+    const res = await this.platform.http.get<string>(
+      `${this.BASE_URL}/g4/treeview.php`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     if (
       res.body.includes('user-link') &&
@@ -78,13 +81,11 @@ export default class Aryion
       const $ = parse(res.body);
       const userLink = $.querySelector('.user-link');
       const username = userLink ? userLink.text : 'Unknown User';
-      this.loginState.setLogin(true, username);
       await this.getFolders($);
-    } else {
-      this.loginState.logout();
+      return { loggedIn: true, username };
     }
 
-    return this.loginState.getState();
+    return { loggedIn: false };
   }
 
   private async getFolders($: HTMLElement): Promise<void> {
@@ -147,16 +148,16 @@ export default class Aryion
     return new AryionFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
   async onPostFileSubmission(
     postData: PostData<AryionFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const { options } = postData;
     const file = files[0];

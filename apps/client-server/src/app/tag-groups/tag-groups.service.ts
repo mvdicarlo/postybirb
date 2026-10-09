@@ -1,37 +1,34 @@
-import { Injectable, Optional } from '@nestjs/common';
-import { TAG_GROUP_UPDATES } from '@postybirb/socket-events';
+import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { TagGroup, TagGroupRepository } from '@postybirb/database';
 import { EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { TagGroup } from '../drizzle/models';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { UpdateTagGroupDto } from './dtos/update-tag-group.dto';
+import { TAG_GROUP_EVENT_PREFIX } from './tag-group.events';
 
 @Injectable()
-export class TagGroupsService extends PostyBirbService<'TagGroupSchema'> {
-  constructor(@Optional() webSocket?: WSGateway) {
-    super('TagGroupSchema', webSocket);
-    this.repository.subscribe('TagGroupSchema', () => this.emit());
+export class TagGroupsService extends PostyBirbService<TagGroupRepository> {
+  constructor(eventEmitter: EventEmitter2) {
+    super(new TagGroupRepository());
+    this.configureCrudEvents(TAG_GROUP_EVENT_PREFIX, eventEmitter);
   }
 
   async create(createDto: CreateTagGroupDto): Promise<TagGroup> {
     this.logger
       .withMetadata(createDto)
       .info(`Creating TagGroup '${createDto.name}'`);
-    await this.throwIfExists(eq(this.schema.name, createDto.name));
-    return this.repository.insert(createDto);
+    await this.throwIfExists(eq(this.table.name, createDto.name));
+    const entity = await this.repository.insert(createDto);
+    this.publishCreated(entity.toDTO());
+    return entity;
   }
 
-  update(id: EntityId, update: UpdateTagGroupDto) {
+  async update(id: EntityId, update: UpdateTagGroupDto): Promise<TagGroup> {
     this.logger.withMetadata(update).info(`Updating TagGroup '${id}'`);
-    return this.repository.update(id, update);
-  }
-
-  protected async emit() {
-    super.emit({
-      event: TAG_GROUP_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
-    });
+    const entity = await this.repository.update(id, update);
+    this.publishUpdated(entity.toDTO());
+    return entity;
   }
 }

@@ -1,16 +1,15 @@
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, CustomShortcutRepository } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacyCustomShortcut } from '../legacy-entities/legacy-custom-shortcut';
 import { LegacyCustomShortcutConverter } from './legacy-custom-shortcut.converter';
 
 describe('LegacyCustomShortcutConverter', () => {
   let converter: LegacyCustomShortcutConverter;
   let testDataPath: string;
-  let repository: PostyBirbDatabase<'CustomShortcutSchema'>;
+  let repository: CustomShortcutRepository;
   const ts = Date.now();
 
   beforeEach(async () => {
@@ -30,7 +29,7 @@ describe('LegacyCustomShortcutConverter', () => {
     writeSync(destFile, testFile);
 
     converter = new LegacyCustomShortcutConverter(testDataPath);
-    repository = new PostyBirbDatabase('CustomShortcutSchema');
+    repository = new CustomShortcutRepository();
   });
 
   it('should be defined', () => {
@@ -50,21 +49,18 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
-        {
-          type: 'paragraph',
-          props: expect.objectContaining({
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          }),
-          content: [
-            { type: 'text', text: 'Artwork: ', styles: {} },
-            { type: 'titleShortcut', props: {} },
-          ],
-          children: [],
-        },
-      ]);
+      expect(result.shortcut).toMatchObject({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Artwork: ' },
+              { type: 'titleShortcut', attrs: {} },
+            ],
+          },
+        ],
+      });
     });
 
     it('should convert {tags} to tagsShortcut', async () => {
@@ -79,21 +75,18 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
-        {
-          type: 'paragraph',
-          props: expect.objectContaining({
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          }),
-          content: [
-            { type: 'text', text: 'Tags: ', styles: {} },
-            { type: 'tagsShortcut', props: {} },
-          ],
-          children: [],
-        },
-      ]);
+      expect(result.shortcut).toMatchObject({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Tags: ' },
+              { type: 'tagsShortcut', attrs: {} },
+            ],
+          },
+        ],
+      });
     });
 
     it('should convert {cw} to contentWarningShortcut', async () => {
@@ -108,21 +101,18 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
-        {
-          type: 'paragraph',
-          props: expect.objectContaining({
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          }),
-          content: [
-            { type: 'text', text: 'Content Warning: ', styles: {} },
-            { type: 'contentWarningShortcut', props: {} },
-          ],
-          children: [],
-        },
-      ]);
+      expect(result.shortcut).toMatchObject({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Content Warning: ' },
+              { type: 'contentWarningShortcut', attrs: {} },
+            ],
+          },
+        ],
+      });
     });
 
     it('should convert multiple system shortcuts in a single block', async () => {
@@ -137,33 +127,24 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
-        {
-          type: 'paragraph',
-          props: expect.objectContaining({
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          }),
-          content: [
-            { type: 'titleShortcut', props: {} },
-            { type: 'text', text: ' (', styles: {} },
-            { type: 'contentWarningShortcut', props: {} },
-            { type: 'text', text: ')', styles: {} },
-          ],
-          children: [],
-        },
-        {
-          type: 'paragraph',
-          props: expect.objectContaining({
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          }),
-          content: [{ type: 'tagsShortcut', props: {} }],
-          children: [],
-        },
-      ]);
+      expect(result.shortcut).toMatchObject({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'titleShortcut', attrs: {} },
+              { type: 'text', text: ' (' },
+              { type: 'contentWarningShortcut', attrs: {} },
+              { type: 'text', text: ')' },
+            ],
+          },
+          {
+            type: 'paragraph',
+            content: [{ type: 'tagsShortcut', attrs: {} }],
+          },
+        ],
+      });
     });
 
     it('should convert system shortcuts alongside username shortcuts', async () => {
@@ -178,50 +159,34 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
-        {
-          type: 'paragraph',
-          props: expect.objectContaining({
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          }),
-          content: [
-            { type: 'titleShortcut', props: {} },
-            { type: 'text', text: ' by ', styles: {} },
-            {
-              type: 'username',
-              props: expect.objectContaining({
-                shortcut: 'furaffinity',
-                only: '',
-                username: 'myusername',
-              }),
-              content: undefined,
-            },
-          ],
-          children: [],
-        },
-        {
-          type: 'paragraph',
-          props: expect.objectContaining({
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          }),
-          content: [{ type: 'contentWarningShortcut', props: {} }],
-          children: [],
-        },
-        {
-          type: 'paragraph',
-          props: expect.objectContaining({
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          }),
-          content: [{ type: 'tagsShortcut', props: {} }],
-          children: [],
-        },
-      ]);
+      expect(result.shortcut).toMatchObject({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'titleShortcut', attrs: {} },
+              { type: 'text', text: ' by ' },
+              {
+                type: 'username',
+                attrs: expect.objectContaining({
+                  shortcut: 'furaffinity',
+                  only: '',
+                  username: 'myusername',
+                }),
+              },
+            ],
+          },
+          {
+            type: 'paragraph',
+            content: [{ type: 'contentWarningShortcut', attrs: {} }],
+          },
+          {
+            type: 'paragraph',
+            content: [{ type: 'tagsShortcut', attrs: {} }],
+          },
+        ],
+      });
     });
 
     it('should handle case-insensitive system shortcuts', async () => {
@@ -236,24 +201,21 @@ describe('LegacyCustomShortcutConverter', () => {
 
       const result = await legacyShortcut.convert();
 
-      expect(result.shortcut).toMatchObject([
-        {
-          type: 'paragraph',
-          props: expect.objectContaining({
-            textColor: 'default',
-            backgroundColor: 'default',
-            textAlignment: 'left',
-          }),
-          content: [
-            { type: 'titleShortcut', props: {} },
-            { type: 'text', text: ' ', styles: {} },
-            { type: 'contentWarningShortcut', props: {} },
-            { type: 'text', text: ' ', styles: {} },
-            { type: 'tagsShortcut', props: {} },
-          ],
-          children: [],
-        },
-      ]);
+      expect(result.shortcut).toMatchObject({
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'titleShortcut', attrs: {} },
+              { type: 'text', text: ' ' },
+              { type: 'contentWarningShortcut', attrs: {} },
+              { type: 'text', text: ' ' },
+              { type: 'tagsShortcut', attrs: {} },
+            ],
+          },
+        ],
+      });
     });
   });
 
@@ -270,25 +232,21 @@ describe('LegacyCustomShortcutConverter', () => {
     expect(shortcut1).toBeDefined();
     expect(shortcut1!.name).toBe('myshortcut');
 
-    // Verify BlockNote format - match against expected structure (ignoring dynamic id)
-    expect(shortcut1!.shortcut).toMatchObject([
-      {
-        type: 'paragraph',
-        props: {
-          backgroundColor: 'default',
-          textColor: 'default',
-          textAlignment: 'left',
+    // Verify TipTap format
+    expect(shortcut1!.shortcut).toMatchObject({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: 'This is my custom shortcut content',
+            },
+          ],
         },
-        content: [
-          {
-            type: 'text',
-            text: 'This is my custom shortcut content',
-            styles: {},
-          },
-        ],
-        children: [],
-      },
-    ]);
+      ],
+    });
 
     // Verify second shortcut (dynamic with HTML)
     const shortcut2 = records.find(
@@ -297,7 +255,7 @@ describe('LegacyCustomShortcutConverter', () => {
     expect(shortcut2).toBeDefined();
     expect(shortcut2!.name).toBe('dynamicshortcut');
 
-    // Verify HTML is converted to BlockNote blocks with bold formatting
+    // Verify HTML is converted to TipTap format with bold formatting
     const textContent2 = JSON.stringify(shortcut2!.shortcut);
     expect(textContent2).toContain('Dynamic content');
     expect(textContent2).toContain('bold');
@@ -326,15 +284,15 @@ describe('LegacyCustomShortcutConverter', () => {
     const record = records[0];
     expect(record.name).toBe('empty');
 
-    // Empty content should create a single empty paragraph block
-    expect(record.shortcut).toMatchObject([
-      {
-        type: 'paragraph',
-        props: expect.any(Object),
-        content: [],
-        children: [],
-      },
-    ]);
+    // Empty content should create a doc with a single empty paragraph
+    expect(record.shortcut).toMatchObject({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+        },
+      ],
+    });
   });
 
   it('should preserve shortcut name as the modern name field', async () => {
@@ -349,7 +307,7 @@ describe('LegacyCustomShortcutConverter', () => {
     expect(names).toContain('dynamicshortcut');
   });
 
-  it('should convert legacy shortcuts in content to BlockNote format', async () => {
+  it('should convert legacy shortcuts in content to TipTap format', async () => {
     // Create test data with legacy shortcut syntax
     const shortcutData = {
       _id: 'test-shortcuts-id',
@@ -373,45 +331,39 @@ describe('LegacyCustomShortcutConverter', () => {
     const record = records[0];
     expect(record.name).toBe('testshortcut');
 
-    // Verify the structure - should have 2 blocks: defaultShortcut block + paragraph with content
-    expect(record.shortcut).toHaveLength(2);
+    const blocks = (record.shortcut as any).content;
+
+    // Should have 2 blocks: defaultShortcut block + paragraph with content
+    expect(blocks).toHaveLength(2);
 
     // First block should be the defaultShortcut block
-    expect(record.shortcut[0]).toMatchObject({
+    expect(blocks[0]).toMatchObject({
       type: 'defaultShortcut',
-      props: {},
-      content: [],
-      children: [],
+      attrs: {},
     });
 
     // Second block should be paragraph with username shortcut and customShortcut
-    expect(record.shortcut[1]).toMatchObject({
+    expect(blocks[1]).toMatchObject({
       type: 'paragraph',
-      props: expect.objectContaining({
-        textColor: 'default',
-        backgroundColor: 'default',
-        textAlignment: 'left',
-      }),
       content: [
-        { type: 'text', text: 'Hello ', styles: {} },
-        { type: 'text', text: ' and ', styles: {} },
+        { type: 'text', text: 'Hello ' },
+        { type: 'text', text: ' and ' },
         {
           type: 'username',
-          props: expect.objectContaining({
+          attrs: expect.objectContaining({
             shortcut: 'furaffinity',
             only: '',
             username: 'myusername',
           }),
         },
-        { type: 'text', text: ' with ', styles: {} },
+        { type: 'text', text: ' with ' },
         {
           type: 'customShortcut',
-          props: { id: 'customshortcut' },
-          content: [{ type: 'text', text: '', styles: {} }],
+          attrs: { id: 'customshortcut' },
+          content: [{ type: 'text', text: '' }],
         },
-        { type: 'text', text: ' text', styles: {} },
+        { type: 'text', text: ' text' },
       ],
-      children: [],
     });
   });
 
@@ -439,46 +391,43 @@ describe('LegacyCustomShortcutConverter', () => {
     const record = records[0];
 
     // Verify the complete structure with all username shortcuts
-    expect(record.shortcut).toMatchObject([
-      {
-        type: 'paragraph',
-        props: expect.objectContaining({
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        }),
-        content: [
-          { type: 'text', text: 'Follow me on ', styles: {} },
-          {
-            type: 'username',
-            props: expect.objectContaining({
-              shortcut: 'furaffinity',
-              only: '',
-              username: 'furuser',
-            }),
-          },
-          { type: 'text', text: ', ', styles: {} },
-          {
-            type: 'username',
-            props: expect.objectContaining({
-              shortcut: 'twitter',
-              only: '',
-              username: 'twitterhandle',
-            }),
-          },
-          { type: 'text', text: ', and ', styles: {} },
-          {
-            type: 'username',
-            props: expect.objectContaining({
-              shortcut: 'deviantart',
-              only: '',
-              username: 'deviantartist',
-            }),
-          },
-        ],
-        children: [],
-      },
-    ]);
+    expect(record.shortcut).toMatchObject({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Follow me on ' },
+            {
+              type: 'username',
+              attrs: expect.objectContaining({
+                shortcut: 'furaffinity',
+                only: '',
+                username: 'furuser',
+              }),
+            },
+            { type: 'text', text: ', ' },
+            {
+              type: 'username',
+              attrs: expect.objectContaining({
+                shortcut: 'twitter',
+                only: '',
+                username: 'twitterhandle',
+              }),
+            },
+            { type: 'text', text: ', and ' },
+            {
+              type: 'username',
+              attrs: expect.objectContaining({
+                shortcut: 'deviantart',
+                only: '',
+                username: 'deviantartist',
+              }),
+            },
+          ],
+        },
+      ],
+    });
   });
 
   it('should convert {default} to block-level when alone in paragraph', async () => {
@@ -503,14 +452,15 @@ describe('LegacyCustomShortcutConverter', () => {
     const record = records[0];
 
     // Should have a single defaultShortcut block
-    expect(record.shortcut).toMatchObject([
-      {
-        type: 'defaultShortcut',
-        props: {},
-        content: [],
-        children: [],
-      },
-    ]);
+    expect(record.shortcut).toMatchObject({
+      type: 'doc',
+      content: [
+        {
+          type: 'defaultShortcut',
+          attrs: {},
+        },
+      ],
+    });
   });
 
   it('should insert defaultShortcut block before paragraph when {default} is with other content', async () => {
@@ -535,27 +485,22 @@ describe('LegacyCustomShortcutConverter', () => {
     const record = records[0];
 
     // Should have 2 blocks: defaultShortcut block + paragraph with remaining text
-    expect(record.shortcut).toMatchObject([
-      {
-        type: 'defaultShortcut',
-        props: {},
-        content: [],
-        children: [],
-      },
-      {
-        type: 'paragraph',
-        props: expect.objectContaining({
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        }),
-        content: [
-          { type: 'text', text: 'Hello ', styles: {} },
-          { type: 'text', text: ' World', styles: {} },
-        ],
-        children: [],
-      },
-    ]);
+    expect(record.shortcut).toMatchObject({
+      type: 'doc',
+      content: [
+        {
+          type: 'defaultShortcut',
+          attrs: {},
+        },
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Hello ' },
+            { type: 'text', text: ' World' },
+          ],
+        },
+      ],
+    });
   });
 
   it('should handle multiple {default} tags correctly', async () => {
@@ -580,33 +525,26 @@ describe('LegacyCustomShortcutConverter', () => {
     const record = records[0];
 
     // Should have 3 blocks: defaultShortcut (from first para), defaultShortcut (inserted), paragraph (remaining content)
-    expect(record.shortcut).toMatchObject([
-      {
-        type: 'defaultShortcut',
-        props: {},
-        content: [],
-        children: [],
-      },
-      {
-        type: 'defaultShortcut',
-        props: {},
-        content: [],
-        children: [],
-      },
-      {
-        type: 'paragraph',
-        props: expect.objectContaining({
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        }),
-        content: [
-          { type: 'text', text: 'Some text ', styles: {} },
-          { type: 'text', text: ' here', styles: {} },
-        ],
-        children: [],
-      },
-    ]);
+    expect(record.shortcut).toMatchObject({
+      type: 'doc',
+      content: [
+        {
+          type: 'defaultShortcut',
+          attrs: {},
+        },
+        {
+          type: 'defaultShortcut',
+          attrs: {},
+        },
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Some text ' },
+            { type: 'text', text: ' here' },
+          ],
+        },
+      ],
+    });
   });
 
   it('should handle and strip modifier blocks from shortcuts', async () => {
@@ -632,34 +570,31 @@ describe('LegacyCustomShortcutConverter', () => {
     const record = records[0];
 
     // Verify the structure - modifiers should be stripped
-    expect(record.shortcut).toMatchObject([
-      {
-        type: 'paragraph',
-        props: expect.objectContaining({
-          textColor: 'default',
-          backgroundColor: 'default',
-          textAlignment: 'left',
-        }),
-        content: [
-          { type: 'text', text: 'Test ', styles: {} },
-          {
-            type: 'username',
-            props: expect.objectContaining({
-              shortcut: 'furaffinity',
-              only: '',
-              username: 'testuser',
-            }),
-          },
-          { type: 'text', text: ' and ', styles: {} },
-          {
-            type: 'customShortcut',
-            props: { id: 'customshortcut' },
-            content: [{ type: 'text', text: '', styles: {} }],
-          },
-          { type: 'text', text: ' text', styles: {} },
-        ],
-        children: [],
-      },
-    ]);
+    expect(record.shortcut).toMatchObject({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Test ' },
+            {
+              type: 'username',
+              attrs: expect.objectContaining({
+                shortcut: 'furaffinity',
+                only: '',
+                username: 'testuser',
+              }),
+            },
+            { type: 'text', text: ' and ' },
+            {
+              type: 'customShortcut',
+              attrs: { id: 'customshortcut' },
+              content: [{ type: 'text', text: '' }],
+            },
+            { type: 'text', text: ' text' },
+          ],
+        },
+      ],
+    });
   });
 });

@@ -1,0 +1,88 @@
+/* eslint-disable lingui/no-unlocalized-strings */
+import reactPreset from '@bbob/preset-react';
+import BBCode from '@bbob/react';
+import { ErrorBoundary } from '../../error-boundary/error-boundary';
+import { descriptionPreviewRendererByWebsite } from '../../sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel';
+
+// https://e621.net/help/dtext
+
+// ----------------------------------------------------------------------
+// Custom preset that extends the default React preset with DText‑specific tags
+// ----------------------------------------------------------------------
+const dtextPreset = reactPreset.extend((tags, options) => ({
+  ...tags,
+  // Render [spoiler] as a <details> block
+  spoiler: (node) => {
+    const content = Array.isArray(node.content)
+      ? node.content
+      : node.content
+        ? [node.content]
+        : [];
+    return {
+      tag: 'details',
+      content: [{ tag: 'summary', content: 'Spoiler' }, ...content],
+    };
+  },
+}));
+
+const onlyAllowTags: string[] = [];
+
+dtextPreset.extend((tags) => {
+  onlyAllowTags.push(...Object.keys(tags));
+  return {};
+})();
+
+// ----------------------------------------------------------------------
+// React component
+// ----------------------------------------------------------------------
+export interface E621DtextProps {
+  dtext: string;
+}
+
+export function E621Dtext({ dtext }: E621DtextProps) {
+  let processed = dtext;
+
+  // Links to a wiki page
+  processed = processed.replace(
+    /\[\[([^\]]+)\]\]/g,
+    '[url=https://e621.net/wiki_pages/show_or_new?title=$1]$1[/url]',
+  );
+
+  // Hyperlinks: "A link":[https://example.com]
+  processed = processed.replace(
+    /"([^"]+)":\[([^\]]+)\]/g,
+    (_, title, url) => `[url=${url}]${title}[/url]`,
+  );
+
+  // Hyperlinks: "A link":https://example.com
+  processed = processed.replace(
+    /"([^"]+)":([^\s]+)/g,
+    (_, title, url) => `[url=${url}]${title}[/url]`,
+  );
+
+  // Plain URLs: https://example.com
+  processed = processed.replace(
+    /\s<?(https?:\/\/[^\s<]+)>?\s/g,
+    (match) => `[url]${match}[/url]`,
+  );
+
+  // Custom header format to bbcode (h1. to [h1][/h1])
+  processed = processed.replace(
+    /^(h[1-6])\.(.*)$/gim,
+    (_, tag, content) => `[${tag}]${content}[/${tag}]`,
+  );
+
+  return (
+    <ErrorBoundary>
+      <div style={{ whiteSpace: 'pre-wrap' }}>
+        <BBCode plugins={[dtextPreset()]} options={{ onlyAllowTags }}>
+          {processed}
+        </BBCode>
+      </div>
+    </ErrorBoundary>
+  );
+}
+
+descriptionPreviewRendererByWebsite.set('e621', ({ description }) => (
+  <E621Dtext dtext={description} />
+));

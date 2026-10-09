@@ -1,7 +1,6 @@
+import { WebsiteData, WebsiteDataRepository } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
-import { DynamicObject, IAccount } from '@postybirb/types';
-import { WebsiteData } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
+import { AccountId, DynamicObject, IAccount } from '@postybirb/types';
 
 /**
  * Saves website specific data associated with an account.
@@ -17,7 +16,9 @@ export default class WebsiteDataManager<T extends DynamicObject> {
 
   private initialized: boolean;
 
-  private repository: PostyBirbDatabase<'WebsiteDataSchema'>;
+  private repository: WebsiteDataRepository;
+
+  private onDataChanged: (accountId: AccountId) => void;
 
   constructor(userAccount: IAccount) {
     this.account = userAccount;
@@ -26,7 +27,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
   }
 
   private async createOrLoadWebsiteData() {
-    let entity: WebsiteData = await this.repository.findById(this.account.id);
+    let entity = await this.repository.findById(this.account.id);
 
     if (!entity) {
       entity = await this.repository.insert({
@@ -34,7 +35,7 @@ export default class WebsiteDataManager<T extends DynamicObject> {
       });
     }
 
-    this.entity = entity;
+    this.entity = entity as WebsiteData<T>;
   }
 
   private async saveData() {
@@ -45,11 +46,15 @@ export default class WebsiteDataManager<T extends DynamicObject> {
 
   /**
    * Initializes the internal WebsiteData entity.
-   * @param {PostyBirbDatabase<'WebsiteDataSchema'>} repository
+   * @param {WebsiteDataRepository} repository
    */
-  public async initialize(repository: PostyBirbDatabase<'WebsiteDataSchema'>) {
+  public async initialize(
+    repository: WebsiteDataRepository,
+    onDataChanged: (accountId: AccountId) => void,
+  ) {
     if (!this.initialized) {
       this.repository = repository;
+      this.onDataChanged = onDataChanged;
       await this.createOrLoadWebsiteData();
       this.initialized = true;
     }
@@ -62,13 +67,16 @@ export default class WebsiteDataManager<T extends DynamicObject> {
   /**
    * Deletes the internal WebsiteData entity and creates a new one.
    */
-  public async clearData(recreateEntity = true) {
+  public async clearData(recreateEntity = true, notify = true) {
     this.logger.info('Clearing website data');
     await this.repository.deleteById([this.entity.id]);
 
     if (recreateEntity) {
       // Do a reload to recreate an object that hasn't been saved.
       await this.createOrLoadWebsiteData();
+      if (notify) {
+        this.onDataChanged(this.account.id);
+      }
     }
   }
 
@@ -90,10 +98,21 @@ export default class WebsiteDataManager<T extends DynamicObject> {
    * Sets WebsiteData value.
    * @param {T} data
    */
-  public async setData(data: T) {
+  public async setData(data: T, notify = true): Promise<boolean> {
     if (JSON.stringify(data) !== JSON.stringify(this.entity.data)) {
+      const previousData = this.entity.data;
       this.entity.data = { ...data };
-      await this.saveData();
+      try {
+        await this.saveData();
+      } catch (error) {
+        this.entity.data = previousData;
+        throw error;
+      }
+      if (notify) {
+        this.onDataChanged(this.account.id);
+      }
+      return true;
     }
+    return false;
   }
 }

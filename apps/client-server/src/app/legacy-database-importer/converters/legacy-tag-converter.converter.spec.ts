@@ -1,15 +1,14 @@
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, TagConverterRepository } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacyTagConverterConverter } from './legacy-tag-converter.converter';
 
 describe('LegacyTagConverterConverter', () => {
   let converter: LegacyTagConverterConverter;
   let testDataPath: string;
-  let repository: PostyBirbDatabase<'TagConverterSchema'>;
+  let repository: TagConverterRepository;
   const ts = Date.now();
 
   beforeEach(async () => {
@@ -29,7 +28,7 @@ describe('LegacyTagConverterConverter', () => {
     writeSync(destFile, testFile);
 
     converter = new LegacyTagConverterConverter(testDataPath);
-    repository = new PostyBirbDatabase('TagConverterSchema');
+    repository = new TagConverterRepository();
   });
 
   it('should import and convert legacy tag converter data', async () => {
@@ -46,6 +45,22 @@ describe('LegacyTagConverterConverter', () => {
     // Verify legacy website IDs are mapped to modern ones (FurAffinity -> fur-affinity)
     expect(record.convertTo).toHaveProperty('fur-affinity');
     expect(record.convertTo['fur-affinity']).toBe('converted');
+  });
+
+  it('should call the inserted callback only for newly imported records', async () => {
+    const onInserted = jest.fn();
+    const callbackConverter = new LegacyTagConverterConverter(
+      testDataPath,
+      onInserted,
+    );
+
+    await callbackConverter.import();
+    await callbackConverter.import();
+
+    expect(onInserted).toHaveBeenCalledTimes(1);
+    expect(onInserted.mock.calls[0][0].toDTO()).toEqual(
+      (await repository.findAll())[0].toDTO(),
+    );
   });
 
   it('should handle empty conversions object', async () => {

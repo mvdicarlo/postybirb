@@ -1,12 +1,13 @@
 // BlockNote types are used in the UI, but conversion happens via DescriptionNode
 // No need to import BlockNote in the server-side website implementation
-import { Http } from '@postybirb/http';
+
 import {
   DynamicObject,
   FileType,
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
+  NPFContentBlock,
   PostData,
   PostResponse,
   SimpleValidationResult,
@@ -15,8 +16,8 @@ import {
 import parse from 'node-html-parser';
 import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
 import { NpfConverter } from '../../../post-parsers/models/description-node/converters/npf-converter';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
@@ -78,7 +79,7 @@ type TumblrPostResponse = {
     [FileType.AUDIO]: FileSize.megabytes(10),
     [FileType.VIDEO]: FileSize.megabytes(500),
     [FileType.IMAGE]: FileSize.megabytes(20),
-    'image/gif': FileSize.megabytes(3),
+    'image/gif': FileSize.megabytes(10),
   },
 })
 export default class Tumblr
@@ -95,59 +96,82 @@ export default class Tumblr
       blogs: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
-    const page = await Http.get<string>(`${this.BASE_URL}`, {
+  public async onLogin(): Promise<LoginResult> {
+    const page = await this.platform.http.get<string>(`${this.BASE_URL}`, {
       partition: this.accountId,
     });
 
     const root = parse(page.body);
-    const initialState = root.querySelector('#___INITIAL_STATE___').innerText;
+    const initialStateEl = root.querySelector('#___INITIAL_STATE___');
+    if (!initialStateEl) {
+      this.logger.warn(
+        'Failed to find #___INITIAL_STATE___ element during login',
+      );
+      return { loggedIn: false };
+    }
+    const initialState = initialStateEl.innerText;
     const cleanedState = initialState.trim().replace(/\\\\"/g, '\\"');
     const data = JSON.parse(cleanedState);
     const apiToken = data?.apiFetchStore?.API_TOKEN;
 
     if (!apiToken) {
-      this.loginState.logout();
-      return this.loginState;
+      return { loggedIn: false };
     }
 
     this.sessionData.apiToken = apiToken;
     this.sessionData.state = data;
     this.sessionData.csrf = data.csrfToken;
-    const userInfo = data.queries.queries.find((query) =>
+    const userInfo = data.queries.queries.find((query: { queryHash: string }) =>
       query.queryHash.includes('user-info'),
     );
 
     if (!userInfo || userInfo?.state?.data?.isLoggedIn === false) {
-      this.loginState.logout();
-      return this.loginState;
+      return { loggedIn: false };
     }
 
     const userName = userInfo.state.data.user.name;
 
     await this.setWebsiteData({
-      blogs: userInfo.state.data.user.blogs.map((blog) => ({
-        label: blog.name,
-        value: blog.uuid,
-        data: blog,
-      })),
+      blogs: userInfo.state.data.user.blogs.map(
+        (blog: { name: string; uuid: string }) => ({
+          label: blog.name,
+          value: blog.uuid,
+          data: blog,
+        }),
+      ),
     });
-    return this.loginState.setLogin(true, userName);
+    return { loggedIn: true, username: userName };
   }
 
   createFileModel(): TumblrFileSubmission {
     return new TumblrFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
+  }
+
+  private getBlogData(blogId: string) {
+    const { blogs } = this.getWebsiteData();
+    let blogData = blogs.find((b) => b.value === blogId);
+    if (!blogData) {
+      blogData = blogs.find(
+        (b) => b.label.toLowerCase() === blogId.toLowerCase(),
+      );
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return blogData!;
   }
 
   async onPostFileSubmission(
     postData: PostData<TumblrFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
+    // Update csrf token
+    await this.onLogin();
+
     // Description is a JSON string of NPF blocks from the NpfConverter
     const npfBlocks = JSON.parse(postData.options.description);
 
@@ -160,8 +184,11 @@ export default class Tumblr
       cancellationToken,
     );
 
+    // Update csrf token
+    await this.onLogin();
+
     // Combine description blocks with media blocks
-    const allBlocks = [...npfBlocks, ...mediaBlocks];
+    const allBlocks = [...mediaBlocks, ...npfBlocks];
 
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
@@ -196,9 +223,7 @@ export default class Tumblr
       result.body.response.state === 'transcoding' // publishing video
     ) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const blogData = this.getWebsiteData().blogs.find(
-        (b) => b.value === blogId,
-      )!;
+      const blogData = this.getBlogData(blogId);
       const postUrl = `${blogData.data.url}/${result.body.response.id}`;
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(result.body)
@@ -231,10 +256,15 @@ export default class Tumblr
 
   async onPostMessageSubmission(
     postData: PostData<TumblrMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
+    // Update csrf token
+    await this.onLogin();
+
     // Description is a JSON string of NPF blocks from the NpfConverter
-    const npfBlocks = JSON.parse(postData.options.description);
+    const npfBlocks = JSON.parse(
+      postData.options.description,
+    ) as NPFContentBlock[];
 
     const builder = new PostBuilder(this, cancellationToken)
       .asJson()
@@ -267,10 +297,8 @@ export default class Tumblr
 
     if (result.body.response.state === 'published') {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const blogData = this.getWebsiteData().blogs.find(
-        (b) => b.value === blogId,
-      )!;
-      const postUrl = `${blogData.data.url}/${result.body.response.id}`;
+      const blogData = this.getBlogData(blogId);
+      const postUrl = `${blogData.data.url}${result.body.response.id}`;
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(result.body)
         .withSourceUrl(postUrl);
@@ -310,7 +338,7 @@ export default class Tumblr
     }
 
     if (options.sexualContent) {
-      labels.push('sexual_content');
+      labels.push('sexual_themes');
     }
 
     return labels;
@@ -322,12 +350,12 @@ export default class Tumblr
   private async uploadFiles(
     files: PostingFile[],
     blogId: string,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<DynamicObject[]> {
     const mediaBlocks: DynamicObject[] = [];
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       try {
         const uploadedMedia = await this.uploadSingleFile(file, blogId);
@@ -385,7 +413,7 @@ export default class Tumblr
     blogId: string,
   ): Promise<DynamicObject[]> {
     // Upload file using multipart form data
-    const uploadBuilder = new PostBuilder(this, new CancellableToken())
+    const uploadBuilder = new PostBuilder(this, new CancellationToken())
       .asMultipart()
       .withHeader('Authorization', `Bearer ${this.sessionData.apiToken}`)
       .withHeader('Referer', 'https://www.tumblr.com')

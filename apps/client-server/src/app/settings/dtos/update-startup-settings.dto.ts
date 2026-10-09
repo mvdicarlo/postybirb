@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { StartupOptions } from '@postybirb/utils/electron';
+import { StartupOptions } from '@postybirb/utils/common';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class UpdateStartupSettingsDto implements StartupOptions {

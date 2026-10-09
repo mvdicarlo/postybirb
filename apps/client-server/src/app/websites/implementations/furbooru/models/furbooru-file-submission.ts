@@ -6,5 +6,5 @@ export class FurbooruFileSubmission extends PhilomenaFileSubmission {
   @TagField({
     minTags: 5,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 }

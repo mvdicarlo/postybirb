@@ -1,17 +1,17 @@
 import {
-  ILoginState,
   ImageResizeProps,
   IPostResponse,
   IWebsiteFormFields,
   IWebsiteMetadata,
+  LoginResult,
   OAuthRouteHandlers,
   OAuthRoutes,
   PostData,
   PostResponse,
   SimpleValidationResult,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { wait } from '../../../utils/wait.util';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -44,14 +44,16 @@ export default class TestWebsite
 
   protected BASE_URL = 'http://localhost:3000';
 
-  public async onLogin(): Promise<ILoginState> {
+  private limited = false;
+
+  public async onLogin(): Promise<LoginResult> {
     if (this.account.id === 'FAIL') {
-      this.loginState.logout();
+      return { loggedIn: false };
     }
 
     // await wait(5_000);
     await this.websiteDataStore.setData({ test: 'test-mode' });
-    return this.loginState.setLogin(true, 'TestUser');
+    return { loggedIn: true, username: 'TestUser' };
   }
 
   createFileModel(): TestFileSubmission {
@@ -62,16 +64,40 @@ export default class TestWebsite
     return new TestMessageSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
   async onPostFileSubmission(
     postData: PostData<IWebsiteFormFields>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
+
+    if (this.account.name === 'RATE_LIMIT' && !this.limited) {
+      this.limited = true;
+      return PostResponse.fromWebsite(this)
+        .atStage('validation')
+        .withMessage('Forced rate limit for testing purposes.')
+        .withRateLimit(15_000);
+    }
+
+    if (this.account.name === 'FAIL') {
+      return PostResponse.fromWebsite(this)
+        .atStage('validation')
+        .withMessage('Forced failure for testing purposes.')
+        .withException(new Error('Forced failure'));
+    }
+
+    if (this.account.name === 'SUCCESS') {
+      await wait(15_000);
+      return PostResponse.fromWebsite(this)
+        .atStage('validation')
+        .withMessage('Forced success for testing purposes.')
+        .withSourceUrl('http://example.com/success');
+    }
+
     return PostResponse.fromWebsite(this)
       .atStage('test')
       .withMessage('test message');
@@ -88,9 +114,9 @@ export default class TestWebsite
 
   async onPostMessageSubmission(
     postData: PostData<TestMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     if (this.account.name === 'FAIL') {
       return PostResponse.fromWebsite(this)
         .atStage('validation')

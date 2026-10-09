@@ -1,6 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DescriptionType, UsernameShortcut } from '@postybirb/types';
-import isEqual from 'lodash/isEqual';
+import {
+  DescriptionType,
+  DynamicObject,
+  TipTapNode,
+  UsernameShortcut,
+} from '@postybirb/types';
 import { Class } from 'type-fest';
 import { WEBSITE_IMPLEMENTATIONS } from '../../constants';
 import { CustomShortcutsService } from '../../custom-shortcuts/custom-shortcuts.service';
@@ -16,11 +20,11 @@ import {
   InsertionOptions,
 } from '../models/description-node/description-node-tree';
 import { ConversionContext } from '../models/description-node/description-node.base';
-import { IDescriptionBlockNode } from '../models/description-node/description-node.types';
 
 @Injectable()
 export class DescriptionParserService {
   private readonly websiteShortcuts: Record<string, UsernameShortcut> = {};
+  private readonly websiteToShortcutId: Record<string, string> = {};
 
   constructor(
     private readonly settingsService: SettingsService,
@@ -34,20 +38,26 @@ export class DescriptionParserService {
         website.prototype.decoratedProps.usernameShortcut;
       if (shortcut) {
         this.websiteShortcuts[shortcut.id] = shortcut;
+        const websiteName: string =
+          website.prototype.decoratedProps.metadata?.name;
+        if (websiteName) {
+          this.websiteToShortcutId[websiteName] = shortcut.id;
+        }
       }
     });
   }
 
   public async parse(
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
     defaultOptions: DefaultWebsiteOptions,
     websiteOptions: BaseWebsiteOptions,
     tags: string[],
     title: string,
-  ): Promise<string> {
+    skipTruncation = false,
+  ): Promise<string | undefined> {
     const mergedOptions = websiteOptions.mergeDefaults(defaultOptions);
-    const { descriptionType, hidden } =
-      mergedOptions.getFormFieldFor('description');
+    const { descriptionType, hidden, maxDescriptionLength } =
+      mergedOptions.getFormFieldFor('description', instance.getFormProperties());
 
     if (descriptionType === DescriptionType.NONE || hidden) {
       return undefined;
@@ -61,8 +71,8 @@ export class DescriptionParserService {
     }
 
     const descriptionValue = mergedOptions.description;
-    const descriptionBlocks =
-      descriptionValue.description as unknown as Array<IDescriptionBlockNode>;
+    const descriptionBlocks: TipTapNode[] =
+      descriptionValue.description?.content ?? [];
 
     const { contentWarning } = mergedOptions;
 
@@ -95,14 +105,24 @@ export class DescriptionParserService {
 
     // Pre-resolve default description
     const defaultDescription = this.mergeBlocks(
-      defaultOptions.description
-        .description as unknown as Array<IDescriptionBlockNode>,
+      defaultOptions.description.description?.content ?? [],
     );
+
+    for (let i = defaultDescription.length - 1; i >= 0; i--) {
+      const element = defaultDescription[i];
+      const isSpacing =
+        element?.type === 'paragraph' &&
+        (!element.content || element.content.length === 0);
+      if (isSpacing) {
+        defaultDescription.splice(i);
+      } else break;
+    }
 
     // Build tree once with minimal context
     const context: ConversionContext = {
       website: instance.decoratedProps.metadata.name,
       shortcuts: this.websiteShortcuts,
+      websiteToShortcutId: this.websiteToShortcutId,
       customShortcuts: new Map(),
       defaultDescription,
       title,
@@ -129,26 +149,43 @@ export class DescriptionParserService {
       usernameConversions,
     });
 
-    const description = this.createDescription(instance, descriptionType, tree);
-
-    return description
-      .replace(/(<div><\/div>)$/, '')
-      .replace(/(<p><\/p>)$/, '')
-      .trim();
+    return this.createDescription(
+      instance,
+      descriptionType,
+      tree,
+      skipTruncation
+        ? Number.MAX_SAFE_INTEGER
+        : (maxDescriptionLength ?? Number.MAX_SAFE_INTEGER),
+    );
   }
 
   private createDescription(
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
     descriptionType: DescriptionType,
     tree: DescriptionNodeTree,
+    maxDescriptionLength: number,
   ): string {
     switch (descriptionType) {
       case DescriptionType.MARKDOWN:
         return tree.toMarkdown();
       case DescriptionType.HTML:
         return tree.toHtml();
-      case DescriptionType.PLAINTEXT:
-        return tree.toPlainText();
+      case DescriptionType.PLAINTEXT: {
+        // Truncate the description if it exceeds the maximum length
+        // Generally plaintext descriptions are more likely to have length limits.
+        // This is a bit of a blunt truncation, but it's the most straightforward way to enforce the limit.
+        const plainText = tree.toPlainText();
+        if (
+          maxDescriptionLength &&
+          maxDescriptionLength > 0 &&
+          plainText.length > maxDescriptionLength
+        ) {
+          return plainText
+            .replace('Posted using PostyBirb', '') // Remove the PostyBirb attribution
+            .substring(0, maxDescriptionLength);
+        }
+        return plainText;
+      }
       case DescriptionType.BBCODE:
         return tree.toBBCode();
       case DescriptionType.CUSTOM:
@@ -165,6 +202,7 @@ export class DescriptionParserService {
             instance,
             instance.getRuntimeParser(),
             tree,
+            maxDescriptionLength,
           );
         }
         throw new Error(
@@ -181,15 +219,15 @@ export class DescriptionParserService {
    */
   private async resolveCustomShortcutsFromTree(
     tree: DescriptionNodeTree,
-  ): Promise<Map<string, IDescriptionBlockNode[]>> {
-    const customShortcuts = new Map<string, IDescriptionBlockNode[]>();
+  ): Promise<Map<string, TipTapNode[]>> {
+    const customShortcuts = new Map<string, TipTapNode[]>();
     const shortcutIds = tree.findCustomShortcutIds();
 
     for (const id of shortcutIds) {
       const shortcut = await this.customShortcutsService?.findById(id);
       if (shortcut) {
         const shortcutBlocks = this.mergeBlocks(
-          shortcut.shortcut as unknown as Array<IDescriptionBlockNode>,
+          shortcut.shortcut?.content ?? [],
         );
         customShortcuts.set(id, shortcutBlocks);
       }
@@ -203,7 +241,7 @@ export class DescriptionParserService {
    */
   private async resolveUsernamesFromTree(
     tree: DescriptionNodeTree,
-    instance: Website<unknown>,
+    instance: Website<DynamicObject>,
   ): Promise<Map<string, string>> {
     const usernameConversions = new Map<string, string>();
     const usernames = tree.findUsernames();
@@ -218,82 +256,20 @@ export class DescriptionParserService {
     return usernameConversions;
   }
 
-  /**
-   * Merges block into the same type if they are adjacent and have the same type.
-   * Merge occurs on block level if all the props in the block are the same.
-   * Blocks with non-empty children are not eligible for merging.
-   *
-   * @param {Array<IDescriptionBlockNode>} blocks
-   * @return {*}  {Array<IDescriptionBlockNode>}
-   */
-  public mergeBlocks(
-    blocks: Array<IDescriptionBlockNode>,
-  ): Array<IDescriptionBlockNode> {
-    const mergedBlocks: Array<IDescriptionBlockNode> = [];
-
-    const blockCopy: Array<IDescriptionBlockNode> = JSON.parse(
-      JSON.stringify(blocks),
-    );
-    for (let i = 0; i < blockCopy.length; i++) {
-      const currentBlock = blockCopy[i];
-      const previousBlock = mergedBlocks[mergedBlocks.length - 1];
-
-      // Check if either block has children - if so, skip merge
-      const currentHasChildren =
-        currentBlock.children && currentBlock.children.length > 0;
-      const previousHasChildren =
-        previousBlock?.children && previousBlock.children.length > 0;
-
-      if (!previousBlock) {
-        mergedBlocks.push(currentBlock);
-      } else if (
-        // Check if the current block is of the same type as the previous block
-        // Filter out content length of 0 because those are assumed to be padding blocks.
-        // Skip merge if either block has children
-        currentBlock.type === previousBlock.type &&
-        currentBlock.content.length !== 0 &&
-        previousBlock.content.length !== 0 &&
-        !currentHasChildren &&
-        !previousHasChildren &&
-        isEqual(currentBlock.props, previousBlock.props)
-      ) {
-        // Insert a \n content then merge together the content of the two blocks
-        previousBlock.content.push({
-          type: 'text',
-          text: '\n',
-          styles: {},
-          props: {},
-        });
-        previousBlock.content.push(...currentBlock.content);
-      } else {
-        // Insert if no action
-        mergedBlocks.push(currentBlock);
-      }
-    }
-
-    return mergedBlocks;
+  public mergeBlocks(blocks: TipTapNode[]): TipTapNode[] {
+    return blocks;
   }
 
   /**
-   * Recursively checks if description blocks contain a specific inline content type.
-   * Used to detect presence of title/tags shortcuts to prevent double insertion.
+   * Recursively checks if TipTap nodes contain a specific inline content type.
    */
-  private hasInlineContentType(
-    blocks: Array<IDescriptionBlockNode>,
-    type: string,
-  ): boolean {
+  private hasInlineContentType(blocks: TipTapNode[], type: string): boolean {
     for (const block of blocks) {
+      if (block?.type === type) return true;
       if (Array.isArray(block?.content)) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (block.content.some((inline: any) => inline?.type === type)) {
+        if (this.hasInlineContentType(block.content, type)) {
           return true;
         }
-      }
-      if (
-        Array.isArray(block?.children) &&
-        this.hasInlineContentType(block.children, type)
-      ) {
-        return true;
       }
     }
     return false;

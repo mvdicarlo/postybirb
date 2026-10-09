@@ -6,12 +6,16 @@ import { extname } from 'path';
 import { v4 } from 'uuid';
 import { AccountModule } from '../account/account.module';
 import { FileModule } from '../file/file.module';
+import { PostingActivityModule } from '../posting/posting-activity.module';
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsitesModule } from '../websites/websites.module';
 import { FileSubmissionController } from './file-submission.controller';
 import { FileSubmissionService } from './services/file-submission.service';
 import { MessageSubmissionService } from './services/message-submission.service';
 import { SubmissionService } from './services/submission.service';
+import { SubmissionAccountEventListener } from './submission-account-event.listener';
+import { SubmissionEventListener } from './submission-event.listener';
+import { SubmissionEventPublisher } from './submission-event.publisher';
 import { SubmissionController } from './submission.controller';
 
 @Module({
@@ -19,6 +23,7 @@ import { SubmissionController } from './submission.controller';
     WebsitesModule,
     AccountModule,
     FileModule,
+    PostingActivityModule,
     forwardRef(() => WebsiteOptionsModule),
     MulterModule.register({
       limits: {
@@ -38,8 +43,15 @@ import { SubmissionController } from './submission.controller';
     SubmissionService,
     MessageSubmissionService,
     FileSubmissionService,
+    SubmissionEventPublisher,
+    SubmissionEventListener,
+    SubmissionAccountEventListener,
   ],
   controllers: [SubmissionController, FileSubmissionController],
-  exports: [SubmissionService, FileSubmissionService],
+  exports: [
+    SubmissionService,
+    FileSubmissionService,
+    SubmissionEventPublisher,
+  ],
 })
 export class SubmissionModule {}

@@ -1,44 +1,48 @@
-import { Injectable, Optional } from '@nestjs/common';
-import { USER_CONVERTER_UPDATES } from '@postybirb/socket-events';
-import { EntityId } from '@postybirb/types';
+import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserConverter, UserConverterRepository } from '@postybirb/database';
+import { DynamicObject, EntityId } from '@postybirb/types';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { UserConverter } from '../drizzle/models';
-import { WSGateway } from '../web-socket/web-socket-gateway';
 import { Website } from '../websites/website';
 import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
 import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
+import { USER_CONVERTER_EVENT_PREFIX } from './user-converter.events';
 
 @Injectable()
-export class UserConvertersService extends PostyBirbService<'UserConverterSchema'> {
-  constructor(@Optional() webSocket?: WSGateway) {
-    super('UserConverterSchema', webSocket);
-    this.repository.subscribe('UserConverterSchema', () => {
-      this.emit();
-    });
+export class UserConvertersService extends PostyBirbService<UserConverterRepository> {
+  constructor(eventEmitter: EventEmitter2) {
+    super(new UserConverterRepository());
+    this.configureCrudEvents(USER_CONVERTER_EVENT_PREFIX, eventEmitter);
   }
 
   async create(createDto: CreateUserConverterDto): Promise<UserConverter> {
     this.logger
       .withMetadata(createDto)
       .info(`Creating UserConverter '${createDto.username}'`);
-    await this.throwIfExists(eq(this.schema.username, createDto.username));
-    return this.repository.insert(createDto);
+    await this.throwIfExists(eq(this.table.username, createDto.username));
+    const entity = await this.repository.insert(createDto);
+    this.publishCreated(entity.toDTO());
+    return entity;
   }
 
-  update(id: EntityId, update: UpdateUserConverterDto) {
+  async update(
+    id: EntityId,
+    update: UpdateUserConverterDto,
+  ): Promise<UserConverter> {
     this.logger.withMetadata(update).info(`Updating UserConverter '${id}'`);
-    return this.repository.update(id, update);
+    const entity = await this.repository.update(id, update);
+    this.publishUpdated(entity.toDTO());
+    return entity;
   }
 
   /**
    * Converts a username using user defined conversion table.
-   *
-   * @param {Website<unknown>} instance
-   * @param {string} username
-   * @return {*}  {Promise<string>}
    */
-  async convert(instance: Website<unknown>, username: string): Promise<string> {
+  async convert(
+    instance: Website<DynamicObject>,
+    username: string,
+  ): Promise<string> {
     const converter = await this.repository.findOne({
       where: (c, { eq: eqFn }) => eqFn(c.username, username),
     });
@@ -52,12 +56,5 @@ export class UserConvertersService extends PostyBirbService<'UserConverterSchema
       converter.convertTo.default ??
       username
     );
-  }
-
-  protected async emit() {
-    super.emit({
-      event: USER_CONVERTER_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
-    });
   }
 }

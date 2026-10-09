@@ -1,23 +1,40 @@
 import {
-    BooleanField,
-    DescriptionField,
-    SelectField,
-    TagField,
-    TextField,
+  DescriptionField,
+  RatingField,
+  SelectField,
+  TagField,
+  TextField,
 } from '@postybirb/form-builder';
 import {
-    DefaultTagValue,
-    DescriptionType,
-    DescriptionValue,
-    TagValue,
+  DefaultTagValue,
+  DescriptionType,
+  DescriptionValue,
+  MegalodonAccountData,
+  SubmissionRating,
+  TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class MegalodonFileSubmission extends BaseWebsiteOptions {
-  @DescriptionField({
+  @DescriptionField<MegalodonAccountData>({
     descriptionType: DescriptionType.PLAINTEXT,
+    required: false,
+    expectsInlineTags: true,
+    expectsInlineTitle: true,
+    // Static fallback used before instance limits are fetched. Overridden per
+    // instance via `derive` from the account's stored `maxCharacters`.
+    maxDescriptionLength: 500,
+    derive: [{ key: 'maxCharacters', populate: 'maxDescriptionLength' }],
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
+
+  @RatingField({
+    options: [
+      { value: SubmissionRating.GENERAL, label: 'Safe' },
+      { value: SubmissionRating.ADULT, label: 'Sensitive' },
+    ],
+  })
+  declare rating: SubmissionRating;
 
   @TagField({
     spaceReplacer: '_',
@@ -25,7 +42,7 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
   tags: TagValue = DefaultTagValue();
 
   override processTag(tag: string) {
-    return `#${tag.replaceAll(/[^a-z0-9]/gi, '_')}`;
+    return `${tag.replaceAll(/\s+/g, '_')}`;
   }
 
   @SelectField({
@@ -36,25 +53,13 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
       { value: 'private', label: 'Followers only' },
       { value: 'direct', label: 'Direct' },
     ],
-    span: 12,
+    span: 6,
   })
   visibility: 'public' | 'unlisted' | 'private' | 'direct' = 'public';
 
   @TextField({
     label: 'spoiler',
-    span: 12,
+    span: 6,
   })
   spoilerText?: string;
-
-  @TextField({
-    label: 'language',
-    span: 12,
-  })
-  language?: string;
-
-  @BooleanField({
-    label: 'sensitiveContent',
-    span: 3,
-  })
-  sensitive = false;
 }

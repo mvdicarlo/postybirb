@@ -30,6 +30,20 @@ export interface IAccount extends IEntity {
    * @type {string[]}
    */
   groups: string[];
+
+  /**
+   * The id of the submission template whose options populate default values
+   * for FILE submissions made with this account.
+   * @type {(EntityId | null)}
+   */
+  defaultFileTemplateId?: EntityId | null;
+
+  /**
+   * The id of the submission template whose options populate default values
+   * for MESSAGE submissions made with this account.
+   * @type {(EntityId | null)}
+   */
+  defaultMessageTemplateId?: EntityId | null;
 }
 
 export const NULL_ACCOUNT_ID = 'NULL_ACCOUNT';
@@ -42,6 +56,10 @@ export class NullAccount implements IAccount {
   website: WebsiteId = 'default';
 
   groups: string[] = [];
+
+  defaultFileTemplateId: EntityId | null = null;
+
+  defaultMessageTemplateId: EntityId | null = null;
 
   createdAt!: string;
 

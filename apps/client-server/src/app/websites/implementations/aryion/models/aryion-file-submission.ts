@@ -2,12 +2,14 @@ import {
   BooleanField,
   DescriptionField,
   RadioField,
+  RatingField,
   SelectField,
 } from '@postybirb/form-builder';
 import {
   DefaultDescriptionValue,
   DescriptionType,
   DescriptionValue,
+  SubmissionRating,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -17,12 +19,18 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
   })
   description: DescriptionValue = DefaultDescriptionValue();
 
+  @RatingField({
+    required: false,
+    hidden: true,
+  })
+  declare rating: SubmissionRating;
+
   @SelectField({
     label: 'folder',
     options: [],
     required: true,
     section: 'website',
-    span: 12,
+    span: 9,
     derive: [
       {
         key: 'folders',
@@ -35,7 +43,7 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
   @RadioField({
     label: 'requiredTag',
     section: 'website',
-    span: 6,
+    span: 3,
     options: [
       { value: '0', label: 'Vore' },
       { value: '1', label: 'Non-Vore' },
@@ -43,6 +51,20 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
     required: true,
   })
   requiredTag: string;
+
+  @RadioField({
+    label: 'commentPermissions',
+    section: 'website',
+    span: 12,
+    options: [
+      { value: 'USER', label: 'Registered Users' },
+      { value: 'BLACK', label: 'All But Blocked' },
+      { value: 'WHITE', label: 'Friends Only' },
+      { value: 'SELF', label: 'Self Only' },
+      { value: 'NONE', label: 'Nobody' },
+    ],
+  })
+  commentPermissions = 'USER';
 
   @RadioField({
     label: 'viewPermissions',
@@ -55,20 +77,6 @@ export class AryionFileSubmission extends BaseWebsiteOptions {
     ],
   })
   viewPermissions = 'ALL';
-
-  @RadioField({
-    label: 'commentPermissions',
-    section: 'website',
-    span: 6,
-    options: [
-      { value: 'USER', label: 'Registered Users' },
-      { value: 'BLACK', label: 'All But Blocked' },
-      { value: 'WHITE', label: 'Friends Only' },
-      { value: 'SELF', label: 'Self Only' },
-      { value: 'NONE', label: 'Nobody' },
-    ],
-  })
-  commentPermissions = 'USER';
 
   @RadioField({
     label: 'tagPermissions',

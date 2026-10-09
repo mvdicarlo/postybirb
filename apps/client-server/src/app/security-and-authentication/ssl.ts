@@ -1,20 +1,29 @@
 import { Logger } from '@postybirb/logger';
-import { app } from 'electron';
 import { mkdir, readFile, stat, writeFile } from 'fs/promises';
+import { isObject } from 'lodash';
 import forge from 'node-forge';
 import { join } from 'path';
 
+/**
+ * Generates and caches a self-signed SSL certificate used for the local
+ * HTTPS server. The certificate is persisted under `<userDataPath>/auth`.
+ *
+ * `userDataPath` is supplied by the caller so SSL has no direct dependency
+ * on Electron (or any other runtime-specific path resolution).
+ */
 export class SSL {
   private static cachedCerts?: { key: string; cert: string };
 
-  static async getOrCreateSSL(): Promise<{ key: string; cert: string }> {
+  static async getOrCreateSSL(
+    userDataPath: string,
+  ): Promise<{ key: string; cert: string }> {
     // Return cached certs if available
     if (this.cachedCerts) {
       return this.cachedCerts;
     }
 
     const logger = Logger().withContext({ name: 'SSL' });
-    const path = join(app.getPath('userData'), 'auth');
+    const path = join(userDataPath, 'auth');
     const keyPath = join(path, 'key.pem');
     const certPath = join(path, 'cert.pem');
 
@@ -27,7 +36,7 @@ export class SSL {
       try {
         await mkdir(path, { recursive: true });
       } catch (err) {
-        if (err.code !== 'EEXIST') {
+        if (isObject(err) && 'code' in err && err.code !== 'EEXIST') {
           logger.error(err);
         }
       }

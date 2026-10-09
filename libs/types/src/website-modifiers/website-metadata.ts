@@ -1,3 +1,5 @@
+export type WebsiteRateLimitScope = 'account' | 'website';
+
 export interface IWebsiteMetadata {
   /**
    * Internal name of the website to be used.
@@ -9,7 +11,7 @@ export interface IWebsiteMetadata {
    * Display name of the website to be shown.
    * If not provided, will default to capitalized name property.
    */
-  displayName?: string;
+  displayName: string;
 
   /**
    * How often in milliseconds login should be re-checked.
@@ -22,4 +24,10 @@ export interface IWebsiteMetadata {
    * spam detection measures.
    */
   minimumPostWaitInterval?: number;
+
+  /**
+   * Determines whether the minimum post interval is shared by an account or
+   * by every account posting to this website.
+   */
+  rateLimitScope?: WebsiteRateLimitScope;
 }

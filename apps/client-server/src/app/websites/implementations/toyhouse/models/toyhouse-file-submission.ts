@@ -1,5 +1,17 @@
-import { BooleanField, DescriptionField, RatingField, SelectField, TagField, TextField, TitleField } from '@postybirb/form-builder';
-import { DescriptionType, DescriptionValue, SubmissionRating } from '@postybirb/types';
+import {
+  BooleanField,
+  DescriptionField,
+  RatingField,
+  SelectField,
+  TagField,
+  TextField,
+  TitleField,
+} from '@postybirb/form-builder';
+import {
+  DescriptionType,
+  DescriptionValue,
+  SubmissionRating,
+} from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 import { ToyhouseAccountData } from './toyhouse-account-data';
 
@@ -28,39 +40,45 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
     required: false,
     hidden: true,
   })
-  title: never;
+  declare title: never;
 
   @TagField({
     hidden: true,
   })
-  tags: never;
-
+  declare tags: never;
 
   @RatingField({
     options: ToyhouseMaturityOptions,
     required: true,
-    section: 'common', order: 1
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
+
+  @DescriptionField({
+    label: 'description',
+    descriptionType: DescriptionType.PLAINTEXT,
+    required: false,
+    maxDescriptionLength: 255,
+  })
+  declare description: DescriptionValue;
 
   @BooleanField({
     label: 'nudity',
     span: 4,
-    section: 'common', order: 2
+    order: 2,
   })
   nudity: boolean;
 
   @BooleanField({
     label: 'gore',
     span: 4,
-    section: 'common', order: 2
+    order: 2,
   })
   gore: boolean;
 
   @BooleanField({
     label: 'sensitiveContent',
     span: 4,
-    section: 'common', order: 2
+    order: 2,
   })
   sensitiveContent: boolean;
 
@@ -70,19 +88,9 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
     maxLength: 200,
     hidden: false,
     showWhen: [['sensitiveContent', [true]]],
-    section: 'common', order: 3
+    order: 3,
   })
-  contentWarning: string;
-
-  @DescriptionField({
-    label: 'description',
-    descriptionType: DescriptionType.PLAINTEXT,
-    required: false,
-    maxDescriptionLength: 255,
-    section: 'common', order: 4
-  })
-  description: DescriptionValue;
-
+  declare contentWarning: string;
 
   @SelectField<ToyhouseAccountData>({
     label: 'characters',
@@ -112,7 +120,7 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
   })
   offSiteArtistUrl?: string;
 
-  @SelectField({ 
+  @SelectField({
     label: 'authorizedViewers',
     options: ToyhousePrivacyOptions,
     defaultValue: '0',
@@ -120,7 +128,7 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
   })
   authorizedViewers: string;
 
-  @SelectField({ 
+  @SelectField({
     label: 'publicViewers',
     options: ToyhousePrivacyOptions,
     defaultValue: '0',
@@ -128,7 +136,7 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
   })
   publicViewers: string;
 
-  @SelectField({ 
+  @SelectField({
     label: 'watermark',
     options: ToyhouseWatermarkOptions,
     defaultValue: '1',
@@ -136,5 +144,3 @@ export class ToyhouseFileSubmission extends BaseWebsiteOptions {
   })
   watermark: string;
 }
-
-

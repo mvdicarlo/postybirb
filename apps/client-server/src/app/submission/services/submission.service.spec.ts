@@ -1,14 +1,20 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import {
+    clearDatabase,
+    EntityNotFoundError,
+    PostRepository,
+} from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
-  FileSubmissionMetadata,
-  IWebsiteFormFields,
-  ScheduleType,
-  SubmissionRating,
-  SubmissionType,
-  WebsiteOptionsDto,
+    FileSubmissionMetadata,
+    ISubmissionMetadata,
+    IWebsiteFormFields,
+    ScheduleType,
+    SubmissionRating,
+    SubmissionType,
+    WebsiteOptionsDto,
 } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -21,9 +27,11 @@ import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { CreateFileService } from '../../file/services/create-file.service';
 import { UpdateFileService } from '../../file/services/update-file.service';
 import { FormGeneratorModule } from '../../form-generator/form-generator.module';
+import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
+import { TestPlatformModule } from '../../platform/testing/test-platform.module';
 import { PostParsersModule } from '../../post-parsers/post-parsers.module';
-import { UserSpecifiedWebsiteOptionsModule } from '../../user-specified-website-options/user-specified-website-options.module';
-import { UserSpecifiedWebsiteOptionsService } from '../../user-specified-website-options/user-specified-website-options.service';
+import { PostingActivityModule } from '../../posting/posting-activity.module';
+import { PostingActivityService } from '../../posting/posting-activity.service';
 import { waitUntilPromised } from '../../utils/wait.util';
 import { ValidationService } from '../../validation/validation.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
@@ -32,6 +40,7 @@ import { WebsiteRegistryService } from '../../websites/website-registry.service'
 import { WebsitesModule } from '../../websites/websites.module';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
+import { SubmissionEventPublisher } from '../submission-event.publisher';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 import { SubmissionService } from './submission.service';
@@ -41,6 +50,8 @@ describe('SubmissionService', () => {
   let service: SubmissionService;
   let websiteOptionsService: WebsiteOptionsService;
   let accountService: AccountService;
+  let postingActivity: PostingActivityService;
+  let postRepository: PostRepository;
   let module: TestingModule;
 
   beforeAll(() => {
@@ -54,24 +65,27 @@ describe('SubmissionService', () => {
     try {
       module = await Test.createTestingModule({
         imports: [
+          EventEmitterModule.forRoot(),
+          TestPlatformModule,
           AccountModule,
           WebsitesModule,
-          UserSpecifiedWebsiteOptionsModule,
           PostParsersModule,
           FormGeneratorModule,
+          PostingActivityModule,
         ],
         providers: [
           SubmissionService,
           CreateFileService,
           UpdateFileService,
+          SharpInstanceManager,
           FileService,
           FileSubmissionService,
           MessageSubmissionService,
           AccountService,
           WebsiteRegistryService,
-          UserSpecifiedWebsiteOptionsService,
           ValidationService,
           WebsiteOptionsService,
+          SubmissionEventPublisher,
           WebsiteImplProvider,
           FileConverterService,
         ],
@@ -82,6 +96,10 @@ describe('SubmissionService', () => {
         WebsiteOptionsService,
       );
       accountService = module.get<AccountService>(AccountService);
+      postingActivity = module.get<PostingActivityService>(
+        PostingActivityService,
+      );
+      postRepository = new PostRepository();
       await accountService.onModuleInit();
     } catch (e) {
       console.error(e);
@@ -94,7 +112,7 @@ describe('SubmissionService', () => {
 
   function setup(): string {
     const path = `${PostyBirbDirectories.DATA_DIRECTORY}/${Date.now()}.jpg`;
-    writeSync(path, testFile);
+    writeSync(path, testFile ?? '');
     return path;
   }
 
@@ -121,12 +139,17 @@ describe('SubmissionService', () => {
       originalname: 'small_image.jpg',
       encoding: '',
       mimetype: 'image/jpeg',
-      size: testFile.length,
+      size: testFile?.length ?? 0,
       destination: '',
       filename: 'small_image.jpg',
       path,
       origin: undefined,
     };
+  }
+
+  async function acceptSubmission(submissionId: string): Promise<void> {
+    const post = await postRepository.insert({ submissionId });
+    expect(postingActivity.accept(post.id, 3)).toBe(true);
   }
 
   it('should be defined', () => {
@@ -146,6 +169,7 @@ describe('SubmissionService', () => {
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
       type: record.type,
+      dependsOn: [],
       isScheduled: false,
       isTemplate: false,
       isArchived: false,
@@ -186,6 +210,7 @@ describe('SubmissionService', () => {
 
   it('should create file entities', async () => {
     const createDto = createSubmissionDto();
+    // @ts-expect-error Test
     delete createDto.name; // To ensure file name check
     createDto.type = SubmissionType.FILE;
     const path = setup();
@@ -205,6 +230,7 @@ describe('SubmissionService', () => {
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
       type: record.type,
+      dependsOn: [],
       isScheduled: false,
       postQueueRecord: undefined,
       isTemplate: false,
@@ -217,9 +243,11 @@ describe('SubmissionService', () => {
       metadata: {},
       files: [
         {
+          altFile: undefined,
           createdAt: file.createdAt,
           primaryFileId: file.primaryFileId,
           fileName: fileInfo.originalname,
+          file: undefined,
           hasThumbnail: true,
           hasCustomThumbnail: false,
           hasAltFile: false,
@@ -228,7 +256,7 @@ describe('SubmissionService', () => {
           width: 138,
           id: file.id,
           mimeType: fileInfo.mimetype,
-          size: testFile.length,
+          size: testFile?.length,
           submissionId: record.id,
           altFileId: null,
           thumbnailId: file.thumbnailId,
@@ -241,6 +269,7 @@ describe('SubmissionService', () => {
                 width: 138,
               },
             },
+            duration: 0,
             ignoredWebsites: [],
             sourceUrls: [],
             spoilerText: '',
@@ -249,11 +278,50 @@ describe('SubmissionService', () => {
         },
       ],
       posts: [],
+      thumbnail: undefined,
+      submission: undefined,
       order: 1,
       options: [defaultOptions.toObject()],
       validations: [],
     });
   });
+
+  it.each(['image', 'text'])(
+    'should allow mixed file types starting with %s',
+    async (firstFileType) => {
+      const createDto = createSubmissionDto();
+      createDto.type = SubmissionType.FILE;
+      const imageFile = createMulterData(setup());
+      const text = 'Mixed file submission';
+      const textPath = `${PostyBirbDirectories.DATA_DIRECTORY}/${Date.now()}.txt`;
+      writeSync(textPath, text);
+      const textFile: MulterFileInfo = {
+        ...createMulterData(textPath),
+        originalname: 'submission.txt',
+        filename: 'submission.txt',
+        mimetype: 'text/plain',
+        size: Buffer.byteLength(text),
+      };
+      const [firstFile, secondFile] =
+        firstFileType === 'image'
+          ? [imageFile, textFile]
+          : [textFile, imageFile];
+      const record = await service.create(createDto, firstFile);
+
+      await module
+        .get(FileSubmissionService)
+        .appendFile(record.id, secondFile);
+
+      const updated = await service.findByIdOrThrow(record.id);
+      expect(updated.files.map((file) => file.fileName)).toEqual([
+        firstFile.originalname,
+        secondFile.originalname,
+      ]);
+      expect(
+        updated.files.every((file) => file.submissionId === record.id),
+      ).toBe(true);
+    },
+  );
 
   it('should throw on missing file on file submission', async () => {
     const createDto = createSubmissionDto();
@@ -285,7 +353,7 @@ describe('SubmissionService', () => {
     expect(await service.findAll()).toHaveLength(0);
     expect(await optionsService.findAll()).toHaveLength(0);
     await expect(fileService.findFile(fileId)).rejects.toThrow(
-      NotFoundException,
+      EntityNotFoundError,
     );
   });
 
@@ -299,13 +367,137 @@ describe('SubmissionService', () => {
     updateDto.scheduledFor = '*';
     updateDto.metadata = {
       test: 'test',
-    } as unknown;
+    } as unknown as ISubmissionMetadata;
+    updateDto.dependsOn = ['00000000-0000-4000-8000-000000000001'];
 
     const updatedRecord = await service.update(record.id, updateDto);
     expect(updatedRecord.isScheduled).toEqual(updateDto.isScheduled);
     expect(updatedRecord.schedule.scheduleType).toEqual(updateDto.scheduleType);
     expect(updatedRecord.schedule.scheduledFor).toEqual(updateDto.scheduledFor);
     expect(updatedRecord.metadata).toEqual(updateDto.metadata);
+    expect(updatedRecord.dependsOn).toEqual(updateDto.dependsOn);
+  });
+
+  it('should reject updates while a submission is accepted', async () => {
+    const record = await service.create(createSubmissionDto());
+    await acceptSubmission(record.id);
+
+    await expect(
+      service.update(record.id, {
+        metadata: { changed: true } as unknown as ISubmissionMetadata,
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.findByIdOrThrow(record.id)).resolves.toMatchObject({
+      metadata: {},
+    });
+  });
+
+  it('should reject file changes while a submission is accepted', async () => {
+    const createDto = createSubmissionDto();
+    createDto.type = SubmissionType.FILE;
+    const record = await service.create(
+      createDto,
+      createMulterData(setup()),
+    );
+    const file = record.files[0];
+    await acceptSubmission(record.id);
+
+    await expect(
+      module.get(FileSubmissionService).updateMetadata(file.id, {
+        ...file.metadata,
+        spoilerText: 'blocked',
+      }),
+    ).rejects.toBeInstanceOf(ConflictException);
+    await expect(service.findByIdOrThrow(record.id)).resolves.toMatchObject({
+      files: [{ metadata: { spoilerText: '' } }],
+    });
+  });
+
+  it('should reject a direct dependency cycle', async () => {
+    const submission = await service.create(createSubmissionDto());
+    const updateDto = new UpdateSubmissionDto();
+    updateDto.dependsOn = [submission.id];
+    updateDto.deletedWebsiteOptions = [submission.options[0].id];
+
+    await expect(service.update(submission.id, updateDto)).rejects.toThrow(
+      BadRequestException,
+    );
+    await expect(service.findByIdOrThrow(submission.id)).resolves.toMatchObject({
+      dependsOn: [],
+      options: [{ id: submission.options[0].id }],
+    });
+  });
+
+  it('should reject a transitive dependency cycle', async () => {
+    const first = await service.create(createSubmissionDto());
+    const second = await service.create(createSubmissionDto());
+    const third = await service.create(createSubmissionDto());
+
+    await service.update(second.id, { dependsOn: [first.id] });
+    await service.update(third.id, { dependsOn: [second.id] });
+
+    await expect(
+      service.update(first.id, { dependsOn: [third.id] }),
+    ).rejects.toThrow(BadRequestException);
+    await expect(service.findByIdOrThrow(first.id)).resolves.toMatchObject({
+      dependsOn: [],
+    });
+  });
+
+  it('should serialize reciprocal dependency updates', async () => {
+    const first = await service.create(createSubmissionDto());
+    const second = await service.create(createSubmissionDto());
+
+    const results = await Promise.allSettled([
+      service.update(first.id, { dependsOn: [second.id] }),
+      service.update(second.id, { dependsOn: [first.id] }),
+    ]);
+
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
+    const [updatedFirst, updatedSecond] = await Promise.all([
+      service.findByIdOrThrow(first.id),
+      service.findByIdOrThrow(second.id),
+    ]);
+    expect(
+      [
+        updatedFirst.dependsOn.includes(second.id),
+        updatedSecond.dependsOn.includes(first.id),
+      ].filter(Boolean),
+    ).toHaveLength(1);
+  });
+
+  it('should drop a removed submission from dependent dependsOn arrays', async () => {
+    const removed = await service.create(createSubmissionDto());
+    const kept = await service.create(createSubmissionDto());
+    const dependent = await service.create(createSubmissionDto());
+    const unrelated = await service.create(createSubmissionDto());
+
+    await service.update(dependent.id, { dependsOn: [removed.id, kept.id] });
+
+    await service.remove(removed.id);
+
+    await expect(service.findByIdOrThrow(dependent.id)).resolves.toMatchObject({
+      dependsOn: [kept.id],
+    });
+    await expect(service.findByIdOrThrow(unrelated.id)).resolves.toMatchObject({
+      dependsOn: [],
+    });
+  });
+
+  it('should reject deletion that would rewrite an accepted dependent', async () => {
+    const removed = await service.create(createSubmissionDto());
+    const dependent = await service.create(createSubmissionDto());
+    await service.update(dependent.id, { dependsOn: [removed.id] });
+    await acceptSubmission(dependent.id);
+
+    await expect(service.remove(removed.id)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+    await expect(service.findByIdOrThrow(removed.id)).resolves.toBeDefined();
+    await expect(service.findByIdOrThrow(dependent.id)).resolves.toMatchObject({
+      dependsOn: [removed.id],
+    });
   });
 
   it('should remove entity options', async () => {
@@ -393,7 +585,7 @@ describe('SubmissionService', () => {
       name: 'Updated',
     });
 
-    expect(updatedTemplate.metadata.template.name).toEqual('Updated');
+    expect(updatedTemplate.metadata.template?.name).toEqual('Updated');
 
     const updatedRecord = await service.applyOverridingTemplate(
       record.id,
@@ -431,7 +623,7 @@ describe('SubmissionService', () => {
       merge: true,
     });
 
-    const updatedRecord = await service.findById(record.id);
+    const updatedRecord = await service.findByIdOrThrow(record.id);
     const defaultOptions = updatedRecord.options[0];
     const multiDefaultOptions = multi.options.find((o) => o.isDefault);
     // The default title should not be updated
@@ -467,17 +659,17 @@ describe('SubmissionService', () => {
       merge: false,
     });
 
-    const updatedRecord = await service.findById(record.id);
-    const multiSubmission = await service.findById(multi.id);
+    const updatedRecord = await service.findByIdOrThrow(record.id);
+    const multiSubmission = await service.findByIdOrThrow(multi.id);
     expect(updatedRecord.options).toHaveLength(multiSubmission.options.length);
     const defaultOptions = updatedRecord.options.find((o) => o.isDefault);
     const nonDefault = updatedRecord.options.find((o) => !o.isDefault);
     expect(nonDefault).toBeDefined();
-    expect(nonDefault.data).toEqual(multiSubmission.options[1].data);
+    expect(nonDefault?.data).toEqual(multiSubmission.options[1].data);
     expect(defaultOptions).toBeDefined();
-    expect(defaultOptions.data).toEqual({
+    expect(defaultOptions?.data).toEqual({
       ...multiSubmission.options[0].data,
-      title: defaultOptions.data.title,
+      title: defaultOptions?.data.title,
     });
   });
 
@@ -485,6 +677,7 @@ describe('SubmissionService', () => {
     const account = await createAccount();
     const createDto = createSubmissionDto();
     createDto.type = SubmissionType.FILE;
+    createDto.dependsOn = ['00000000-0000-4000-8000-000000000001'];
     const path = setup();
     const fileInfo = createMulterData(path);
 
@@ -506,21 +699,22 @@ describe('SubmissionService', () => {
     expect(duplicated?.type).toEqual(record.type);
     expect(duplicated?.options).toHaveLength(2);
     expect(duplicated?.files).toHaveLength(1);
-    expect(duplicated.order).toEqual(record.order);
+    expect(duplicated?.order).toEqual(record.order);
+    expect(duplicated?.dependsOn).toEqual(record.dependsOn);
 
     // Check that the metadata references the new file IDs
     const duplicatedFileId = duplicated?.files[0].id;
     const duplicatedMetadata = duplicated?.metadata as FileSubmissionMetadata;
     expect(duplicatedFileId).toBeDefined();
 
-    for (const file of duplicated.files) {
+    for (const file of duplicated?.files ?? []) {
       expect(record.files.find((f) => f.id === file.id)).toBeUndefined();
     }
 
     // Check that the original metadata is preserved
     const originalMetadata = record?.metadata as FileSubmissionMetadata;
     for (const file of record.files) {
-      expect(duplicated.files.find((f) => f.id === file.id)).toBeUndefined();
+      expect(duplicated?.files.find((f) => f.id === file.id)).toBeUndefined();
     }
   });
 });

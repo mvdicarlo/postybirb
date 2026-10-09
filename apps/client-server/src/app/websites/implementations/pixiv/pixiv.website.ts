@@ -1,15 +1,14 @@
-import { Http } from '@postybirb/http';
 import {
   FileType,
-  ILoginState,
   ImageResizeProps,
+  LoginResult,
   PostData,
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -26,6 +25,7 @@ import { PixivFileSubmission } from './models/pixiv-file-submission';
   name: 'pixiv',
   displayName: 'Pixiv',
   minimumPostWaitInterval: 60000 * 5, // 5 minutes between posts
+  rateLimitScope: 'website',
 })
 @UserLoginFlow('https://www.pixiv.net')
 @SupportsFiles({
@@ -33,6 +33,7 @@ import { PixivFileSubmission } from './models/pixiv-file-submission';
   acceptedFileSizes: {
     [FileType.IMAGE]: FileSize.megabytes(32), // Image limit is 32MB
   },
+  fileBatchSize: 100,
 })
 export default class Pixiv
   extends Website<PixivAccountData>
@@ -43,8 +44,8 @@ export default class Pixiv
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<PixivAccountData> =
     {};
 
-  public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(this.BASE_URL, {
+  public async onLogin(): Promise<LoginResult> {
+    const res = await this.platform.http.get<string>(this.BASE_URL, {
       partition: this.accountId,
     });
 
@@ -53,36 +54,42 @@ export default class Pixiv
       const $ = parse(res.body);
       let username = '';
       try {
-        const data = $.querySelector('#__NEXT_DATA__').textContent;
+        const data = $.querySelector('#__NEXT_DATA__')?.textContent;
+        if (!data) {
+          this.logger.warn(
+            'Failed to find #__NEXT_DATA__ element during login',
+          );
+          return { loggedIn: true, username: 'Logged In' };
+        }
         username = JSON.parse(
           JSON.parse(data).props.pageProps.serverSerializedPreloadedState,
         ).userData.self.pixivId;
       } catch (error) {
         this.logger.warn('Failed to parse username from login response');
       }
-      return this.loginState.setLogin(true, username || 'Logged In');
+      return { loggedIn: true, username: username || 'Logged In' };
     }
 
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   createFileModel(): PixivFileSubmission {
     return new PixivFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
   async onPostFileSubmission(
     postData: PostData<PixivFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Get the create page to check for version and get tokens
-    const page = await Http.get<string>(
+    const page = await this.platform.http.get<string>(
       `${this.BASE_URL}/illustration/create`,
       {
         partition: this.accountId,
@@ -90,9 +97,13 @@ export default class Pixiv
     );
 
     const $ = parse(page.body);
-    const accountInfo = JSON.parse(
-      $.querySelector('#__NEXT_DATA__').textContent,
-    );
+    const nextData = $.querySelector('#__NEXT_DATA__')?.textContent;
+    if (!nextData) {
+      return PostResponse.fromWebsite(this)
+        .withException(new Error('Failed to find #__NEXT_DATA__ element'))
+        .withAdditionalInfo(page.body);
+    }
+    const accountInfo = JSON.parse(nextData);
     const { token } = JSON.parse(
       accountInfo.props.pageProps.serverSerializedPreloadedState,
     ).api;
@@ -105,7 +116,7 @@ export default class Pixiv
       .asMultipart()
       .setField('title', options.title.substring(0, 32))
       .setField('caption', options.description)
-      .setField('tags[]', options.tags.slice(0, 10))
+      .setField('tags[]', options.tags)
       .setField('allowTagEdit', options.communityTags)
       .setField('xRestrict', contentRating)
       .setField('sexual', options.sexual)
@@ -142,8 +153,8 @@ export default class Pixiv
       })
       .whenTrue(contentRating !== 'general', (b) => {
         b.removeField('sexual');
-        b.forEach(options.matureContent, (c) => {
-          b.setField(`attributes[${c}]`, 'true');
+        b.forEach(options.matureContent, (c, _, innerBuilder) => {
+          innerBuilder.setField(`attributes[${c}]`, 'true');
         });
       });
 
@@ -164,9 +175,7 @@ export default class Pixiv
           ),
         );
     } catch (error) {
-      return PostResponse.fromWebsite(this).withException(
-        error instanceof Error ? error : new Error(JSON.stringify(error)),
-      );
+      return PostResponse.fromWebsite(this).withException(error);
     }
   }
 

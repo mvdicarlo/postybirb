@@ -1,5 +1,9 @@
-import { EntityId, IUpdateSettingsDto, SettingsDto } from '@postybirb/types';
-import { StartupOptions } from '@postybirb/utils/electron';
+import type {
+  EntityId,
+  IUpdateSettingsDto,
+  SettingsDto,
+} from '@postybirb/types';
+import type { StartupOptions } from '@postybirb/utils/common';
 import { HttpClient } from '../transports/http-client';
 
 class SettingsApi {
@@ -21,7 +25,10 @@ class SettingsApi {
   updateSystemStartupSettings(
     startAppOnSystemStartup: Partial<StartupOptions>,
   ) {
-    return this.client.patch(`startup/system-startup`, startAppOnSystemStartup);
+    return this.client.patch<StartupOptions>(
+      `startup/system-startup`,
+      startAppOnSystemStartup,
+    );
   }
 }
 

@@ -6,16 +6,18 @@ import {
   Injectable,
   NotFoundException,
   OnModuleInit,
-  Optional,
 } from '@nestjs/common';
 import {
   FileBufferSchema,
   Insert,
+  Submission,
   SubmissionFileSchema,
+  SubmissionRepository,
   SubmissionSchema,
+  WebsiteOptions,
   WebsiteOptionsSchema,
+  withTransactionContext,
 } from '@postybirb/database';
-import { SUBMISSION_UPDATES } from '@postybirb/socket-events';
 import {
   FileSubmission,
   FileSubmissionMetadata,
@@ -28,21 +30,20 @@ import {
   SubmissionMetadataType,
   SubmissionType,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/electron';
+import { toError } from '@postybirb/utils/common';
+import { Mutex } from 'async-mutex';
 import { eq } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
-import { FileBuffer, Submission, WebsiteOptions } from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import { withTransactionContext } from '../../drizzle/transaction-context';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
-import { WSGateway } from '../../web-socket/web-socket-gateway';
+import { PostingActivityService } from '../../posting/posting-activity.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
 import { ApplyTemplateOptionsDto } from '../dtos/apply-template-options.dto';
 import { CreateSubmissionDto } from '../dtos/create-submission.dto';
 import { UpdateSubmissionTemplateNameDto } from '../dtos/update-submission-template-name.dto';
 import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
+import { SubmissionEventPublisher } from '../submission-event.publisher';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
 
@@ -54,10 +55,10 @@ type SubmissionEntity = Submission<SubmissionMetadataType>;
  */
 @Injectable()
 export class SubmissionService
-  extends PostyBirbService<'SubmissionSchema'>
+  extends PostyBirbService<SubmissionRepository>
   implements OnModuleInit
 {
-  private emitDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private readonly dependencyMutationMutex = new Mutex();
 
   constructor(
     @Inject(forwardRef(() => WebsiteOptionsService))
@@ -65,53 +66,100 @@ export class SubmissionService
     @Inject(forwardRef(() => FileSubmissionService))
     private readonly fileSubmissionService: FileSubmissionService,
     private readonly messageSubmissionService: MessageSubmissionService,
-    @Optional() webSocket: WSGateway,
+    private readonly submissionEventPublisher: SubmissionEventPublisher,
+    private readonly postingActivity: PostingActivityService,
   ) {
-    super(
-      new PostyBirbDatabase('SubmissionSchema', {
-        options: {
-          with: {
-            account: true,
-          },
-        },
-        posts: {
-          with: {
-            events: {
-              account: true,
-            },
-          },
-        },
-        postQueueRecord: true,
-        files: true,
-      }),
-      webSocket,
-    );
-    this.repository.subscribe(
-      [
-        'PostRecordSchema',
-        'PostQueueRecordSchema',
-        'SubmissionFileSchema',
-        'FileBufferSchema',
-      ],
-      () => {
-        this.emit();
-      },
-    );
-
-    this.repository.subscribe(['WebsiteOptionsSchema'], (_, action) => {
-      if (action === 'delete') {
-        this.emit();
-      }
-    });
+    super(new SubmissionRepository());
   }
 
   async onModuleInit() {
     await this.cleanupUninitializedSubmissions();
+    await this.recreateMissingDefaultOptions();
     await this.normalizeOrders();
     for (const type of Object.values(SubmissionType)) {
       // eslint-disable-next-line no-await-in-loop
       await this.populateMultiSubmission(type);
     }
+  }
+
+  private markChanged(ids: SubmissionId | SubmissionId[]): void {
+    this.submissionEventPublisher?.markChanged(ids);
+  }
+
+  private markRemoved(ids: SubmissionId | SubmissionId[]): void {
+    this.submissionEventPublisher?.markRemoved(ids);
+  }
+
+  /**
+   * Self-healing pass that restores the default (NULL_ACCOUNT) website option
+   * for any submission missing it.
+   *
+   * Every submission is expected to have exactly one default option (created
+   * during {@link create}). A destructive migration cascade-deleted
+   * `website-options` rows on some databases, leaving pre-existing submissions
+   * without their default option. This recreates any that are missing so the
+   * database is whole again. Account-specific options and stored login data are
+   * not recoverable here (no source survives); website data rows are
+   * re-created lazily on website initialization, and accounts must be
+   * re-authenticated.
+   */
+  private async recreateMissingDefaultOptions() {
+    const submissions = await this.repository.findAll();
+    let recreated = 0;
+
+    for (const submission of submissions) {
+      const hasDefault = (submission.options ?? []).some(
+        (option) => option.isDefault || option.accountId === NULL_ACCOUNT_ID,
+      );
+      if (hasDefault) {
+        continue;
+      }
+
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        await this.websiteOptionsService.createDefaultSubmissionOptions(
+          submission,
+          this.deriveRecoveryTitle(submission),
+        );
+        recreated++;
+      } catch (err) {
+        this.logger
+          .withError(toError(err))
+          .withMetadata({ id: submission.id })
+          .error('Failed to recreate missing default website option');
+      }
+    }
+
+    if (recreated > 0) {
+      this.logger.warn(
+        `Recreated ${recreated} missing default website option(s)`,
+      );
+    }
+  }
+
+  /**
+   * Derives a best-effort title for a recreated default option, preferring any
+   * surviving option title, then a file name, then the template/submission
+   * name.
+   */
+  private deriveRecoveryTitle(submission: SubmissionEntity): string {
+    const survivingTitle = (submission.options ?? [])
+      .map((option) => option.data?.title)
+      .find((title) => typeof title === 'string' && title.trim().length > 0);
+    if (survivingTitle) {
+      return survivingTitle;
+    }
+
+    const firstFile = (submission.files ?? [])[0];
+    if (firstFile?.fileName) {
+      return path.parse(firstFile.fileName).name;
+    }
+
+    if (submission.metadata?.template?.name) {
+      return submission.metadata.template.name;
+    }
+
+    return submission.isMultiSubmission ? submission.type : 'New submission';
   }
 
   /**
@@ -142,7 +190,10 @@ export class SubmissionService
    * (e.g., from a crash during creation).
    */
   private async cleanupUninitializedSubmissions() {
-    const all = await super.findAll();
+    const all = await this.repository.find({
+      // eslint-disable-next-line @typescript-eslint/no-shadow
+      where: (submission, { eq }) => eq(submission.isInitialized, false),
+    });
     const uninitialized = all.filter((s) => !s.isInitialized);
     if (uninitialized.length > 0) {
       const ids = uninitialized.map((s) => s.id);
@@ -155,37 +206,38 @@ export class SubmissionService
     }
   }
 
-  /**
-   * Emits submissions onto websocket.
-   * Debounced by 50ms to avoid rapid consecutive emits.
-   * Overrides base class emit to provide submission-specific behavior.
-   */
-  public async emit() {
-    if (IsTestEnvironment()) {
-      return;
-    }
-
-    if (this.emitDebounceTimer) {
-      clearTimeout(this.emitDebounceTimer);
-    }
-
-    this.emitDebounceTimer = setTimeout(() => {
-      this.emitDebounceTimer = null;
-      this.performEmit();
-    }, 50);
-  }
-
-  private async performEmit() {
-    const now = Date.now();
-    super.emit({
-      event: SUBMISSION_UPDATES,
-      data: await this.findAllAsDto(),
-    });
-    this.logger.info(`Emitted submission updates in ${Date.now() - now}ms`);
-  }
-
   public async findAllAsDto(): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
     const all = (await super.findAll()).filter((s) => s.isInitialized);
+
+    return this.toDtosWithValidation(all);
+  }
+
+  public async findByIdsAsDto(
+    ids: SubmissionId[],
+  ): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
+    const uniqueIds = [...new Set(ids)];
+    if (!uniqueIds.length) {
+      return [];
+    }
+
+    const submissions = await this.repository.find({
+      where: (submission, { inArray }) => inArray(submission.id, uniqueIds),
+    });
+    const byId = new Map(
+      submissions.map((submission) => [submission.id, submission]),
+    );
+    const initialized = uniqueIds.flatMap((id) => {
+      const submission = byId.get(id);
+      return submission?.isInitialized ? [submission] : [];
+    });
+
+    return this.toDtosWithValidation(initialized);
+  }
+
+  private async toDtosWithValidation(
+    submissions: SubmissionEntity[],
+  ): Promise<ISubmissionDto<ISubmissionMetadata>[]> {
+    const all = submissions;
 
     // Separate archived from non-archived for efficient processing
     const archived = all.filter((s) => s.isArchived);
@@ -283,7 +335,10 @@ export class SubmissionService
       order: (await this.repository.count()) + 1,
     });
 
-    submission = await this.repository.insert(submission);
+    submission = await this.dependencyMutationMutex.runExclusive(async () => {
+      await this.assertNoDependencyCycle(submission.id, submission.dependsOn);
+      return this.repository.insert(submission);
+    });
 
     // Determine the submission name/title
     let name = 'New submission';
@@ -373,12 +428,13 @@ export class SubmissionService
         ...submission.toObject(),
         isInitialized: true,
       });
-      this.emit();
-      return await this.findById(submission.id);
+      this.markChanged(submission.id);
+      return await this.findByIdOrThrow(submission.id);
     } catch (err) {
       // Clean up on error, tx is too much work
       this.logger.error(err, 'Error creating submission');
       await this.repository.deleteById([submission.id]);
+      this.markRemoved(submission.id);
       throw err;
     }
   }
@@ -395,16 +451,15 @@ export class SubmissionService
     this.logger
       .withMetadata({ id, templateId })
       .info('Applying template to submission');
-    const submission = await this.findById(id, { failOnMissing: true });
-    const template: Submission = await this.findById(templateId, {
-      failOnMissing: true,
-    });
+    const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
+    const template: Submission = await this.findByIdOrThrow(templateId);
 
     if (!template.metadata.template) {
       throw new BadRequestException('Template Id provided is not a template.');
     }
 
-    const defaultOption: WebsiteOptions = submission.options.find(
+    const defaultOption = submission.options.find(
       (option: WebsiteOptions) => option.accountId === NULL_ACCOUNT_ID,
     );
     const defaultTitle = defaultOption?.data?.title;
@@ -443,7 +498,9 @@ export class SubmissionService
     });
 
     try {
-      return await this.findById(id);
+      const result = await this.findByIdOrThrow(id);
+      this.markChanged(id);
+      return result;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -457,14 +514,16 @@ export class SubmissionService
    */
   async update(id: SubmissionId, update: UpdateSubmissionDto) {
     this.logger.withMetadata(update).info(`Updating Submission '${id}'`);
-    const submission = await this.findById(id, { failOnMissing: true });
+    const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
 
     const scheduleType =
       update.scheduleType ?? submission.schedule.scheduleType;
     const updates: Pick<
       SubmissionEntity,
-      'metadata' | 'isArchived' | 'isScheduled' | 'schedule'
+      'dependsOn' | 'metadata' | 'isArchived' | 'isScheduled' | 'schedule'
     > = {
+      dependsOn: update.dependsOn ?? submission.dependsOn,
       metadata: {
         ...submission.metadata,
         ...(update.metadata ?? {}),
@@ -492,62 +551,145 @@ export class SubmissionService
             },
     };
 
-    const optionChanges: Promise<unknown>[] = [];
-
-    // Removes unused website options
-    if (update.deletedWebsiteOptions?.length) {
-      update.deletedWebsiteOptions.forEach((deletedOptionId) => {
-        optionChanges.push(this.websiteOptionsService.remove(deletedOptionId));
-      });
-    }
-
-    // Creates or updates new website options
-    if (update.newOrUpdatedOptions?.length) {
-      update.newOrUpdatedOptions.forEach((option) => {
-        if (option.createdAt) {
-          optionChanges.push(
-            this.websiteOptionsService.update(option.id, {
-              data: option.data,
-            }),
-          );
-        } else {
-          optionChanges.push(
-            this.websiteOptionsService.create({
-              accountId: option.accountId,
-              data: option.data,
-              submissionId: submission.id,
-            }),
-          );
-        }
-      });
-    }
-
-    await Promise.allSettled(optionChanges);
-
     try {
-      // Update Here
-      await this.repository.update(id, updates);
-      this.emit();
-      return await this.findById(id);
+      if (update.dependsOn !== undefined) {
+        await this.dependencyMutationMutex.runExclusive(async () => {
+          await this.assertNoDependencyCycle(id, updates.dependsOn);
+          await this.repository.update(id, updates);
+        });
+      } else {
+        await this.repository.update(id, updates);
+      }
+
+      const optionChanges: Promise<unknown>[] = [];
+      if (update.deletedWebsiteOptions?.length) {
+        update.deletedWebsiteOptions.forEach((deletedOptionId) => {
+          optionChanges.push(
+            this.websiteOptionsService.remove(deletedOptionId),
+          );
+        });
+      }
+      if (update.newOrUpdatedOptions?.length) {
+        update.newOrUpdatedOptions.forEach((option) => {
+          if (option.createdAt) {
+            optionChanges.push(
+              this.websiteOptionsService.update(option.id, {
+                data: option.data,
+              }),
+            );
+          } else {
+            optionChanges.push(
+              this.websiteOptionsService.create({
+                accountId: option.accountId,
+                data: option.data,
+                submissionId: submission.id,
+              }),
+            );
+          }
+        });
+      }
+      await Promise.allSettled(optionChanges);
+      this.markChanged(id);
+      return await this.findByIdOrThrow(id);
     } catch (err) {
       throw new BadRequestException(err);
     }
   }
 
-  public async remove(id: SubmissionId) {
-    const result = await super.remove(id);
-    this.emit();
-    return result;
+  private async assertNoDependencyCycle(
+    submissionId: SubmissionId,
+    dependsOn: SubmissionId[],
+  ): Promise<void> {
+    const submissions = await this.repository.find({ with: {} });
+    const graph = new Map<SubmissionId, SubmissionId[]>(
+      submissions.map((submission) => [submission.id, submission.dependsOn]),
+    );
+    graph.set(submissionId, dependsOn);
+
+    const visiting = new Set<SubmissionId>();
+    const visited = new Set<SubmissionId>();
+    const hasCycle = (currentId: SubmissionId): boolean => {
+      if (visiting.has(currentId)) {
+        return true;
+      }
+      if (visited.has(currentId)) {
+        return false;
+      }
+
+      visiting.add(currentId);
+      for (const dependencyId of graph.get(currentId) ?? []) {
+        if (hasCycle(dependencyId)) {
+          return true;
+        }
+      }
+      visiting.delete(currentId);
+      visited.add(currentId);
+      return false;
+    };
+
+    if (hasCycle(submissionId)) {
+      throw new BadRequestException(
+        `Submission '${submissionId}' has a circular dependency`,
+      );
+    }
+  }
+
+  public async remove(id: SubmissionId): Promise<void> {
+    const dependents = await this.dependencyMutationMutex.runExclusive(
+      async () => {
+        const affected = await this.findDependencyReferences(id);
+        await this.postingActivity.assertSubmissionsMutable([
+          id,
+          ...affected.map((submission) => submission.id),
+        ]);
+        await super.remove(id);
+        await this.dropDependencyReferences(id, affected);
+        return affected;
+      },
+    );
+    this.markRemoved(id);
+    if (dependents.length > 0) {
+      this.markChanged(dependents.map((submission) => submission.id));
+    }
+  }
+
+  /**
+   * Strips a deleted submission's id from every `dependsOn` that references it.
+   * A dangling id blocks posting forever, since dependency completion requires a
+   * completed post for each listed id and no post can ever exist for it.
+   */
+  private async dropDependencyReferences(
+    removedId: SubmissionId,
+    dependents: SubmissionEntity[],
+  ): Promise<void> {
+    await Promise.all(
+      dependents.map((submission) =>
+        this.repository.update(submission.id, {
+          dependsOn: submission.dependsOn.filter(
+            (dependencyId) => dependencyId !== removedId,
+          ),
+        }),
+      ),
+    );
+  }
+
+  private async findDependencyReferences(
+    removedId: SubmissionId,
+  ): Promise<SubmissionEntity[]> {
+    return (await this.repository.find({ with: {} })).filter((submission) =>
+      submission.dependsOn.includes(removedId),
+    );
   }
 
   async applyMultiSubmission(applyMultiSubmissionDto: ApplyMultiSubmissionDto) {
     const { submissionToApply, submissionIds, merge } = applyMultiSubmissionDto;
-    const origin = await this.repository.findById(submissionToApply, {
-      failOnMissing: true,
-    });
+    const origin = await this.repository.findByIdOrThrow(submissionToApply);
     const submissions = await this.repository.find({
       where: (submission, { inArray }) => inArray(submission.id, submissionIds),
     });
+    await this.postingActivity.assertSubmissionsMutable(
+      submissions.map((submission) => submission.id),
+    );
     if (merge) {
       // Keeps unique options, overwrites overlapping options
       for (const submission of submissions) {
@@ -596,7 +738,7 @@ export class SubmissionService
       }
     }
 
-    this.emit();
+    this.markChanged(submissions.map((submission) => submission.id));
   }
 
   /**
@@ -613,6 +755,7 @@ export class SubmissionService
   }> {
     const { targetSubmissionIds, options, overrideTitle, overrideDescription } =
       dto;
+    await this.postingActivity.assertSubmissionsMutable(targetSubmissionIds);
 
     this.logger
       .withMetadata({
@@ -629,9 +772,7 @@ export class SubmissionService
 
     for (const submissionId of targetSubmissionIds) {
       try {
-        const submission = await this.findById(submissionId, {
-          failOnMissing: true,
-        });
+        const submission = await this.findByIdOrThrow(submissionId);
 
         for (const templateOption of options) {
           // Find existing option for this account
@@ -647,8 +788,11 @@ export class SubmissionService
             delete dataToApply.title;
           }
 
-          // Handle description override: only replace if overrideDescription is true AND template has description
-          if (!overrideDescription || !dataToApply.description?.description) {
+          // Handle description override: only replace if overrideDescription is true AND template has non-empty description
+          if (
+            !overrideDescription ||
+            !dataToApply.description?.description?.content?.length
+          ) {
             delete dataToApply.description;
           }
 
@@ -662,22 +806,23 @@ export class SubmissionService
               data: mergedData,
             });
           } else {
-            // Create new option
+            // Create new option - only pass title if it exists in dataToApply
             await this.websiteOptionsService.createOption(
               submission,
               templateOption.accountId,
               dataToApply,
-              dataToApply.title,
+              'title' in dataToApply ? dataToApply.title : undefined,
             );
           }
         }
 
         results.success++;
+        this.markChanged(submissionId);
       } catch (error) {
         results.failed++;
         results.errors.push({
           submissionId,
-          error: error instanceof Error ? error.message : String(error),
+          error: toError(error).message,
         });
         this.logger
           .withMetadata({ submissionId, error })
@@ -685,7 +830,6 @@ export class SubmissionService
       }
     }
 
-    this.emit();
     return results;
   }
 
@@ -706,12 +850,21 @@ export class SubmissionService
         files: true,
       },
     });
+
+    if (!entityToDuplicate) {
+      throw new BadRequestException(
+        `Cannot duplicate: Submission with id ${id} does not exists`,
+      );
+    }
+
+    let duplicatedSubmissionId: SubmissionId | undefined;
     await withTransactionContext(this.repository.db, async (ctx) => {
       const newSubmission = (
         await ctx
           .getDb()
           .insert(SubmissionSchema)
           .values({
+            dependsOn: entityToDuplicate.dependsOn,
             metadata: entityToDuplicate.metadata,
             type: entityToDuplicate.type,
             isScheduled: entityToDuplicate.isScheduled,
@@ -723,6 +876,7 @@ export class SubmissionService
           })
           .returning()
       )[0];
+      duplicatedSubmissionId = newSubmission.id;
       ctx.track('SubmissionSchema', newSubmission.id);
 
       const optionValues = entityToDuplicate.options.map((option) => ({
@@ -769,7 +923,7 @@ export class SubmissionService
         )[0];
         ctx.track('FileBufferSchema', primaryFile.id);
 
-        const thumbnail: FileBuffer | undefined = file.thumbnail
+        const thumbnail = file.thumbnail
           ? (
               await ctx
                 .getDb()
@@ -786,7 +940,7 @@ export class SubmissionService
           ctx.track('FileBufferSchema', thumbnail.id);
         }
 
-        const altFile: FileBuffer | undefined = file.altFile
+        const altFile = file.altFile
           ? (
               await ctx
                 .getDb()
@@ -826,14 +980,17 @@ export class SubmissionService
         .set({ metadata: newSubmission.metadata, isInitialized: true })
         .where(eq(SubmissionSchema.id, newSubmission.id));
     });
-    this.emit();
+    if (duplicatedSubmissionId) {
+      this.markChanged(duplicatedSubmissionId);
+    }
   }
 
   async updateTemplateName(
     id: SubmissionId,
     updateSubmissionDto: UpdateSubmissionTemplateNameDto,
   ) {
-    const entity = await this.findById(id, { failOnMissing: true });
+    const entity = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
 
     if (!entity.isTemplate) {
       throw new BadRequestException(`Submission '${id}' is not a template`);
@@ -852,7 +1009,7 @@ export class SubmissionService
     const result = await this.repository.update(id, {
       metadata: entity.metadata,
     });
-    this.emit();
+    this.markChanged(id);
     return result;
   }
 
@@ -861,8 +1018,9 @@ export class SubmissionService
     targetId: SubmissionId,
     position: 'before' | 'after',
   ) {
-    const moving = await this.findById(id, { failOnMissing: true });
-    const target = await this.findById(targetId, { failOnMissing: true });
+    const moving = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
+    const target = await this.findByIdOrThrow(targetId);
 
     // Ensure same type (FILE or MESSAGE)
     if (moving.type !== target.type) {
@@ -875,8 +1033,7 @@ export class SubmissionService
     // Exclude templates and multi-submissions from ordering
     const allOfType = (await this.repository.findAll())
       .filter(
-        (s) =>
-          s.type === moving.type && !s.isTemplate && !s.isMultiSubmission,
+        (s) => s.type === moving.type && !s.isTemplate && !s.isMultiSubmission,
       )
       .sort((a, b) => a.order - b.order);
 
@@ -906,28 +1063,36 @@ export class SubmissionService
     }
 
     await this.repository.update(id, { order: newOrder });
-    this.emit();
+    this.markChanged(id);
   }
 
   async unarchive(id: SubmissionId) {
-    const submission = await this.findById(id, { failOnMissing: true });
+    const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
     if (!submission.isArchived) {
       throw new BadRequestException(`Submission '${id}' is not archived`);
     }
     await this.repository.update(id, {
       isArchived: false,
     });
-    this.emit();
+    this.markChanged(id);
   }
 
   async archive(id: SubmissionId) {
-    const submission = await this.findById(id, { failOnMissing: true });
+    const submission = await this.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(id);
     if (submission.isArchived) {
       throw new BadRequestException(`Submission '${id}' is already archived`);
     }
     await this.repository.update(id, {
       isArchived: true,
+      isScheduled: false,
+      schedule: {
+        scheduledFor: undefined,
+        scheduleType: ScheduleType.NONE,
+        cron: undefined,
+      },
     });
-    this.emit();
+    this.markChanged(id);
   }
 }

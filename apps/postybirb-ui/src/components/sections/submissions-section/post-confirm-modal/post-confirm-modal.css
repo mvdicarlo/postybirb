@@ -1,0 +1,79 @@
+.postybirb__bulk_post_targets {
+  padding-left: var(--mantine-spacing-xs);
+  border-left: 2px solid var(--mantine-color-default-border);
+}
+
+.postybirb__bulk_post_target_summary {
+  min-width: 0;
+}
+
+.postybirb__bulk_post_target_summary > :nth-child(3) {
+  flex: 1;
+  min-width: 0;
+}
+
+.postybirb__bulk_post_target_count {
+  flex-shrink: 0;
+}
+
+.postybirb__bulk_post_unit_target,
+.postybirb__bulk_post_unit_labels {
+  min-width: 0;
+}
+
+.postybirb__bulk_post_unit_target > svg {
+  flex-shrink: 0;
+  color: var(--mantine-color-dimmed);
+}
+
+.postybirb__bulk_post_dependencies {
+  min-width: 0;
+  padding: 6px 8px;
+  border-left: 2px solid var(--mantine-color-blue-5);
+  border-radius: var(--mantine-radius-xs);
+  background: var(--mantine-color-blue-light);
+}
+
+.postybirb__bulk_post_dependencies_label {
+  flex-shrink: 0;
+  min-height: 20px;
+  color: var(--mantine-color-blue-light-color);
+}
+
+.postybirb__bulk_post_dependency_list {
+  min-width: 0;
+}
+
+.postybirb__bulk_post_dependency {
+  min-width: 0;
+  max-width: 320px;
+  padding-left: 6px;
+}
+
+.postybirb__bulk_post_dependency > p {
+  min-width: 0;
+}
+
+.postybirb__bulk_post_dependency > .mantine-Badge-root {
+  flex-shrink: 0;
+}
+
+@media (max-width: 48em) {
+  .postybirb__bulk_post_target_summary {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .postybirb__bulk_post_target_summary > :nth-child(3) {
+    flex-basis: 100%;
+    padding-left: var(--mantine-spacing-xs);
+  }
+
+  .postybirb__bulk_post_dependencies {
+    flex-wrap: wrap;
+  }
+
+  .postybirb__bulk_post_dependency_list {
+    flex-basis: 100%;
+  }
+}

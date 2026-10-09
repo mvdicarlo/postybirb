@@ -45,7 +45,7 @@ export class FileSubmissionController {
   ) {}
 
   private findOne(id: SubmissionId) {
-    return this.submissionService.findById(id).then((record) => record.toDTO());
+    return this.submissionService.findByIdOrThrow(id).then((record) => record.toDTO());
   }
 
   @Post('add/:target/:id')

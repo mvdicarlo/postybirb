@@ -1,21 +1,21 @@
-import { BadRequestException, Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
+import { DirectoryWatcher, DirectoryWatcherRepository } from '@postybirb/database';
 import {
-  DirectoryWatcherImportAction,
-  EntityId,
-  SubmissionType,
+    DirectoryWatcherImportAction,
+    EntityId,
+    SubmissionType,
 } from '@postybirb/types';
-import { IsTestEnvironment } from '@postybirb/utils/electron';
+import { IsTestEnvironment, toError } from '@postybirb/utils/common';
 import { mkdir, readdir, rename, writeFile } from 'fs/promises';
 import { getType } from 'mime';
 import { join } from 'path';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { DirectoryWatcher } from '../drizzle/models';
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SubmissionService } from '../submission/services/submission.service';
-import { WSGateway } from '../web-socket/web-socket-gateway';
+import { DIRECTORY_WATCHER_EVENT_PREFIX } from './directory-watcher.events';
 import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
 import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
 
@@ -59,7 +59,7 @@ export interface CheckPathResult {
 }
 
 @Injectable()
-export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcherSchema'> {
+export class DirectoryWatchersService extends PostyBirbService<DirectoryWatcherRepository> {
   private runningWatchers = new Set<EntityId>();
 
   private recoveredWatchers = new Set<EntityId>();
@@ -73,19 +73,10 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
   constructor(
     private readonly submissionService: SubmissionService,
     private readonly notificationService: NotificationsService,
-    @Optional() webSocket?: WSGateway,
+    eventEmitter: EventEmitter2,
   ) {
-    super('DirectoryWatcherSchema', webSocket);
-    this.repository.subscribe('DirectoryWatcherSchema', () =>
-      this.emitUpdates(),
-    );
-  }
-
-  protected async emitUpdates() {
-    super.emit({
-      event: DIRECTORY_WATCHER_UPDATES,
-      data: (await this.repository.findAll()).map((entity) => entity.toDTO()),
-    });
+    super(new DirectoryWatcherRepository());
+    this.configureCrudEvents(DIRECTORY_WATCHER_EVENT_PREFIX, eventEmitter);
   }
 
   /**
@@ -115,10 +106,18 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
 
   /**
    * Ensures all required subdirectories exist.
+   * Skips if the base path doesn't exist.
    *
    * @param {string} basePath
    */
   private async ensureDirectoryStructure(basePath: string): Promise<void> {
+    // Check if base path exists, skip if it doesn't
+    try {
+      await readdir(basePath);
+    } catch {
+      return;
+    }
+
     const subfolders = [
       this.SUBFOLDER_PROCESSING,
       this.SUBFOLDER_COMPLETED,
@@ -138,6 +137,8 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
    */
   private async recoverOrphanedFiles(watcher: DirectoryWatcher): Promise<void> {
     try {
+      if (!watcher.path) return;
+
       await this.ensureDirectoryStructure(watcher.path);
 
       const processingPath = join(watcher.path, this.SUBFOLDER_PROCESSING);
@@ -156,7 +157,9 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
             await rename(sourcePath, targetPath);
             this.logger.info(`Recovered orphaned file: ${file}`);
           } catch (err) {
-            this.logger.error(err, `Failed to recover orphaned file: ${file}`);
+            this.logger
+              .withError(err)
+              .error(`Failed to recover orphaned file: ${file}`);
           }
         }
 
@@ -172,10 +175,9 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         });
       }
     } catch (err) {
-      this.logger.error(
-        err,
-        `Failed to recover orphaned files for watcher ${watcher.id}`,
-      );
+      this.logger
+        .withError(err)
+        .error(`Failed to recover orphaned files for watcher ${watcher.id}`);
     }
   }
 
@@ -186,6 +188,8 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
    */
   private async read(watcher: DirectoryWatcher) {
     try {
+      if (!watcher.path) return;
+
       // Ensure directory structure exists
       await this.ensureDirectoryStructure(watcher.path);
 
@@ -202,7 +206,10 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         return;
       }
 
-      const results = { success: [], failed: [] };
+      const results = {
+        success: [] as string[],
+        failed: [] as { file: string; error: string }[],
+      };
 
       // Process files sequentially
       for (const file of filesInDirectory) {
@@ -210,8 +217,11 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
           await this.processFileWithMove(watcher, file);
           results.success.push(file);
         } catch (err) {
-          this.logger.error(err, `Failed to process file ${file}`);
-          results.failed.push({ file, error: err.message });
+          this.logger.withError(err).error(`Failed to process file ${file}`);
+          results.failed.push({
+            file,
+            error: toError(err).message,
+          });
         }
       }
 
@@ -230,14 +240,16 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         },
       });
     } catch (e) {
-      this.logger.error(e, `Failed to read directory ${watcher.path}`);
+      this.logger
+        .withError(e)
+        .error(`Failed to read directory ${watcher.path}`);
       this.notificationService.create({
         title: 'Directory Watcher Error',
         message: `Failed to read directory ${watcher.path}`,
         type: 'error',
         tags: ['directory-watcher'],
         data: {
-          error: e.message,
+          error: (e as Error).message,
         },
       });
     }
@@ -254,6 +266,8 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     watcher: DirectoryWatcher,
     fileName: string,
   ): Promise<void> {
+    if (!watcher.path) return;
+
     const sourcePath = join(watcher.path, fileName);
     const processingPath = join(
       watcher.path,
@@ -282,7 +296,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         origin: 'directory-watcher',
         originalname: fileName,
         encoding: '',
-        mimetype: getType(fileName),
+        mimetype: getType(fileName) ?? '',
         size: 0,
         destination: '',
         filename: fileName,
@@ -300,10 +314,10 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
           );
           submissionId = submission.id;
 
-          if (watcher.template) {
+          if (watcher.templateId) {
             await this.submissionService.applyOverridingTemplate(
               submission.id,
-              watcher.template?.id,
+              watcher.templateId,
             );
           }
           break;
@@ -319,7 +333,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         `Successfully processed file ${fileName} (submission: ${submissionId})`,
       );
     } catch (err) {
-      this.logger.error(err, `Failed to process file ${fileName}`);
+      this.logger.withError(err).error(`Failed to process file ${fileName}`);
 
       // Cleanup submission if it was created
       if (submissionId) {
@@ -346,16 +360,15 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
         const errorDetails = [
           `File: ${fileName}`,
           `Failed at: ${new Date().toISOString()}`,
-          `Error: ${err.message}`,
-          `Stack: ${err.stack || 'N/A'}`,
+          `Error: ${(err as Error).message}`,
+          `Stack: ${(err as Error).stack || 'N/A'}`,
         ].join('\n');
 
         await writeFile(errorFilePath, errorDetails);
       } catch (moveErr) {
-        this.logger.error(
-          moveErr,
-          `Failed to move file to failed folder: ${fileName}`,
-        );
+        this.logger
+          .withError(moveErr)
+          .error(`Failed to move file to failed folder: ${fileName}`);
       }
 
       throw err;
@@ -379,12 +392,14 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
       await this.ensureDirectoryStructure(createDto.path);
     }
 
-    return this.repository.insert(createDto);
+    const entity = await this.repository.insert(createDto);
+    this.publishCreated(entity.toDTO());
+    return entity;
   }
 
   async update(id: EntityId, update: UpdateDirectoryWatcherDto) {
     this.logger.withMetadata(update).info(`Updating DirectoryWatcher '${id}'`);
-    const entity = await this.repository.findById(id, { failOnMissing: true });
+    const entity = await this.repository.findByIdOrThrow(id);
 
     // Validate path if being updated
     if (update.path && update.path !== entity.path) {
@@ -401,9 +416,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     }
 
     const template = update.templateId
-      ? await this.submissionService.findById(update.templateId, {
-          failOnMissing: true,
-        })
+      ? await this.submissionService.findByIdOrThrow(update.templateId)
       : null;
     if (template && !template.isTemplate) {
       throw new BadRequestException('Template Id provided is not a template.');
@@ -412,7 +425,9 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
     const updatedEntity = await this.repository.update(id, {
       importAction: update.importAction ?? entity.importAction,
       path: update.path ?? entity.path,
-      templateId: update.templateId ?? entity.templateId,
+      templateId: Object.prototype.hasOwnProperty.call(update, 'templateId')
+        ? update.templateId
+        : entity.templateId,
     });
 
     // If this is the first time setting a path (from null/empty to valid path), ensure directory structure
@@ -420,6 +435,7 @@ export class DirectoryWatchersService extends PostyBirbService<'DirectoryWatcher
       await this.ensureDirectoryStructure(updatedEntity.path);
     }
 
+    this.publishUpdated(updatedEntity.toDTO());
     return updatedEntity;
   }
 

@@ -1,21 +1,24 @@
+/**
+ * Error boundary component for the remake UI.
+ * Adapted from src/components/error-boundary with App Insights removed.
+ */
+
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/react/macro';
 import {
-  Alert,
-  Box,
-  Button,
-  Code,
-  Container,
-  CopyButton,
-  ScrollArea,
-  Stack,
-  Text,
-  Title,
+    Alert,
+    Box,
+    Button,
+    Code,
+    Container,
+    ScrollArea,
+    Stack,
+    Text,
+    Title,
 } from '@mantine/core';
-import { IconAlertTriangle, IconCopy, IconRefresh } from '@tabler/icons-react';
+import { IconAlertTriangle, IconRefresh } from '@tabler/icons-react';
 import { Component, ReactNode } from 'react';
-import { trackUIException } from '../../app-insights-ui';
-import { CommonTranslations } from '../../translations/common-translations';
+import { CopyToClipboard } from '../shared/copy-to-clipboard';
 
 /**
  * Copyable error details component
@@ -31,9 +34,6 @@ function CopyableErrorDetails({
   const getComponentName = (componentStack?: string): string | null => {
     if (!componentStack) return null;
 
-    // Component stack format typically looks like:
-    //     in ComponentName (at file.tsx:123)
-    //     in AnotherComponent (at file.tsx:456)
     const lines = componentStack.trim().split('\n');
     const firstComponentLine = lines.find((line) =>
       line.trim().startsWith('in '),
@@ -69,30 +69,13 @@ function CopyableErrorDetails({
           <Text size="xs" fw={500}>
             <Trans>Error</Trans>:
           </Text>
-          <CopyButton value={errorDetails} timeout={2000}>
-            {({ copied, copy }) => (
-              <Button
-                color={copied ? 'teal' : 'gray'}
-                onClick={copy}
-                leftSection={<IconCopy size={12} />}
-                size="xs"
-                variant="subtle"
-              >
-                {copied ? (
-                  <CommonTranslations.CopiedToClipboard />
-                ) : (
-                  <CommonTranslations.CopyToClipboard />
-                )}
-              </Button>
-            )}
-          </CopyButton>
+          <CopyToClipboard value={errorDetails} variant="button" size="xs" color="gray" />
         </Box>
 
         <ScrollArea.Autosize mah={120}>
           <Code
             block
             p="xs"
-            fs="xs"
             style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
           >
             <Text span c="red" fw={500}>
@@ -171,7 +154,7 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
-    // eslint-disable-next-line lingui/no-unlocalized-strings, no-console
+    // eslint-disable-next-line no-console
     console.error('ErrorBoundary caught an error:', error, errorInfo);
 
     this.setState({ error, errorInfo });
@@ -193,21 +176,17 @@ export class ErrorBoundary extends Component<
     const componentName = getComponentName(errorInfo.componentStack);
     const { level = 'section' } = this.props;
 
-    // Track exception in Application Insights
-    trackUIException(error, {
+    // Log for debugging
+    // eslint-disable-next-line no-console
+    console.error('Error details:', {
       source: 'error-boundary',
       level,
       component: componentName || 'unknown',
-      componentStack: errorInfo.componentStack.substring(0, 500), // Limit length
     });
 
     // Call the onError callback if provided
     // eslint-disable-next-line react/destructuring-assignment
     this.props.onError?.(error, errorInfo);
-
-    // Log error to any external error reporting service
-    // Example: Sentry, LogRocket, etc.
-    // logErrorToService(error, errorInfo);
   }
 
   componentDidUpdate(prevProps: ErrorBoundaryProps) {
@@ -268,7 +247,6 @@ export class ErrorBoundary extends Component<
     errorInfo?: { componentStack: string },
   ) {
     const isComponentLevel = level === 'component';
-    const AlertComponent = isComponentLevel ? Alert : Container;
 
     if (isComponentLevel) {
       return (
@@ -300,7 +278,7 @@ export class ErrorBoundary extends Component<
     }
 
     return (
-      <AlertComponent>
+      <Container>
         <Box ta="center" py="xl">
           <Stack align="center" gap="lg">
             <IconAlertTriangle size={48} color="var(--mantine-color-red-5)" />
@@ -346,7 +324,7 @@ export class ErrorBoundary extends Component<
             )}
           </Stack>
         </Box>
-      </AlertComponent>
+      </Container>
     );
   }
 }

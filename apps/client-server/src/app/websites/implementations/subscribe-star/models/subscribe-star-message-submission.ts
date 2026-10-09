@@ -6,8 +6,9 @@ import { SubscribeStarAccountData } from './subscribe-star-account-data';
 export class SubscribeStarMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.HTML,
+    expectsInlineTitle: true,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @SelectField<SubscribeStarAccountData>({
     required: true,

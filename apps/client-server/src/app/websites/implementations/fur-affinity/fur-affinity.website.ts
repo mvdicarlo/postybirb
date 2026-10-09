@@ -1,22 +1,21 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
-  ILoginState,
   ImageResizeProps,
   IPostResponse,
+  LoginResult,
   PostData,
   PostResponse,
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
 import { HTMLElement, parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
-import HtmlParserUtil from '../../../utils/html-parser.util';
 import { PostBuilder } from '../../commons/post-builder';
-import { validatorPassthru } from '../../commons/validator-passthru';
+import { SubmissionValidator } from '../../commons/validator';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
@@ -84,9 +83,11 @@ export default class FurAffinity
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  protected readonly cookieIgnoreList = ['FCNEC'];
+
+  public async onLogin(): Promise<LoginResult> {
     try {
-      const res = await Http.get<string>(
+      const res = await this.platform.http.get<string>(
         `${this.BASE_URL}/controls/submissions`,
         { partition: this.accountId },
       );
@@ -94,68 +95,86 @@ export default class FurAffinity
       if (res.body.includes('logout-link')) {
         const $ = parse(res.body);
         await this.getFolders($);
-        return this.loginState.setLogin(
-          true,
-          $.querySelector('.loggedin_user_avatar').getAttribute('alt'),
+        const username = $.querySelector('.loggedin_user_avatar')?.getAttribute(
+          'alt',
         );
+        if (!username) {
+          this.logger.warn(
+            'Failed to find loggedin_user_avatar element during login',
+          );
+        }
+        return { loggedIn: true, username: username ?? null };
       }
 
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     } catch (e) {
-      this.logger.error('Failed to login', e);
-      return this.loginState.setLogin(false, null);
+      this.logger.withError(e).error('Failed to login');
+      return { loggedIn: false };
     }
   }
 
-  private getFolders($: HTMLElement) {
-    const folders: SelectOption[] = [];
-    const flatFolders: SelectOption[] = [];
+  private async getFolders($: HTMLElement) {
+    const folderSelect = $.querySelector('select[name=assign_folder_id]');
+    if (!folderSelect) {
+      this.logger.warn('Failed to find folder select element during login');
+      return;
+    }
 
-    $.querySelector('select[name=assign_folder_id]').children.forEach((el) => {
-      if (el.tagName === 'option') {
-        if (el.getAttribute('value') === '0') {
-          return;
-        }
-        const folder: SelectOption = {
-          value: el.getAttribute('value'),
-          label: el.textContent,
-        };
-        folders.push(folder);
-        flatFolders.push(folder);
-      } else {
-        const optgroup: SelectOption = {
-          label: el.getAttribute('label'),
-          items: [],
-        };
-        [...el.children].forEach((opt) => {
-          const f: SelectOption = {
-            value: opt.getAttribute('value'),
-            label: opt.textContent,
-          };
-          optgroup.items.push(f);
-          flatFolders.push(f);
-        });
-        folders.push(optgroup);
+    await this.setWebsiteData({
+      folders: this.getFolderOptions(folderSelect.children),
+    });
+  }
+
+  private getFolderOptions(elements: HTMLElement[]): SelectOption[] {
+    return elements.reduce<SelectOption[]>((options, el) => {
+      const option = this.getFolderOption(el);
+      if (option) {
+        options.push(option);
       }
-    });
+      return options;
+    }, []);
+  }
 
-    this.setWebsiteData({
-      folders: flatFolders,
-    });
+  private getFolderOption(el: HTMLElement): SelectOption | undefined {
+    if (el.tagName === 'OPTION') {
+      const value = el.getAttribute('value') || '';
+      if (value === '0') {
+        return undefined;
+      }
+
+      return {
+        value,
+        label: el.textContent.trim() || 'Unknown',
+      };
+    }
+
+    if (el.tagName === 'OPTGROUP') {
+      const items = this.getFolderOptions(el.children);
+      if (!items.length) {
+        return undefined;
+      }
+
+      return {
+        label: el.getAttribute('label')?.trim() || 'Unknown',
+        items,
+      };
+    }
+
+    return undefined;
   }
 
   createFileModel(): FurAffinityFileSubmission {
     return new FurAffinityFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
   private processForError(body: string): string | undefined {
     if (body.includes('redirect-message')) {
       const $ = parse(body);
-      let msg = $.querySelector('.redirect-message').textContent.trim();
+      let msg = $.querySelector('.redirect-message')?.textContent?.trim();
 
       if (msg?.includes('CAPTCHA')) {
         msg =
@@ -168,17 +187,40 @@ export default class FurAffinity
     return undefined;
   }
 
+  private processForRateLimit(body: string): IPostResponse | undefined {
+    const match = parse(body).textContent.match(
+      /Flood protection\.\s*Please wait\s+(\d+)\s+seconds?\s+before trying to upload another submission\.\s*/i,
+    );
+    if (!match) {
+      return undefined;
+    }
+
+    const waitSeconds = Number.parseInt(match[1], 10);
+    return PostResponse.fromWebsite(this)
+      .withMessage(match[0].trim())
+      .withRateLimit(new Date(Date.now() + waitSeconds * 1000).toISOString())
+      .withAdditionalInfo(body);
+  }
+
   async onPostFileSubmission(
     postData: PostData<FurAffinityFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
-    const part1 = await Http.get<string>(`${this.BASE_URL}/submit/`, {
-      partition: this.accountId,
-      headers: {
-        Referer: 'https://www.furaffinity.net/submit/',
+    const part1 = await this.platform.http.get<string>(
+      `${this.BASE_URL}/submit/`,
+      {
+        partition: this.accountId,
+        headers: {
+          Referer: 'https://www.furaffinity.net/submit/',
+        },
       },
-    });
+    );
+
+    const part1RateLimit = this.processForRateLimit(part1.body);
+    if (part1RateLimit) {
+      return part1RateLimit;
+    }
 
     PostResponse.validateBody(this, part1);
     const err = this.processForError(part1.body);
@@ -212,6 +254,11 @@ export default class FurAffinity
       .withHeader('Referer', 'https://www.furaffinity.net/submit/')
       .send<string>(`${this.BASE_URL}/submit/upload`);
 
+    const part2RateLimit = this.processForRateLimit(part2.body);
+    if (part2RateLimit) {
+      return part2RateLimit;
+    }
+
     const err2 = this.processForError(part2.body);
     if (err2) {
       return PostResponse.fromWebsite(this)
@@ -238,7 +285,7 @@ export default class FurAffinity
       .setField('message', postData.options.description)
       .setField('keywords', postData.options.tags.join(' '))
       .setField('rating', this.getRating(postData.options.rating))
-      .setField('atype', postData.options.theme)
+      .setField('atype', postData.options.theme || '1')
       .setField('species', postData.options.species)
       .setField('gender', postData.options.gender)
       .setConditional(
@@ -258,6 +305,11 @@ export default class FurAffinity
     const postResponse = await builder.send<string>(
       `${this.BASE_URL}/submit/finalize`,
     );
+
+    const finalizeRateLimit = this.processForRateLimit(postResponse.body);
+    if (finalizeRateLimit) {
+      return finalizeRateLimit;
+    }
 
     if (!postResponse?.responseUrl?.includes('?upload-successful')) {
       const err3 = this.processForError(postResponse.body);
@@ -284,19 +336,32 @@ export default class FurAffinity
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<FurAffinityFileSubmission>();
 
-    const tags = postData.options.tags.filter((t) => t.length > 0);
-    if (tags.length < 3) {
+    this.validateKeywords(postData, validator);
+
+    return validator.result;
+  }
+
+  private validateKeywords(
+    postData: PostData<
+      FurAffinityFileSubmission | FurAffinityMessageSubmission
+    >,
+    validator:
+      | SubmissionValidator<FurAffinityFileSubmission>
+      | SubmissionValidator<FurAffinityMessageSubmission>,
+  ) {
+    const keywords = postData.options.tags.join(' ');
+    const keywordsFieldLimit = 500;
+
+    if (keywords.length >= keywordsFieldLimit) {
       validator.error(
-        'validation.tags.min-tags',
+        'validation.tags.furaffinity.keywords-max-length',
         {
-          currentLength: tags.length,
-          minLength: 3,
+          currentLength: keywords.length,
+          maxLength: keywordsFieldLimit,
         },
         'tags',
       );
     }
-
-    return validator.result;
   }
 
   createMessageModel(): FurAffinityMessageSubmission {
@@ -305,11 +370,20 @@ export default class FurAffinity
 
   async onPostMessageSubmission(
     postData: PostData<FurAffinityMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
-    const page = await Http.get<string>(`${this.BASE_URL}/controls/journal`, {
-      partition: this.accountId,
-    });
+    const page = await this.platform.http.get<string>(
+      `${this.BASE_URL}/controls/journal`,
+      {
+        partition: this.accountId,
+      },
+    );
+
+    const pageRateLimit = this.processForRateLimit(page.body);
+    if (pageRateLimit) {
+      return pageRateLimit;
+    }
+
     PostResponse.validateBody(this, page);
 
     const key = parse(page.body)
@@ -322,10 +396,6 @@ export default class FurAffinity
         )
         .withAdditionalInfo(page.body);
     }
-    const key2 = HtmlParserUtil.getInputValue(
-      page.body.split('action="/controls/journal/"').pop(),
-      'key',
-    );
     const builder = new PostBuilder(this, cancellationToken)
       .asUrlEncoded()
       .setField('key', key)
@@ -339,7 +409,14 @@ export default class FurAffinity
       `${this.BASE_URL}/controls/journal/`,
     );
 
-    if (post.body.includes('journal-title')) {
+    const postRateLimit = this.processForRateLimit(post.body);
+    if (postRateLimit) {
+      return postRateLimit;
+    }
+
+    if (
+      /^https:\/\/www\.furaffinity\.net\/journal\/\d+\/$/.test(post.responseUrl)
+    ) {
       return PostResponse.fromWebsite(this)
         .withAdditionalInfo(post.body)
         .withSourceUrl(post.responseUrl);
@@ -391,5 +468,13 @@ export default class FurAffinity
     }
   }
 
-  onValidateMessageSubmission = validatorPassthru;
+  async onValidateMessageSubmission(
+    postData: PostData<FurAffinityMessageSubmission>,
+  ): Promise<SimpleValidationResult> {
+    const validator = this.createValidator<FurAffinityMessageSubmission>();
+
+    this.validateKeywords(postData, validator);
+
+    return validator.result;
+  }
 }

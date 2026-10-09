@@ -1,26 +1,34 @@
-import { SelectOption } from '@postybirb/form-builder';
+// eslint-disable-next-line max-classes-per-file
+import { SelectOption, SelectOptionSingle } from '@postybirb/form-builder';
+
 import {
-  ILoginState,
+  FileType,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   OAuthRouteHandlers,
   PostData,
   PostResponse,
+  SimpleValidationResult,
   TelegramAccountData,
   TelegramOAuthRoutes,
 } from '@postybirb/types';
-import { supportsImage } from '@postybirb/utils/file-type';
-import { Api, TelegramClient } from 'telegram';
-import { CustomFile } from 'telegram/client/uploads';
-import { Entity } from 'telegram/define';
-import { HTMLParser as HTMLToTelegram } from 'telegram/extensions/html';
-import { LogLevel } from 'telegram/extensions/Logger';
-import { returnBigInt } from 'telegram/Helpers';
-import { StringSession } from 'telegram/sessions';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import {
+  calculateImageResize,
+  supportsImage,
+} from '@postybirb/utils/file-type';
+import { Api, TelegramClient } from 'teleproto';
+import { CustomFile } from 'teleproto/client/uploads';
+import { Entity } from 'teleproto/define';
+import { LogLevel } from 'teleproto/extensions/Logger';
+import { returnBigInt } from 'teleproto/Helpers';
+import { ProxyInterface } from 'teleproto/network/connection/TCPMTProxy';
+import { StringSession } from 'teleproto/sessions';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
-import { validatorPassthru } from '../../commons/validator-passthru';
+import { SubmissionValidator } from '../../commons/validator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -31,9 +39,11 @@ import {
 } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { TelegramFileSubmission } from './models/telegram-file-submission';
 import { TelegramMessageSubmission } from './models/telegram-message-submission';
+import { TelegramConverter } from './telegram-description-converter';
 
 @WebsiteMetadata({
   name: 'telegram',
@@ -49,14 +59,18 @@ import { TelegramMessageSubmission } from './models/telegram-message-submission'
     'audio/mp3',
   ],
   fileBatchSize: 10,
-  acceptedFileSizes: { '*': FileSize.megabytes(30) },
+  acceptedFileSizes: {
+    '*': FileSize.megabytes(1000 * 2),
+    [FileType.IMAGE]: FileSize.megabytes(10),
+  },
 })
 export default class Telegram
   extends Website<TelegramAccountData>
   implements
     FileWebsite<TelegramFileSubmission>,
     MessageWebsite<TelegramMessageSubmission>,
-    OAuthWebsite<TelegramOAuthRoutes>
+    OAuthWebsite<TelegramOAuthRoutes>,
+    WithCustomDescriptionParser
 {
   protected BASE_URL = 'https://t.me/';
 
@@ -79,13 +93,18 @@ export default class Telegram
       this.logger.info(
         `Creating client for ${account.appId} with session present ${!!account.session}`,
       );
+
+      const telegramProxySettings = await this.resolveProxySettings();
+
       client = new TelegramClient(
         new StringSession(account.session ?? ''),
         account.appId,
         account.appHash,
-        {},
+        {
+          proxy: telegramProxySettings,
+        },
       );
-      client.setLogLevel(LogLevel.INFO);
+      client.setLogLevel(LogLevel.ERROR);
       this.clients.set(account.appId, client);
     }
 
@@ -126,10 +145,10 @@ export default class Telegram
           },
         });
         this.logger.info('Login successfull');
-        this.onLogin();
+        this.login();
         return { success: true };
       } catch (e) {
-        this.logger.error(e);
+        this.logger.withError(e).error('Failed to ');
         const passwordRequired = String(e).includes('Password is empty');
         const passwordInvalid = String(e).includes('PASSWORD_HASH_INVALID');
         const codeInvalid = String(e).includes('CODE_INVALID');
@@ -144,6 +163,65 @@ export default class Telegram
     },
   };
 
+  private async resolveProxySettings() {
+    let telegramProxySettings: ProxyInterface | undefined;
+
+    // Example:
+    // tg://proxy?server=127.0.0.1&port=1080&secret=dda7e716f615266d980bf8e2e41acc36b0
+    const env = process.env.POSTYBIRB_TELEGRAM_MTPROXY;
+    if (env) {
+      try {
+        const parsed = new URL(env);
+        if (
+          parsed.protocol === 'tg:' &&
+          parsed.host === 'proxy' &&
+          parsed.search
+        ) {
+          telegramProxySettings = {
+            MTProxy: true,
+            ip: parsed.searchParams.get('ip') ?? '',
+            secret: parsed.searchParams.get('secret') ?? '',
+            port: parseInt(parsed.searchParams.get('port') ?? '', 10),
+          };
+          this.logger.info('Using', env);
+        }
+      } catch (e) {
+        this.logger
+          .withError(e)
+          .error(
+            'Failed to parse env POSTYBIRB_TELEGRAM_MTPROXY, falling back to other proxy settings...',
+          );
+      }
+    }
+
+    if (!telegramProxySettings) {
+      const proxies = [
+        ...(await this.platform.http.getParsedProxiesFor(
+          'https://telegram.org',
+        )),
+        ...(await this.platform.http.getParsedProxiesFor('https://t.me/')),
+      ];
+      const proxy =
+        proxies.find((e) => e?.type === 'SOCKS') ??
+        proxies.find((e) => e?.type === 'PROXY') ??
+        proxies[0];
+
+      if (proxy && proxy.type !== 'DIRECT') {
+        telegramProxySettings = {
+          ip: proxy.hostname,
+          port: parseInt(proxy.port, 10),
+          socksType: 5,
+        };
+        this.logger
+          .withMetadata({ proxy: telegramProxySettings, proxies })
+          .info(
+            'Using SOCKS5 proxy resolved for hostname t.me or telegram.org',
+          );
+      }
+    }
+    return telegramProxySettings;
+  }
+
   private async loadChannels(telegram: TelegramClient) {
     this.logger.info('Loading folders...');
     const channels: SelectOption[] = [];
@@ -151,19 +229,42 @@ export default class Telegram
 
     for await (const dialog of telegram.iterDialogs()) {
       total++;
-      if (!dialog.id) continue;
-      if (!this.canSendMediaInChat(dialog.entity)) continue;
+      if (!dialog.id || !dialog.entity) continue;
+      const chat = dialog.entity;
 
-      const id = dialog.entity.id.toString();
+      if (!this.canSendMediaInChat(chat)) continue;
+
+      const id = chat.id.toString();
       const hash =
-        dialog.entity.className === 'Channel'
-          ? `|${dialog.entity.accessHash.toString()}`
-          : '';
+        chat.className === 'Channel' ? `|${chat.accessHash?.toString()}` : '';
+      const channelId = `${id}${hash}`;
+      const label = dialog.title ?? dialog.name ?? 'Empty name';
 
-      channels.push({
-        label: dialog.title ?? dialog.name,
-        value: `${id}${hash}`,
-      });
+      if (chat.className === 'Channel' && chat.forum) {
+        const { topics } = await telegram.invoke(
+          new Api.messages.GetForumTopics({
+            peer: this.getPeer(channelId).peer,
+          }),
+        );
+
+        const filteredTopics: SelectOptionSingle[] = [];
+        for (const topic of topics) {
+          if (topic.className !== 'ForumTopic') continue;
+          if (topic.closed || topic.hidden) continue;
+
+          filteredTopics.push({
+            label: topic.titleMissing ? `Topic ${topic.id}` : topic.title,
+            value: `${channelId}|${topic.id}`,
+          });
+        }
+
+        channels.push({ label, value: channelId, items: filteredTopics });
+      } else {
+        channels.push({
+          label,
+          value: channelId,
+        });
+      }
       this.setWebsiteData({ ...this.websiteDataStore.getData(), channels });
     }
 
@@ -187,54 +288,46 @@ export default class Telegram
     return false;
   }
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const account = this.websiteDataStore.getData();
     if (!account.appHash || !account.appId || !account.phoneNumber) {
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
 
     const client = await this.getTelegramClient(account);
     if (await client.isUserAuthorized()) {
       const me = await client.getMe();
-      const session = (client.session as StringSession).save();
+      const telegramSession = (client.session as StringSession).save();
       const username = me.username ?? me.firstName ?? me.id.toString();
-      this.setWebsiteData({ ...account, session });
+      this.setWebsiteData({ ...account, session: telegramSession });
       await this.loadChannels(client);
-      return this.loginState.setLogin(true, username);
+      return { loggedIn: true, username };
     }
 
     this.logger.info(
       `Not logged in with session presence ${!!account.session}`,
     );
-    return this.loginState.setLogin(false, null);
+    return { loggedIn: false };
   }
 
   createFileModel(): TelegramFileSubmission {
     return new TelegramFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    return file.width > 2560 || file.height > 2560
-      ? { width: 2560, height: 2560 }
-      : file.size > this.decoratedProps.fileOptions.acceptedFileSizes['*']
-        ? { maxBytes: this.decoratedProps.fileOptions.acceptedFileSizes['*'] }
-        : undefined;
-  }
-
-  htmlToDescriptionEntities(html: string) {
-    return HTMLToTelegram.parse(
-      // Add newlines. All blocknote lines are wrapped using <div> without \n between them.
-      html.replaceAll('</div><div>', '</div>\n<div>'),
-    );
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
+    return calculateImageResize(file, {
+      maxWidth: 2560,
+      maxHeight: 2560,
+    });
   }
 
   async onPostFileSubmission(
     postData: PostData<TelegramFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     batch: PostBatchData,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const telegram = await this.getTelegramClient();
 
     const medias: (
@@ -243,7 +336,7 @@ export default class Telegram
     )[] = [];
 
     for (const file of files) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       const customFile = new CustomFile(
         file.fileName,
@@ -260,12 +353,55 @@ export default class Telegram
         ? Api.InputMediaUploadedPhoto
         : Api.InputMediaUploadedDocument;
 
+      const isGif = file.mimeType === 'image/gif';
+
+      // Telegram may parse file and extract its metadata by itself
+      // but it also may not. In that case the file will display as "Unknown track"
+      // even if its video, audio or any other file type. To fix this,
+      // we manually add the metadata to file attributes
+
+      const attributes: Api.TypeDocumentAttribute[] = [];
+
+      switch (file.fileType) {
+        case FileType.AUDIO:
+          attributes.push(
+            new Api.DocumentAttributeAudio({
+              duration: file.metadata.duration ?? 0,
+            }),
+          );
+          break;
+
+        case FileType.VIDEO:
+          attributes.push(
+            new Api.DocumentAttributeVideo({
+              duration: file.metadata.duration ?? 0,
+              w: file.width,
+              h: file.height,
+            }),
+          );
+          break;
+
+        case FileType.IMAGE:
+          if (isGif) {
+            attributes.push(new Api.DocumentAttributeAnimated());
+          }
+
+          // Normal image is not document and does not require any attributes
+          // Telegram extracts dimensions from it by itself
+          break;
+
+        default:
+          attributes.push(
+            new Api.DocumentAttributeFilename({ fileName: file.fileName }),
+          );
+      }
+
       const media = new UploadedMedia({
         spoiler: postData.options.spoiler,
         file: uploadedFile,
         mimeType: file.mimeType,
-        attributes: [],
-        nosoundVideo: file.mimeType === 'image/gif',
+        attributes,
+        nosoundVideo: isGif,
       });
 
       medias.push(media);
@@ -273,12 +409,12 @@ export default class Telegram
 
     const lastBatch = batch.index === batch.totalBatches - 1;
 
-    const [description, entities] = this.htmlToDescriptionEntities(
+    const [description, entities] = TelegramConverter.fromJson(
       postData.options.description,
     );
 
     let mediaDescription = '';
-    let mediaEntities = [];
+    let mediaEntities: Api.TypeMessageEntity[] = [];
     let messageDescription = '';
 
     if (description.length < 1024) {
@@ -293,20 +429,21 @@ export default class Telegram
     let response: Api.TypeUpdates | undefined;
 
     for (const channel of postData.options.channels) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       // Only add description to the media in first batch
       const firstInBatch = batch.index === 0;
-      const peer = this.getPeer(channel);
+      const { peer, topic } = this.getPeer(channel);
 
       if (medias.length === 1) {
-        telegram.invoke(
+        response = await telegram.invoke(
           new Api.messages.SendMedia({
             media: medias[0],
             message: firstInBatch ? mediaDescription : '',
             entities: firstInBatch ? mediaEntities : [],
             silent: postData.options.silent,
             peer,
+            replyTo: topic,
           }),
         );
       } else {
@@ -315,15 +452,35 @@ export default class Telegram
           const messageMedia = await telegram.invoke(
             new Api.messages.UploadMedia({ media, peer }),
           );
-          const file =
-            messageMedia.className === 'MessageMediaPhoto'
-              ? messageMedia.photo
-              : messageMedia.className === 'MessageMediaDocument'
-                ? messageMedia.document
-                : undefined;
 
-          if (!file) {
-            throw new Error(`Unknwon media type: ${messageMedia.className}`);
+          let inputMedia: Api.InputMediaPhoto | Api.InputMediaDocument;
+
+          if (
+            messageMedia.className === 'MessageMediaPhoto' &&
+            messageMedia.photo?.className === 'Photo'
+          ) {
+            inputMedia = new Api.InputMediaPhoto({
+              id: new Api.InputPhoto({
+                id: messageMedia.photo.id,
+                accessHash: messageMedia.photo.accessHash,
+                fileReference: messageMedia.photo.fileReference,
+              }),
+              spoiler: postData.options.spoiler,
+            });
+          } else if (
+            messageMedia.className === 'MessageMediaDocument' &&
+            messageMedia.document?.className === 'Document'
+          ) {
+            inputMedia = new Api.InputMediaDocument({
+              id: new Api.InputDocument({
+                id: messageMedia.document.id,
+                accessHash: messageMedia.document.accessHash,
+                fileReference: messageMedia.document.fileReference,
+              }),
+              spoiler: postData.options.spoiler,
+            });
+          } else {
+            throw new Error(`Unknown media type: ${messageMedia.className}`);
           }
 
           // Only add description to the first media in first batch
@@ -331,7 +488,7 @@ export default class Telegram
 
           multiMedia.push(
             new Api.InputSingleMedia({
-              media,
+              media: inputMedia,
               message: useDescription ? mediaDescription : '',
               entities: useDescription ? mediaEntities : [],
             }),
@@ -343,16 +500,21 @@ export default class Telegram
             silent: postData.options.silent,
             multiMedia,
             peer,
+            replyTo: topic,
           }),
         );
       }
 
       if (messageDescription) {
-        await telegram.sendMessage(peer, {
-          message: messageDescription,
-          silent: postData.options.silent,
-          formattingEntities: entities,
-        });
+        await telegram.invoke(
+          new Api.messages.SendMessage({
+            message: messageDescription,
+            entities,
+            silent: postData.options.silent,
+            peer,
+            replyTo: topic,
+          }),
+        );
       }
     }
 
@@ -372,14 +534,21 @@ export default class Telegram
     const peerId = channelUpdate?.message?.peerId;
     if (peerId?.className !== 'PeerChannel') return '';
 
-    const chat = response.chats.find((e) => e.id === peerId.channelId);
-    if (!chat || chat.className !== 'Channel' || !chat.username) return '';
+    const chat = response.chats.find((e) => e.id.equals(peerId.channelId));
+
+    if (
+      !chat ||
+      chat.className !== 'Channel' ||
+      !chat.username ||
+      !channelUpdate
+    )
+      return '';
 
     return `https://t.me/${chat.username}/${channelUpdate.message.id}`;
   }
 
   private getPeer(channel: string) {
-    const [idRaw, accessHash] = channel.split('|');
+    const [idRaw, accessHash, topicId] = channel.split('|');
     const id = returnBigInt(idRaw);
     const peer = accessHash
       ? new Api.InputPeerChannel({
@@ -388,10 +557,46 @@ export default class Telegram
         })
       : new Api.InputPeerChat({ chatId: id });
 
-    return peer;
+    return {
+      peer,
+      topic: topicId
+        ? new Api.InputReplyToMessage({
+            replyToMsgId: parseInt(topicId, 10),
+          })
+        : undefined,
+    };
   }
 
-  onValidateFileSubmission = validatorPassthru;
+  private readonly MAX_CHARS = 4096;
+
+  private async validateDescription(
+    postData: PostData<TelegramMessageSubmission | TelegramFileSubmission>,
+    validator: SubmissionValidator<
+      TelegramMessageSubmission | TelegramFileSubmission
+    >,
+  ): Promise<void> {
+    const { description } = postData.options;
+
+    const [text] = TelegramConverter.fromJson(description);
+
+    if (text.length > this.MAX_CHARS) {
+      validator.error(
+        'validation.description.max-length',
+        { maxLength: this.MAX_CHARS, currentLength: text.length },
+        'description',
+      );
+    }
+  }
+
+  async onValidateFileSubmission(
+    postData: PostData<TelegramFileSubmission>,
+  ): Promise<SimpleValidationResult> {
+    const validator = this.createValidator<TelegramFileSubmission>();
+
+    this.validateDescription(postData, validator);
+
+    return validator.result;
+  }
 
   createMessageModel(): TelegramMessageSubmission {
     return new TelegramMessageSubmission();
@@ -399,24 +604,26 @@ export default class Telegram
 
   async onPostMessageSubmission(
     postData: PostData<TelegramMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     let response: Api.TypeUpdates | undefined;
-    const [description, entities] = this.htmlToDescriptionEntities(
+    const [description, entities] = TelegramConverter.fromJson(
       postData.options.description,
     );
     const telegram = await this.getTelegramClient();
 
     for (const channel of postData.options.channels) {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
+      const { peer, topic } = this.getPeer(channel);
       response = await telegram.invoke(
         new Api.messages.SendMessage({
           message: description,
           entities,
           silent: postData.options.silent,
-          peer: this.getPeer(channel),
+          peer,
+          replyTo: topic,
         }),
       );
     }
@@ -427,5 +634,17 @@ export default class Telegram
     return postResponse;
   }
 
-  onValidateMessageSubmission = validatorPassthru;
+  async onValidateMessageSubmission(
+    postData: PostData<TelegramMessageSubmission>,
+  ): Promise<SimpleValidationResult> {
+    const validator = this.createValidator<TelegramMessageSubmission>();
+
+    this.validateDescription(postData, validator);
+
+    return validator.result;
+  }
+
+  getDescriptionConverter(): BaseConverter {
+    return new TelegramConverter();
+  }
 }

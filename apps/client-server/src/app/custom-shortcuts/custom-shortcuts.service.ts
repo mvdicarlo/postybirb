@@ -1,26 +1,17 @@
-import { Injectable, Optional } from '@nestjs/common';
-import { CUSTOM_SHORTCUT_UPDATES } from '@postybirb/socket-events';
-import { EntityId } from '@postybirb/types';
+import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { CustomShortcut, CustomShortcutRepository } from '@postybirb/database';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { CustomShortcut } from '../drizzle/models/custom-shortcut.entity';
-import { WSGateway } from '../web-socket/web-socket-gateway';
+import { CUSTOM_SHORTCUT_EVENT_PREFIX } from './custom-shortcut.events';
 import { CreateCustomShortcutDto } from './dtos/create-custom-shortcut.dto';
 import { UpdateCustomShortcutDto } from './dtos/update-custom-shortcut.dto';
 
 @Injectable()
-export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSchema'> {
-  constructor(@Optional() webSocket?: WSGateway) {
-    super('CustomShortcutSchema', webSocket);
-    this.repository.subscribe('CustomShortcutSchema', () => this.emit());
-  }
-
-  public async emit() {
-    const dtos = await this.findAll();
-    super.emit({
-      event: CUSTOM_SHORTCUT_UPDATES,
-      data: dtos.map((dto) => dto.toDTO()),
-    });
+export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepository> {
+  constructor(eventEmitter: EventEmitter2) {
+    super(new CustomShortcutRepository());
+    this.configureCrudEvents(CUSTOM_SHORTCUT_EVENT_PREFIX, eventEmitter);
   }
 
   public async create(
@@ -30,9 +21,11 @@ export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSche
       .withMetadata(createCustomShortcutDto)
       .info('Creating custom shortcut');
     await this.throwIfExists(
-      eq(this.schema.name, createCustomShortcutDto.name),
+      eq(this.table.name, createCustomShortcutDto.name),
     );
-    return this.repository.insert(createCustomShortcutDto);
+    const entity = await this.repository.insert(createCustomShortcutDto);
+    this.publishCreated(entity.toDTO());
+    return entity;
   }
 
   public async update(
@@ -42,17 +35,9 @@ export class CustomShortcutsService extends PostyBirbService<'CustomShortcutSche
     this.logger
       .withMetadata(updateCustomShortcutDto)
       .info('Updating custom shortcut');
-    const existing = await this.repository.findById(id, {
-      failOnMissing: true,
-    });
-
-    return this.repository.update(id, updateCustomShortcutDto);
-  }
-
-  public async remove(id: EntityId) {
-    const existing = await this.repository.findById(id, {
-      failOnMissing: true,
-    });
-    return super.remove(id);
+    await this.repository.findByIdOrThrow(id);
+    const entity = await this.repository.update(id, updateCustomShortcutDto);
+    this.publishUpdated(entity.toDTO());
+    return entity;
   }
 }

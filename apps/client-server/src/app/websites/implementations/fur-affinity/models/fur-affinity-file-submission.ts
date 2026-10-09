@@ -20,17 +20,18 @@ import { FurAffinityThemes } from './fur-affinity-themes';
 
 export class FurAffinityFileSubmission extends BaseWebsiteOptions {
   @TitleField({ maxLength: 60 })
-  title: string;
+  declare title: string;
 
   @DescriptionField({
     descriptionType: DescriptionType.BBCODE,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @TagField({
     spaceReplacer: '_',
+    minTags: 3,
   })
-  tags: TagValue;
+  declare tags: TagValue;
 
   @RatingField({
     options: [
@@ -39,38 +40,38 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'Adult' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @SelectField({
+    required: true,
     label: 'category',
-    defaultValue: '1',
     options: FurAffinityCategories,
     section: 'website',
     span: 6,
   })
-  category: string;
+  category = '1';
 
   @SelectField({
+    required: true,
     label: 'theme',
-    defaultValue: '1',
     options: FurAffinityThemes,
     section: 'website',
     span: 6,
   })
-  theme: string;
+  theme = '1';
 
   @SelectField({
+    required: true,
     label: 'species',
-    defaultValue: '1',
     options: FurAffinitySpecies,
     section: 'website',
     span: 6,
   })
-  species: string;
+  species = '1';
 
   @SelectField({
+    required: true,
     label: 'gender',
-    defaultValue: '0',
     options: [
       { value: '0', label: 'Any' },
       { value: '2', label: 'Male' },
@@ -86,7 +87,7 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
     section: 'website',
     span: 6,
   })
-  gender: string;
+  gender = '0';
 
   @SelectField<FurAffinityAccountData>({
     label: 'folder',
@@ -99,23 +100,21 @@ export class FurAffinityFileSubmission extends BaseWebsiteOptions {
       },
     ],
     section: 'website',
-    span: 6,
+    span: 12,
   })
-  folders: string[];
+  folders: string[] = [];
 
   @BooleanField({
     label: 'disableComments',
-    defaultValue: false,
     section: 'website',
     span: 6,
   })
-  disableComments: boolean;
+  disableComments = false;
 
   @BooleanField({
     label: 'scraps',
-    defaultValue: false,
     section: 'website',
     span: 6,
   })
-  scraps: boolean;
+  scraps = false;
 }

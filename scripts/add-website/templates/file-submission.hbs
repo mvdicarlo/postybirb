@@ -6,11 +6,11 @@ export class {{pascalWebsiteName}}FileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.HTML
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
   {{#if supportsTags}}
   {{else}}
 
   @TagField({ hidden: true })
-  tags: TagValue;
+  declare tags: TagValue;
   {{/if}}
 }

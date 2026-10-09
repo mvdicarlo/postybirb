@@ -1,27 +1,30 @@
 /* eslint-disable no-param-reassign */
+// @ts-expect-error No types on npm
 import * as rtf from '@iarna/rtf-to-html';
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  FileBufferRepository,
+  SubmissionFile,
+  SubmissionFileRepository,
+  TransactionContext,
+  withTransactionContext,
+} from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { EntityId, FileType } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { eq } from 'drizzle-orm';
 import { async as hash } from 'hasha';
-import { html as htmlBeautify } from 'js-beautify';
+import { htmlToText } from 'html-to-text';
 import * as mammoth from 'mammoth';
 import { parse } from 'path';
 import { promisify } from 'util';
-import { SubmissionFile } from '../../drizzle/models';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
-import {
-  TransactionContext,
-  withTransactionContext,
-} from '../../drizzle/transaction-context';
+import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
 import { MulterFileInfo } from '../models/multer-file-info';
-import { ImageUtil } from '../utils/image.util';
+import { MediaUtils } from '../utils/media.util';
 import { CreateFileService } from './create-file.service';
 
 /**
@@ -31,15 +34,14 @@ import { CreateFileService } from './create-file.service';
 export class UpdateFileService {
   private readonly logger = Logger();
 
-  private readonly fileRepository = new PostyBirbDatabase(
-    'SubmissionFileSchema',
-  );
+  private readonly fileRepository = new SubmissionFileRepository();
 
-  private readonly fileBufferRepository = new PostyBirbDatabase(
-    'FileBufferSchema',
-  );
+  private readonly fileBufferRepository = new FileBufferRepository();
 
-  constructor(private readonly createFileService: CreateFileService) {}
+  constructor(
+    private readonly createFileService: CreateFileService,
+    private readonly sharpInstanceManager: SharpInstanceManager,
+  ) {}
 
   /**
    * Creates file entity and stores it.
@@ -76,7 +78,11 @@ export class UpdateFileService {
     file: MulterFileInfo,
     buf: Buffer,
   ) {
-    const thumbnailDetails = await this.getImageDetails(file, buf);
+    const thumbnailDetails = await this.getMetadata(FileType.IMAGE, file, buf);
+    if (!thumbnailDetails) {
+      throw new BadRequestException('File is not an image');
+    }
+
     let { thumbnailId } = submissionFile;
 
     if (!thumbnailId) {
@@ -84,7 +90,7 @@ export class UpdateFileService {
       const thumbnail = await this.createFileService.createFileBufferEntity(
         ctx,
         submissionFile,
-        thumbnailDetails.buffer,
+        buf,
         {
           width: thumbnailDetails.width,
           height: thumbnailDetails.height,
@@ -96,26 +102,32 @@ export class UpdateFileService {
       // Update existing thumbnail buffer
       await ctx
         .getDb()
-        .update(this.fileBufferRepository.schemaEntity)
+        .update(this.fileBufferRepository.table)
         .set({
-          buffer: thumbnailDetails.buffer,
-          size: thumbnailDetails.buffer.length,
+          buffer: buf,
+          size: buf.length,
           mimeType: file.mimetype,
           width: thumbnailDetails.width,
           height: thumbnailDetails.height,
         })
-        .where(eq(this.fileBufferRepository.schemaEntity.id, thumbnailId));
+        .where(eq(this.fileBufferRepository.table.id, thumbnailId));
     }
+
+    // Recompute hash from thumbnail buffer so the frontend cache-buster updates
+    const thumbnailHash = await hash(buf, {
+      algorithm: 'sha256',
+    });
 
     await ctx
       .getDb()
-      .update(this.fileRepository.schemaEntity)
+      .update(this.fileRepository.table)
       .set({
         thumbnailId,
         hasCustomThumbnail: true,
         hasThumbnail: true,
+        hash: thumbnailHash,
       })
-      .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+      .where(eq(this.fileRepository.table.id, submissionFile.id));
   }
 
   async replacePrimaryFile(
@@ -138,28 +150,38 @@ export class UpdateFileService {
     // Only need to replace when unique file is given
     if (submissionFile.hash !== fileHash) {
       const fileType = getFileType(file.filename);
-      if (fileType === FileType.IMAGE) {
-        await this.updateImageFileProps(ctx, submissionFile, file, buf);
+      if (
+        fileType === FileType.IMAGE ||
+        fileType === FileType.VIDEO ||
+        fileType === FileType.AUDIO
+      ) {
+        await this.updateMediaFileMetadata(
+          ctx,
+          submissionFile,
+          file,
+          buf,
+          fileType,
+        );
       }
 
       // Update submission file entity
       await ctx
         .getDb()
-        .update(this.fileRepository.schemaEntity)
+        .update(this.fileRepository.table)
         .set({
           hash: fileHash,
           size: buf.length,
           fileName: file.filename,
           mimeType: file.mimetype,
         })
-        .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+        .where(eq(this.fileRepository.table.id, submissionFile.id));
 
       // Just to get the latest data
 
       // Duplicate props to primary file
       await ctx
         .getDb()
-        .update(this.fileBufferRepository.schemaEntity)
+        .update(this.fileBufferRepository.table)
         .set({
           buffer: buf,
           size: buf.length,
@@ -167,10 +189,7 @@ export class UpdateFileService {
           mimeType: file.mimetype,
         })
         .where(
-          eq(
-            this.fileBufferRepository.schemaEntity.id,
-            submissionFile.primaryFileId,
-          ),
+          eq(this.fileBufferRepository.table.id, submissionFile.primaryFileId),
         );
 
       if (
@@ -183,24 +202,24 @@ export class UpdateFileService {
         if (altFileText) {
           await ctx
             .getDb()
-            .update(this.fileBufferRepository.schemaEntity)
+            .update(this.fileBufferRepository.table)
             .set({
               buffer: altFileText,
               size: altFileText.length,
             })
             .where(
               eq(
-                this.fileBufferRepository.schemaEntity.id,
-                submissionFile.altFile.id,
+                this.fileBufferRepository.table.id,
+                submissionFile.altFile?.id ?? '',
               ),
             );
           await ctx
             .getDb()
-            .update(this.fileRepository.schemaEntity)
+            .update(this.fileRepository.table)
             .set({
               hasAltFile: true,
             })
-            .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+            .where(eq(this.fileRepository.table.id, submissionFile.id));
         }
       }
     }
@@ -210,14 +229,14 @@ export class UpdateFileService {
     file: MulterFileInfo,
     buf: Buffer,
   ): Promise<Buffer | null> {
-    let altText: string;
+    let altText: string | undefined;
     if (
       file.mimetype ===
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
       file.originalname.endsWith('.docx')
     ) {
       this.logger.info('[Mutation] Updating Alt File for Text Document: DOCX');
-      altText = (await mammoth.convertToHtml({ buffer: buf })).value;
+      altText = (await mammoth.extractRawText({ buffer: buf })).value;
     }
 
     if (
@@ -225,12 +244,21 @@ export class UpdateFileService {
       file.originalname.endsWith('.rtf')
     ) {
       this.logger.info('[Mutation] Updating Alt File for Text Document: RTF');
-      const promisifiedRtf = promisify(rtf.fromString);
-      altText = await promisifiedRtf(buf.toString(), {
+      const promisifiedRtf = promisify(
+        rtf.fromString as (
+          input: string,
+          options: {
+            template(_: unknown, __: unknown, content: string): string;
+          },
+          callback: (err: Error, result: string) => void,
+        ) => void,
+      );
+      const rtfHtml = await promisifiedRtf(buf.toString(), {
         template(_, __, content: string) {
           return content;
         },
       });
+      altText = htmlToText(rtfHtml, { wordwrap: false });
     }
 
     if (file.mimetype === 'text/plain' || file.originalname.endsWith('.txt')) {
@@ -238,43 +266,56 @@ export class UpdateFileService {
       altText = buf.toString();
     }
 
-    return altText
-      ? Buffer.from(htmlBeautify(altText, { wrap_line_length: 120 }))
-      : null;
+    return altText ? Buffer.from(altText) : null;
   }
 
-  private async updateImageFileProps(
+  private async updateMediaFileMetadata(
     ctx: TransactionContext,
     submissionFile: SubmissionFile,
     file: MulterFileInfo,
     buf: Buffer,
+    fileType: FileType,
   ) {
-    const { width, height, sharpInstance } = await this.getImageDetails(
-      file,
-      buf,
-    );
+    const metadata = await this.getMetadata(fileType, file, buf);
+    const { width, height } = metadata;
     await ctx
       .getDb()
-      .update(this.fileRepository.schemaEntity)
+      .update(this.fileRepository.table)
       .set({
         width,
         height,
       })
-      .where(eq(this.fileRepository.schemaEntity.id, submissionFile.id));
+      .where(eq(this.fileRepository.table.id, submissionFile.id));
 
     await ctx
       .getDb()
-      .update(this.fileBufferRepository.schemaEntity)
+      .update(this.fileBufferRepository.table)
       .set({
         width,
         height,
       })
       .where(
-        eq(
-          this.fileBufferRepository.schemaEntity.id,
-          submissionFile.primaryFileId,
-        ),
+        eq(this.fileBufferRepository.table.id, submissionFile.primaryFileId),
       );
+
+    // Reset metadata dimensions so they don't reference the old file size
+    const updatedMetadata = { ...submissionFile.metadata };
+    if (updatedMetadata.dimensions) {
+      updatedMetadata.dimensions = {
+        ...updatedMetadata.dimensions,
+        default: { width, height },
+      };
+    }
+
+    if ('duration' in metadata) {
+      updatedMetadata.duration = metadata.duration;
+    }
+
+    await ctx
+      .getDb()
+      .update(this.fileRepository.table)
+      .set({ metadata: updatedMetadata })
+      .where(eq(this.fileRepository.table.id, submissionFile.id));
 
     if (submissionFile.hasThumbnail && !submissionFile.hasCustomThumbnail) {
       // Regenerate auto-thumbnail;
@@ -283,19 +324,14 @@ export class UpdateFileService {
         width: thumbnailWidth,
         height: thumbnailHeight,
         mimeType: thumbnailMimeType,
-      } = await this.createFileService.generateThumbnail(
-        sharpInstance,
-        height,
-        width,
-        file.mimetype,
-      );
+      } = await this.createFileService.generateThumbnail(buf, file.mimetype);
 
       const fileNameWithoutExt = parse(file.filename).name;
       const thumbnailExt = thumbnailMimeType === 'image/jpeg' ? 'jpg' : 'png';
 
       await ctx
         .getDb()
-        .update(this.fileBufferRepository.schemaEntity)
+        .update(this.fileBufferRepository.table)
         .set({
           buffer: thumbnailBuf,
           width: thumbnailWidth,
@@ -305,28 +341,34 @@ export class UpdateFileService {
           fileName: `thumbnail_${fileNameWithoutExt}.${thumbnailExt}`,
         })
         .where(
-          eq(
-            this.fileBufferRepository.schemaEntity.id,
-            submissionFile.thumbnailId,
-          ),
+          eq(this.fileBufferRepository.table.id, submissionFile.thumbnailId),
         );
     }
   }
 
-  /**
-   * Details of a multer file.
-   *
-   * @param {MulterFileInfo} file
-   */
-  private async getImageDetails(file: MulterFileInfo, buf: Buffer) {
-    if (ImageUtil.isImage(file.mimetype, false)) {
-      const sharpInstance = ImageUtil.load(buf);
-
-      const { height, width } = await sharpInstance.metadata();
-      return { buffer: buf, width, height, sharpInstance };
+  private async getMetadata(
+    fileType: FileType,
+    file: MulterFileInfo,
+    buf: Buffer,
+  ) {
+    if (fileType === FileType.IMAGE) {
+      return this.sharpInstanceManager.getMetadata(buf);
     }
 
-    throw new BadRequestException('File is not an image');
+    if (fileType === FileType.VIDEO || fileType === FileType.AUDIO) {
+      try {
+        return await MediaUtils.getMetadata(file, buf);
+      } catch (e) {
+        this.logger
+          .withError(e)
+          .error(`Failed to get metadata for ${file.filename}`);
+      }
+    }
+
+    return {
+      width: 0,
+      height: 0,
+    };
   }
 
   /**
@@ -346,9 +388,10 @@ export class UpdateFileService {
         // },
       });
 
-      return entity;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return entity!;
     } catch (e) {
-      this.logger.error(e.message, e.stack);
+      this.logger.error(e);
       throw new NotFoundException(id);
     }
   }

@@ -1,0 +1,102 @@
+.postybirb__post_preview_modal_content {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - var(--mantine-spacing-xl) * 2);
+  overflow: hidden;
+}
+
+.postybirb__post_preview_modal_header {
+  flex-shrink: 0;
+}
+
+.postybirb__post_preview_modal_body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.postybirb__post_preview_modal_layout {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.postybirb__post_preview_modal_scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.postybirb__post_preview_modal_footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--mantine-color-default-border);
+  background: var(--mantine-color-body);
+}
+
+.postybirb__post_preview_list {
+  overflow: hidden;
+  border: 1px solid var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-sm);
+  background: var(--mantine-color-body);
+}
+
+.postybirb__post_preview_website + .postybirb__post_preview_website {
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.postybirb__post_preview_website_header {
+  min-height: 40px;
+  padding: 7px var(--mantine-spacing-sm);
+  background: var(--mantine-color-default-hover);
+}
+
+.postybirb__post_preview_account + .postybirb__post_preview_account {
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.postybirb__post_preview_account_header {
+  min-height: 32px;
+  padding: 6px var(--mantine-spacing-sm) 6px 38px;
+  color: var(--mantine-color-dimmed);
+}
+
+.postybirb__post_preview_unit {
+  min-height: 36px;
+  padding: 6px var(--mantine-spacing-sm) 6px 58px;
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.postybirb__post_preview_target {
+  min-width: 0;
+  color: var(--mantine-color-text);
+}
+
+.postybirb__post_preview_target > svg {
+  flex: 0 0 auto;
+  color: var(--mantine-color-dimmed);
+}
+
+.postybirb__post_preview_empty {
+  display: grid;
+  min-height: 84px;
+  place-items: center;
+  border: 1px dashed var(--mantine-color-default-border);
+  border-radius: var(--mantine-radius-sm);
+}
+
+@media (max-width: 48em) {
+  .postybirb__post_preview_modal_content {
+    max-height: calc(100dvh - var(--mantine-spacing-md) * 2);
+  }
+
+  .postybirb__post_preview_account_header {
+    padding-left: var(--mantine-spacing-md);
+  }
+
+  .postybirb__post_preview_unit {
+    padding-left: var(--mantine-spacing-xl);
+  }
+}

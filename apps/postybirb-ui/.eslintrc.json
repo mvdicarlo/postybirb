@@ -29,6 +29,9 @@
     },
     {
       "files": ["*.ts", "*.tsx"],
+      "parserOptions": {
+        "project": ["apps/postybirb-ui/tsconfig.*?.json"]
+      },
       "rules": {}
     },
     {

@@ -1,13 +1,18 @@
 /* eslint-disable no-underscore-dangle */
-import { SchemaKey } from '@postybirb/database';
+import {
+    DatabaseEntity,
+    RepositoryRegistry,
+    SchemaKey,
+} from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { join } from 'path';
 import { Class } from 'type-fest';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacyConverterEntity } from '../legacy-entities/legacy-converter-entity';
 import { NdjsonParser } from '../utils/ndjson-parser';
 
-export abstract class LegacyConverter {
+export abstract class LegacyConverter<
+  TEntity extends DatabaseEntity = DatabaseEntity,
+> {
   abstract readonly modernSchemaKey: SchemaKey;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,14 +20,17 @@ export abstract class LegacyConverter {
 
   abstract readonly legacyFileName: string;
 
-  constructor(protected readonly databasePath: string) {}
+  constructor(
+    protected readonly databasePath: string,
+    private readonly onInserted?: (entity: TEntity) => void | Promise<void>,
+  ) {}
 
   private getEntityFilePath(): string {
     return join(this.databasePath, 'data', `${this.legacyFileName}.db`);
   }
 
   private getModernDatabase() {
-    return new PostyBirbDatabase(this.modernSchemaKey);
+    return RepositoryRegistry.get(this.modernSchemaKey);
   }
 
   public async import(): Promise<void> {
@@ -67,7 +75,20 @@ export abstract class LegacyConverter {
         continue;
       }
 
-      await modernDb.insert(modernEntity);
+      try {
+        const inserted = (await modernDb.insert(modernEntity)) as TEntity;
+        await this.onInserted?.(inserted);
+      } catch (err) {
+        const message = (err as Error).message ?? '';
+        if (message.includes('UNIQUE constraint failed')) {
+          logger.warn(
+            `Skipping record ${legacyEntity._id} due to unique constraint violation: ${message}`,
+          );
+          skippedCount++;
+        } else {
+          throw err;
+        }
+      }
     }
 
     if (skippedCount > 0) {

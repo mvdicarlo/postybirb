@@ -1,13 +1,15 @@
-import { DIRECTORY_WATCHER_UPDATES } from '@postybirb/socket-events';
+import { DIRECTORY_WATCHER_DELTA } from '@postybirb/socket-events';
 import { DirectoryWatcherDto } from '@postybirb/types';
-import { WebsocketEvent } from '../web-socket/models/web-socket-event';
+import {
+    EntityDeltaDescriptor,
+    EntityDeltaEvent,
+} from '../common/events/entity-crud.events';
 
-export type DirectoryWatcherEventTypes = DirectoryWatcherUpdateEvent;
+export const DIRECTORY_WATCHER_EVENTS: EntityDeltaDescriptor = {
+  prefix: 'directory-watcher',
+  delta: DIRECTORY_WATCHER_DELTA,
+};
 
-class DirectoryWatcherUpdateEvent
-  implements WebsocketEvent<DirectoryWatcherDto[]>
-{
-  event: string = DIRECTORY_WATCHER_UPDATES;
+export const DIRECTORY_WATCHER_EVENT_PREFIX = DIRECTORY_WATCHER_EVENTS.prefix;
 
-  data: DirectoryWatcherDto[];
-}
+export type DirectoryWatcherEventTypes = EntityDeltaEvent<DirectoryWatcherDto>;

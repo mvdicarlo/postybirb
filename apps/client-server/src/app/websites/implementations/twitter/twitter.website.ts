@@ -1,19 +1,19 @@
 import {
-  FileType,
-  ILoginState,
-  ImageResizeProps,
-  ISubmissionFile,
-  OAuthRouteHandlers,
-  PostData,
-  PostResponse,
-  SimpleValidationResult,
-  TwitterAccountData,
-  TwitterOAuthRoutes,
+    FileType,
+    ImageResizeProps,
+    ISubmissionFile,
+    LoginResult,
+    OAuthRouteHandlers,
+    PostData,
+    PostResponse,
+    SimpleValidationResult,
+    TwitterAccountData,
+    TwitterOAuthRoutes,
 } from '@postybirb/types';
 import { chunk } from 'lodash';
 import { parseTweet } from 'twitter-text';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
@@ -27,8 +27,8 @@ import { Website } from '../../website';
 import { TwitterFileSubmission } from './models/twitter-file-submission';
 import { TwitterMessageSubmission } from './models/twitter-message-submission';
 import {
-  TweetResultMeta,
-  TwitterApiServiceV2,
+    TweetResultMeta,
+    TwitterApiServiceV2,
 } from './twitter-api-service/twitter-api-service';
 
 @WebsiteMetadata({
@@ -62,6 +62,8 @@ import {
     [FileType.IMAGE]: FileSize.megabytes(5),
     [FileType.VIDEO]: FileSize.megabytes(15),
   },
+
+  maxAltTextLength: 1000,
 })
 @DisableAds()
 export default class Twitter
@@ -150,7 +152,7 @@ export default class Twitter
           requestToken: undefined,
           requestTokenSecret: undefined,
         });
-        await this.onLogin();
+        await this.login();
         return {
           success: true,
           screenName: result.screenName,
@@ -163,31 +165,37 @@ export default class Twitter
     },
   };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
     if (data?.accessToken && data?.accessTokenSecret && data?.screenName) {
-      return this.loginState.setLogin(true, data.screenName);
+      return { loggedIn: true, username: data.screenName };
     }
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   createFileModel(): TwitterFileSubmission {
     return new TwitterFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
   async onPostFileSubmission(
     postData: PostData<TwitterFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const filePartitions = chunk(files, 4);
     const { accessToken, accessTokenSecret, apiKey, apiSecret } =
       this.getWebsiteData();
+
+    // Validate credentials
+    if (!apiKey || !apiSecret || !accessToken || !accessTokenSecret) {
+      throw new Error('Missing API credentials');
+    }
+
     const results: TweetResultMeta[] = [];
     for (const partition of filePartitions) {
       const result = await TwitterApiServiceV2.postMedia(
@@ -197,7 +205,7 @@ export default class Twitter
         results.length > 0 ? results[results.length - 1].id : undefined,
       );
 
-      if (!result.success || cancellationToken.isCancelled) {
+      if (!result.success || cancellationToken.aborted) {
         const cleanupSuccess = await this.cleanUpFailedPost(
           results,
           apiKey,
@@ -237,7 +245,7 @@ export default class Twitter
 
         if (deleteResult.errors.length > 0) {
           this.logger
-            .withMetadata(deleteResult.errors)
+            .withMetadata(deleteResult)
             .warn('Some tweets could not be deleted');
         }
 
@@ -280,11 +288,16 @@ export default class Twitter
 
   async onPostMessageSubmission(
     postData: PostData<TwitterMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const { accessToken, accessTokenSecret, apiKey, apiSecret } =
       this.getWebsiteData();
+
+    // Validate credentials
+    if (!apiKey || !apiSecret || !accessToken || !accessTokenSecret) {
+      throw new Error('Missing API credentials');
+    }
 
     const result = await TwitterApiServiceV2.postStatus(
       {

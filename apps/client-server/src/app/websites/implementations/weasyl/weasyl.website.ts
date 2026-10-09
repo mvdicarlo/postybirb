@@ -1,17 +1,17 @@
 import { SelectOption } from '@postybirb/form-builder';
-import { Http } from '@postybirb/http';
+
 import {
   FileType,
-  ILoginState,
   ImageResizeProps,
+  LoginResult,
   PostData,
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -76,8 +76,8 @@ export default class Weasyl
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<{ login: string }>(
+  public async onLogin(): Promise<LoginResult> {
+    const res = await this.platform.http.get<{ login: string }>(
       `${this.BASE_URL}/api/whoami`,
       {
         partition: this.accountId,
@@ -85,17 +85,15 @@ export default class Weasyl
     );
 
     if (res.body.login) {
-      this.loginState.setLogin(true, res.body.login);
       await this.getFolders(res.body.login);
-    } else {
-      this.loginState.setLogin(false, null);
+      return { loggedIn: true, username: res.body.login };
     }
 
-    return this.loginState.getState();
+    return { loggedIn: false };
   }
 
   private async getFolders(username: string): Promise<void> {
-    const res = await Http.get<{
+    const res = await this.platform.http.get<{
       folders: {
         title: string;
         folder_id: string;
@@ -140,7 +138,7 @@ export default class Weasyl
     return new WeasylFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -183,7 +181,7 @@ export default class Weasyl
   async onPostFileSubmission(
     postData: PostData<WeasylFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const fileType = getFileTypeFromMimeType(files[0].mimeType);
     const contentType = this.getContentType(fileType);
@@ -261,6 +259,11 @@ export default class Weasyl
 
     if (
       body.includes('Submission Information') ||
+      // Currently unknown issue with Weasyl where they return a security error page instead of the submission page
+      // However usually the post is made successfully, so we will treat this as a success and return the source URL
+      body.includes(
+        'We weren’t able to process your request for security reasons',
+      ) ||
       // If they set a rating of adult and didn't set nsfw when they logged in
       body.includes(
         'This page contains content that you cannot view according to your current allowed ratings',
@@ -272,7 +275,7 @@ export default class Weasyl
 
     if (body.includes('Weasyl experienced a technical issue')) {
       // Unknown issue so do a second check
-      const recheck = await Http.get<string>(result.responseUrl, {
+      const recheck = await this.platform.http.get<string>(result.responseUrl, {
         partition: this.accountId,
       });
       if (recheck.body.includes('Submission Information')) {
@@ -287,7 +290,9 @@ export default class Weasyl
         body: result.body,
         statusCode: result.statusCode,
       })
-      .withException(new Error('Unknown response from Weasyl'));
+      .withException(
+        new Error(`Unknown response from Weasyl at ${result.responseUrl}`),
+      );
   }
 
   onValidateFileSubmission = validatorPassthru;
@@ -298,10 +303,10 @@ export default class Weasyl
 
   async onPostMessageSubmission(
     postData: PostData<WeasylMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const url = `${this.BASE_URL}/submit/journal`;
-    const submissionPage = await Http.get<string>(url, {
+    const submissionPage = await this.platform.http.get<string>(url, {
       partition: this.accountId,
     });
     PostResponse.validateBody(this, submissionPage);
@@ -312,12 +317,11 @@ export default class Weasyl
       .asMultipart()
       .withHeader('Referer', url)
       .withHeader('Origin', 'https://www.weasyl.com')
-      .withHeader('Host', 'www.weasyl.com')
       .setField('title', title)
       .setField('rating', this.convertRating(rating))
       .setField('content', this.modifyDescription(description))
       .setField('tags', tags.join(' '))
-      .send<string>(`${this.BASE_URL}/submit`);
+      .send<string>(`${this.BASE_URL}/submit/journal`);
 
     return PostResponse.fromWebsite(this).withAdditionalInfo({
       body: result,

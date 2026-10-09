@@ -14,7 +14,7 @@ export class PiczelFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.MARKDOWN,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @SelectField({
     label: 'folder',
@@ -36,5 +36,5 @@ export class PiczelFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'NSFW' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 }

@@ -1,6 +1,7 @@
 import {
   BooleanField,
   DescriptionField,
+  NumberField,
   RatingField,
   SelectField,
   TextField,
@@ -17,7 +18,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.BBCODE,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 
   @RatingField({
     options: [
@@ -26,7 +27,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'Adult' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @SelectField({
     label: 'category',
@@ -34,7 +35,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     defaultValue: '',
     options: HentaiFoundryCategories,
     section: 'website',
-    span: 6,
+    span: 12,
   })
   category: string;
 
@@ -48,7 +49,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
       { value: '3', label: 'Explicit Nudity' },
     ],
     section: 'website',
-    span: 6,
+    span: 4,
   })
   nudityRating: string;
 
@@ -62,7 +63,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
       { value: '3', label: 'Explicit or Graphic Violence' },
     ],
     section: 'website',
-    span: 6,
+    span: 4,
   })
   violenceRating: string;
 
@@ -76,7 +77,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
       { value: '3', label: 'Proliferous or Severe Profanity' },
     ],
     section: 'website',
-    span: 6,
+    span: 4,
   })
   profanityRating: string;
 
@@ -90,7 +91,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
       { value: '3', label: 'Strong racist themes or content' },
     ],
     section: 'website',
-    span: 6,
+    span: 4,
   })
   racismRating: string;
 
@@ -104,7 +105,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
       { value: '3', label: 'Explicit or adult sexual content' },
     ],
     section: 'website',
-    span: 6,
+    span: 4,
   })
   sexRating: string;
 
@@ -118,7 +119,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
       { value: '3', label: 'Major Spoiler Warning' },
     ],
     section: 'website',
-    span: 6,
+    span: 4,
   })
   spoilersRating: string;
 
@@ -157,18 +158,18 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
   })
   media: string;
 
-  @TextField({
+  @NumberField({
     label: 'timeTaken',
-    maxLength: 50,
+    min: 0,
     section: 'website',
     span: 6,
   })
-  timeTaken: string;
+  timeTaken: number;
 
   @TextField({
     label: 'reference',
     section: 'website',
-    span: 6,
+    span: 12,
   })
   reference: string;
 
@@ -192,7 +193,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: { untranslated: 'Yaoi' },
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   yaoi: boolean;
 
@@ -200,7 +201,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: { untranslated: 'Yuri' },
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   yuri: boolean;
 
@@ -208,7 +209,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: { untranslated: 'Teen' },
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   teen: boolean;
 
@@ -216,7 +217,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: { untranslated: 'Guro' },
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   guro: boolean;
 
@@ -224,7 +225,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: 'furry',
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   furry: boolean;
 
@@ -232,7 +233,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: { untranslated: 'Beast' },
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   beast: boolean;
 
@@ -240,7 +241,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: 'male',
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   male: boolean;
 
@@ -248,7 +249,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: 'female',
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   female: boolean;
 
@@ -256,7 +257,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: { untranslated: 'Futa' },
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   futa: boolean;
 
@@ -264,7 +265,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: { untranslated: 'Other' },
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   other: boolean;
 
@@ -272,7 +273,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: { untranslated: 'Scat' },
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   scat: boolean;
 
@@ -280,7 +281,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: { untranslated: 'Incest' },
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   incest: boolean;
 
@@ -288,7 +289,7 @@ export class HentaiFoundryFileSubmission extends BaseWebsiteOptions {
     label: { untranslated: 'Rape' },
     defaultValue: false,
     section: 'website',
-    span: 6,
+    span: 3,
   })
   rape: boolean;
 }

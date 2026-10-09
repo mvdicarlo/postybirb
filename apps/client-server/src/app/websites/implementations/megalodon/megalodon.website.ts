@@ -1,8 +1,8 @@
 import {
   FileType,
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   MegalodonAccountData,
   MegalodonOAuthRoutes,
   OAuthRouteHandlers,
@@ -11,10 +11,13 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
+import { toError } from '@postybirb/utils/common';
+import { isObject } from 'lodash';
 import { detector, Entity } from 'megalodon';
 import { Readable } from 'stream';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
+import { wait } from '../../../utils/wait.util';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { MessageWebsite } from '../../models/website-modifiers/message-website';
@@ -71,6 +74,7 @@ export abstract class MegalodonWebsite
       username: true,
       displayName: true,
       instanceType: true,
+      maxCharacters: true,
       accessToken: false, // Never expose token
       authCode: false, // Temporary, don't expose
     };
@@ -176,7 +180,7 @@ export abstract class MegalodonWebsite
         this.logger.error('Failed to register app', error);
         return {
           success: false,
-          message: `Failed to register with instance: ${error.message}`,
+          message: `Failed to register with instance: ${toError(error).message}`,
         };
       }
     },
@@ -221,7 +225,7 @@ export abstract class MegalodonWebsite
           authCode: undefined, // Clear temporary code
         });
 
-        await this.onLogin();
+        await this.login();
 
         return {
           success: true,
@@ -232,7 +236,7 @@ export abstract class MegalodonWebsite
         this.logger.error('Failed to complete OAuth', error);
         return {
           success: false,
-          message: `Failed to authenticate: ${error.message}`,
+          message: `Failed to authenticate: ${toError(error).message}`,
         };
       }
     },
@@ -248,7 +252,7 @@ export abstract class MegalodonWebsite
     return normalized;
   }
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
 
     if (data?.accessToken && data?.username && data?.instanceUrl) {
@@ -266,7 +270,7 @@ export abstract class MegalodonWebsite
         await this.fetchInstanceLimits(client);
 
         // Need to manually override decorated prop
-        if (this.decoratedProps.fileOptions) {
+        if (this.decoratedProps.fileOptions && this.instanceLimits) {
           this.decoratedProps.fileOptions.fileBatchSize =
             this.instanceLimits.maxMediaAttachments || 4;
 
@@ -291,17 +295,17 @@ export abstract class MegalodonWebsite
           }
         }
 
-        return this.loginState.setLogin(
-          true,
-          `${account.data.username}@${data.instanceUrl}`,
-        );
+        return {
+          loggedIn: true,
+          username: `${account.data.username}@${data.instanceUrl}`,
+        };
       } catch (error) {
         this.logger.error('Token verification failed', error);
-        return this.loginState.logout();
+        return { loggedIn: false };
       }
     }
 
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   /**
@@ -362,6 +366,20 @@ export abstract class MegalodonWebsite
         maxCharacters: this.getDefaultMaxDescriptionLength(),
         maxMediaAttachments: 4,
       };
+    }
+
+    // Persist the character limit into website data so the description form
+    // field can derive its maxDescriptionLength for this specific instance.
+    try {
+      const currentData = this.websiteDataStore.getData();
+      if (currentData.maxCharacters !== this.instanceLimits.maxCharacters) {
+        await this.setWebsiteData({
+          ...(currentData as MegalodonAccountData),
+          maxCharacters: this.instanceLimits.maxCharacters,
+        });
+      }
+    } catch (error) {
+      this.logger.error('Failed to persist instance character limit', error);
     }
   }
 
@@ -432,7 +450,7 @@ export abstract class MegalodonWebsite
     return new MegalodonMessageSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     const imageSizeLimit = this.getImageSizeLimit();
     const imageMatrixLimit = this.getImageMatrixLimit();
 
@@ -491,11 +509,14 @@ export abstract class MegalodonWebsite
   async onPostFileSubmission(
     postData: PostData<MegalodonFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const data = this.websiteDataStore.getData();
+
+    if (!data.accessToken) throw new Error('No accessToken exists');
+
     const client = MegalodonApiService.createClient(
       data.instanceUrl,
       data.accessToken,
@@ -506,7 +527,7 @@ export abstract class MegalodonWebsite
       // Upload media files
       const mediaIds: string[] = [];
       for (const file of files) {
-        cancellationToken.throwIfCancelled();
+        cancellationToken.throwIfAborted();
 
         this.logger
           .withMetadata({
@@ -544,21 +565,55 @@ export abstract class MegalodonWebsite
         mediaIds.push(uploadResult.data.id);
       }
 
-      // Build description with tags
-      const description = postData.options.description || '';
-
       const isSensitiveRating =
         postData.options.rating === SubmissionRating.ADULT ||
         postData.options.rating === SubmissionRating.EXTREME;
 
       // Create status with media
-      const statusResult = await client.postStatus(description, {
-        media_ids: mediaIds,
-        sensitive: postData.options.sensitive || isSensitiveRating || false,
-        visibility: postData.options.visibility || 'public',
-        spoiler_text: postData.options.spoilerText || undefined,
-        language: postData.options.language || undefined,
-      });
+      // Retry loop to handle media still processing (e.g. GIF transcoding)
+      const maxRetries = 20;
+      const retryDelayMs = 10_000;
+      let statusResult:
+        | undefined
+        | Awaited<ReturnType<typeof client.postStatus>>;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        cancellationToken.throwIfAborted();
+        try {
+          statusResult = await client.postStatus(
+            postData.options.description || '',
+            {
+              media_ids: mediaIds,
+              sensitive: isSensitiveRating || false,
+              visibility: postData.options.visibility || 'public',
+              spoiler_text:
+                postData.options.spoilerText ||
+                files[0]?.metadata?.spoilerText ||
+                undefined,
+              language: undefined,
+            },
+          );
+          break;
+        } catch (postError) {
+          if (
+            isObject(postError) &&
+            'response' in postError &&
+            isObject(postError.response) &&
+            'status' in postError.response &&
+            postError.response.status === 422 &&
+            attempt < maxRetries
+          ) {
+            this.logger
+              .withMetadata({ attempt: attempt + 1, maxRetries })
+              .info('Media still processing, waiting before retry');
+            await wait(retryDelayMs);
+            continue;
+          }
+          throw postError;
+        }
+      }
+
+      if (!statusResult) throw new Error('No post result');
 
       const status = statusResult.data;
       // Check if it's a Status (not ScheduledStatus)
@@ -576,19 +631,19 @@ export abstract class MegalodonWebsite
       });
     } catch (error) {
       this.logger.error('Failed to post file submission', error);
-      return PostResponse.fromWebsite(this).withException(
-        new Error(`Failed to post: ${error.message}`),
-      );
+      return PostResponse.fromWebsite(this).withException(error);
     }
   }
 
   async onPostMessageSubmission(
     postData: PostData<MegalodonMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     const data = this.websiteDataStore.getData();
+    if (!data.accessToken) throw new Error('No accessToken exists');
+
     const client = MegalodonApiService.createClient(
       data.instanceUrl,
       data.accessToken,
@@ -596,26 +651,19 @@ export abstract class MegalodonWebsite
     );
 
     try {
-      // Build description with tags
-      let description = postData.options.description || '';
-      const tags = postData.options.tags || [];
-      if (tags.length > 0) {
-        const processedTags = tags
-          .map((tag) => this.createMessageModel().processTag(tag))
-          .join(' ');
-        description = `${description}\n\n${processedTags}`.trim();
-      }
-
       const isSensitiveRating =
         postData.options.rating === SubmissionRating.ADULT ||
         postData.options.rating === SubmissionRating.EXTREME;
 
-      const statusResult = await client.postStatus(description, {
-        sensitive: postData.options.sensitive || isSensitiveRating || false,
-        visibility: postData.options.visibility || 'public',
-        spoiler_text: postData.options.spoilerText || undefined,
-        language: postData.options.language || undefined,
-      });
+      const statusResult = await client.postStatus(
+        postData.options.description || '',
+        {
+          sensitive: isSensitiveRating || false,
+          visibility: postData.options.visibility || 'public',
+          spoiler_text: postData.options.spoilerText || undefined,
+          language: undefined,
+        },
+      );
 
       const status = statusResult.data;
       // Check if it's a Status (not ScheduledStatus)
@@ -631,9 +679,9 @@ export abstract class MegalodonWebsite
       });
     } catch (error) {
       this.logger.error('Failed to post message submission', error);
-      return PostResponse.fromWebsite(this).withException(
-        new Error(`Failed to post: ${error.message}`),
-      );
+      return PostResponse.fromWebsite(this)
+        .withException(error)
+        .atStage('post');
     }
   }
 
@@ -642,17 +690,9 @@ export abstract class MegalodonWebsite
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<MegalodonFileSubmission>();
 
-    // Basic validations - subclasses can add more
-    const descLength = postData.options.description?.length || 0;
-    const maxLength = this.getMaxDescriptionLength();
-
-    if (descLength > maxLength) {
-      validator.error(
-        'validation.description.max-length',
-        { currentLength: descLength, maxLength },
-        'description',
-      );
-    }
+    // Description length is validated (warned) and truncated by the shared
+    // pipeline via the description field's `maxDescriptionLength`, which is
+    // derived from the instance's `maxCharacters`. Subclasses can add more.
 
     return validator.result;
   }
@@ -662,16 +702,9 @@ export abstract class MegalodonWebsite
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<MegalodonMessageSubmission>();
 
-    const descLength = postData.options.description?.length || 0;
-    const maxLength = this.getMaxDescriptionLength();
-
-    if (descLength > maxLength) {
-      validator.error(
-        'validation.description.max-length',
-        { currentLength: descLength, maxLength },
-        'description',
-      );
-    }
+    // Description length is validated (warned) and truncated by the shared
+    // pipeline via the description field's `maxDescriptionLength`, which is
+    // derived from the instance's `maxCharacters`.
 
     return validator.result;
   }

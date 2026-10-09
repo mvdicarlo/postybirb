@@ -1,18 +1,18 @@
-import { Http } from '@postybirb/http';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {
-  ILoginState,
   ImageResizeProps,
   IPostResponse,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
 import { parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -67,22 +67,22 @@ export default class Newgrounds
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<NewgroundsAccountData> =
     {};
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
-      const res = await Http.get<string>(this.BASE_URL, {
+      const res = await this.platform.http.get<string>(this.BASE_URL, {
         partition: this.accountId,
       });
 
       if (res.body.includes('activeuser')) {
         const match = res.body.match(/"name":"(.*?)"/);
         const username = match ? match[1] : 'Unknown';
-        return this.loginState.setLogin(true, username);
+        return { loggedIn: true, username };
       }
 
-      return this.loginState.logout();
+      return { loggedIn: false };
     } catch (e) {
-      this.logger.error('Failed to login', e);
-      return this.loginState.logout();
+      this.logger.error('Failed to login', e as any);
+      return { loggedIn: false };
     }
   }
 
@@ -90,12 +90,17 @@ export default class Newgrounds
     return new NewgroundsFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    return { maxBytes: FileSize.megabytes(40) };
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
+    return undefined;
   }
 
   private parseDescription(text: string): string {
-    return text.replace(/<div/gm, '<p').replace(/<\/div>/gm, '</p>');
+    return text
+      .replace(/<div/gm, '<p')
+      .replace(/<\/div>/gm, '</p>')
+      .replace(/<span[^>]*>/gm, '')
+      .replace(/<\/span>/gm, '')
+      .replace(/<p><\/p>/gm, '<p><br /></p>');
   }
 
   private getSuitabilityRating(rating: SubmissionRating | string): string {
@@ -114,18 +119,6 @@ export default class Newgrounds
     }
   }
 
-  private formatTags(tags: string[]): string[] {
-    return tags
-      .map((tag) =>
-        tag
-          .replace(/(\(|\)|:|#|;|\]|\[|')/g, '')
-          .replace(/_/g, '-')
-          .replace(/\s+/g, '-')
-          .toLowerCase(),
-      )
-      .slice(0, 12);
-  }
-
   private checkIsSaved(response: NewgroundsPostResponse): boolean {
     return response.success === 'saved';
   }
@@ -135,25 +128,28 @@ export default class Newgrounds
     userKey: string,
   ): Promise<void> {
     try {
-      await Http.post(`${this.BASE_URL}/projects/art/remove/${projectId}`, {
-        partition: this.accountId,
-        type: 'multipart',
-        data: {
-          userkey: userKey,
+      await this.platform.http.post(
+        `${this.BASE_URL}/projects/art/remove/${projectId}`,
+        {
+          partition: this.accountId,
+          type: 'multipart',
+          data: {
+            userkey: userKey,
+          },
         },
-      });
+      );
     } catch (error) {
-      this.logger.error('Failed to clean up project', error);
+      this.logger.error('Failed to clean up project', error as any);
     }
   }
 
   async onPostFileSubmission(
     postData: PostData<NewgroundsFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the user key from the page
-    const userKey: string = await BrowserWindowUtils.runScriptOnPage(
+    const userKey: string = await this.platform.browser.runScriptOnPage(
       this.accountId,
       `${this.BASE_URL}/projects/art/new`,
       'return PHP.get("uek")',
@@ -166,7 +162,7 @@ export default class Newgrounds
         .atStage('get userkey');
     }
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Step 2: Initialize the project
     const initRes = await new PostBuilder(this, cancellationToken)
@@ -259,7 +255,7 @@ export default class Newgrounds
       const { options } = postData;
       const updateProps = {
         title: postData.options.title,
-        'option[tags]': this.formatTags(postData.options.tags).join(','),
+        'option[tags]': postData.options.tags.join(','),
         'option[include_in_portal]': options.sketch ? '0' : '1',
         'option[use_creative_commons]': options.creativeCommons ? '1' : '0',
         'option[cc_commercial]': options.commercial ? 'yes' : 'no',
@@ -286,7 +282,7 @@ export default class Newgrounds
           .send<NewgroundsPostResponse>(editUrl);
       }
 
-      if (!this.checkIsSaved(contentUpdateRes.body)) {
+      if (contentUpdateRes?.body && !this.checkIsSaved(contentUpdateRes.body)) {
         await this.cleanUpFailedProject(projectId, userKey);
         return PostResponse.fromWebsite(this)
           .withException(new Error('Could not update content'))
@@ -295,8 +291,8 @@ export default class Newgrounds
       }
 
       // Check for errors in the response
-      const resKeys = Object.entries(contentUpdateRes.body).filter(([key]) =>
-        key.endsWith('_error'),
+      const resKeys = Object.entries(contentUpdateRes?.body || {}).filter(
+        ([key]) => key.endsWith('_error'),
       );
       if (resKeys.length > 0) {
         await this.cleanUpFailedProject(projectId, userKey);
@@ -305,14 +301,14 @@ export default class Newgrounds
           .withException(
             new Error(`Could not update content:\n${errorMessages}`),
           )
-          .withAdditionalInfo(contentUpdateRes.body)
+          .withAdditionalInfo(contentUpdateRes?.body)
           .atStage('content validation');
       }
 
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       // Step 7: Publish the project
-      if (contentUpdateRes.body.can_publish) {
+      if (contentUpdateRes?.body?.can_publish) {
         const publishRes = await new PostBuilder(this, cancellationToken)
           .asMultipart()
           .setField('userkey', userKey)
@@ -334,7 +330,7 @@ export default class Newgrounds
         .withException(
           new Error('Could not publish content. It may be missing data'),
         )
-        .withAdditionalInfo(contentUpdateRes.body)
+        .withAdditionalInfo(contentUpdateRes?.body)
         .atStage('publish check');
     } catch (error) {
       // Clean up on any error
@@ -357,12 +353,15 @@ export default class Newgrounds
 
   async onPostMessageSubmission(
     postData: PostData<NewgroundsMessageSubmission>,
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
     // Step 1: Get the page to extract userkey
-    const page = await Http.get<string>(`${this.BASE_URL}/account/news/post`, {
-      partition: this.accountId,
-    });
+    const page = await this.platform.http.get<string>(
+      `${this.BASE_URL}/account/news/post`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     PostResponse.validateBody(this, page);
 
@@ -379,7 +378,7 @@ export default class Newgrounds
         .atStage('get userkey');
     }
 
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     // Step 2: Submit the news post
     const builder = new PostBuilder(this, cancellationToken)
@@ -390,7 +389,8 @@ export default class Newgrounds
       .setField('emoticon', '6')
       .setField('comments_pref', '1')
       .setField('tag', '')
-      .setField('body', `<p>${postData.options.description}</p>`)
+      .setField('tags[]', postData.options.tags)
+      .setField('body', this.parseDescription(postData.options.description))
       .setField(
         'suitability',
         this.getSuitabilityRating(postData.options.rating),
@@ -403,12 +403,6 @@ export default class Newgrounds
         Accept: '*/*',
         'Content-Type': 'multipart/form-data',
       });
-
-    // Add tags as array
-    const formattedTags = this.formatTags(postData.options.tags);
-    for (const tag of formattedTags) {
-      builder.setField('tags[]', tag);
-    }
 
     const post = await builder.send<{ url: string }>(
       `${this.BASE_URL}/account/news/post`,

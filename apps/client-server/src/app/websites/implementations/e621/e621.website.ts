@@ -1,20 +1,23 @@
-import { Http } from '@postybirb/http';
+// eslint-disable-next-line max-classes-per-file
 import {
   E621AccountData,
   E621OAuthRoutes,
   E621TagCategory,
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   OAuthRouteHandlers,
   PostData,
   PostResponse,
   SimpleValidationResult,
   SubmissionRating,
+  TipTapNode,
 } from '@postybirb/types';
-import { app } from 'electron';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
+import { BBCodeConverter } from '../../../post-parsers/models/description-node/converters/bbcode-converter';
+import { ConversionContext } from '../../../post-parsers/models/description-node/description-node.base';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { SubmissionValidator } from '../../commons/validator';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
@@ -25,6 +28,7 @@ import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { E621FileSubmission } from './models/e621-file-submission';
 
@@ -34,8 +38,25 @@ import { E621FileSubmission } from './models/e621-file-submission';
 })
 @CustomLoginFlow('e621')
 @SupportsFiles({
-  acceptedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'video/webm'],
-  acceptedFileSizes: { '*': FileSize.megabytes(100) },
+  acceptedMimeTypes: [
+    'image/png',
+    'image/jpeg',
+    'image/gif',
+    'image/apng',
+    'video/webm',
+    'video/mp4',
+    'video/webm',
+    'image/webp',
+  ],
+  acceptedFileSizes: {
+    'image/png': FileSize.megabytes(100),
+    'image/jpeg': FileSize.megabytes(100),
+    'image/gif': FileSize.megabytes(20),
+    'image/apng': FileSize.megabytes(20),
+    'video/webm': FileSize.megabytes(100),
+    'video/mp4': FileSize.megabytes(100),
+    'image/webp': FileSize.megabytes(100),
+  },
   acceptsExternalSourceUrls: true,
   fileBatchSize: 1,
 })
@@ -51,7 +72,10 @@ import { E621FileSubmission } from './models/e621-file-submission';
 @DisableAds()
 export default class E621
   extends Website<E621AccountData>
-  implements FileWebsite<E621FileSubmission>, OAuthWebsite<E621OAuthRoutes>
+  implements
+    FileWebsite<E621FileSubmission>,
+    OAuthWebsite<E621OAuthRoutes>,
+    WithCustomDescriptionParser
 {
   protected BASE_URL = 'https://e621.net/';
 
@@ -61,18 +85,18 @@ export default class E621
       key: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
-    if (data.username) return this.loginState.setLogin(true, data.username);
+    if (data.username) return { loggedIn: true, username: data.username };
 
-    return this.loginState.logout();
+    return { loggedIn: false };
   }
 
   onAuthRoute: OAuthRouteHandlers<E621OAuthRoutes> = {
     login: async (data) => {
       // This check is only run at account creation stage because v3 did this. Maybe its worth moving to the onLogin?
       try {
-        const response = await Http.get(
+        const response = await this.platform.http.get(
           `https://e621.net/posts.json?login=${encodeURIComponent(data.username)}&api_key=${
             data.key
           }&limit=1`,
@@ -85,8 +109,8 @@ export default class E621
       }
 
       await this.setWebsiteData(data);
-      const result = await this.onLogin();
-      return { result: result.isLoggedIn };
+      const state = await this.login();
+      return { result: state.isLoggedIn };
     },
   };
 
@@ -94,28 +118,36 @@ export default class E621
     return new E621FileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
-  private readonly headers = { 'User-Agent': `PostyBirb/${app.getVersion()}` };
+  getDescriptionConverter(): BaseConverter {
+    return new E621Converter();
+  }
+
+  private get headers() {
+    return { 'User-Agent': `PostyBirb/${this.platform.app.getVersion()}` };
+  }
 
   private async request<T>(
-    cancellableToken: CancellableToken,
+    cancellationToken: CancellationToken,
     method: 'get' | 'post',
     url: string,
     form?: Record<string, unknown>,
   ) {
-    cancellableToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
 
     if (method === 'get') {
-      return Http.get<T>(`${this.BASE_URL}${url}`, { partition: '' });
+      return this.platform.http.get<T>(`${this.BASE_URL}${url}`, {
+        partition: '',
+      });
     }
 
-    return Http.post<T>(`${this.BASE_URL}${url}`, {
+    return this.platform.http.post<T>(`${this.BASE_URL}${url}`, {
       partition: '',
       type: 'multipart',
-      data: form,
+      data: form ?? {},
       headers: this.headers,
     });
   }
@@ -123,16 +155,14 @@ export default class E621
   async onPostFileSubmission(
     postData: PostData<E621FileSubmission>,
     files: PostingFile[],
-    cancellableToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellableToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const accountData = this.websiteDataStore.getData();
     const file = files[0];
 
-    // Spec: https://e621.net/help/dtext
-    const description = postData.options.description
-      .replaceAll('\n', '')
-      .replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/, '"$2":[$1]');
+    const { description } = postData.options;
+
     const formData = {
       login: accountData.username,
       api_key: accountData.key,
@@ -156,7 +186,7 @@ export default class E621
       location: string;
       reason: string;
       message: string;
-    }>(cancellableToken, 'post', `/uploads.json`, formData);
+    }>(cancellationToken, 'post', `/uploads.json`, formData);
 
     if (result.body.success && result.body.location) {
       return PostResponse.fromWebsite(this)
@@ -164,16 +194,17 @@ export default class E621
         .withSourceUrl(`https://e621.net${result.body.location}`);
     }
 
+    const errorText =
+      typeof result.body === 'string'
+        ? result.body
+        : `${result.body.reason || ''} || ${result.body.message || ''}`;
+
     return PostResponse.fromWebsite(this)
       .withAdditionalInfo({
         body: result.body,
         statusCode: result.statusCode,
       })
-      .withException(
-        new Error(
-          `${result.body.reason || ''} || ${result.body.message || ''}`,
-        ),
-      );
+      .withException(new Error(errorText));
   }
 
   async onValidateFileSubmission(
@@ -233,7 +264,7 @@ export default class E621
         }
       }
     } catch (error) {
-      this.logger.error(error);
+      this.logger.withError(error).error('Failed to get user feedback');
       validator.warning('validation.file.e621.user-feedback.network-error', {});
     }
   }
@@ -277,7 +308,7 @@ export default class E621
           );
         }
       } catch (error) {
-        this.logger.error(error);
+        this.logger.withError(error).error('Failed to validate tags');
         validator.warning(
           'validation.file.e621.tags.network-error',
           {},
@@ -308,7 +339,7 @@ export default class E621
     }
 
     if (tag.post_count < 2) {
-      context.validator.error(
+      context.validator.warning(
         'validation.file.e621.tags.low-use',
         { tag: tag.name, postCount: tag.post_count },
         'tags',
@@ -339,7 +370,7 @@ export default class E621
     if (cached) return cached;
 
     const response = await this.request<object>(
-      new CancellableToken(),
+      new CancellationToken(),
       'get',
       url,
     );
@@ -350,6 +381,26 @@ export default class E621
     this.metadataCache.set(url, result);
 
     return result;
+  }
+}
+
+// Spec: https://e621.net/help/dtext
+class E621Converter extends BBCodeConverter {
+  convertBlockNode(node: TipTapNode, context: ConversionContext): string {
+    const attrs = node.attrs ?? {};
+
+    // E621 does not support text align
+    delete attrs.textAlign;
+
+    return super.convertBlockNode(node, context);
+  }
+
+  convert(nodes: TipTapNode[], context: ConversionContext): string {
+    const text = super.convert(nodes, context);
+
+    return text
+      .replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/g, '"$2":[$1]')
+      .replace(/\[h(\d)](.+)\[\/h\d]/g, 'h$1. $2');
   }
 }
 

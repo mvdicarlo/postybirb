@@ -4,6 +4,7 @@
   "sourceRoot": "apps/postybirb/src",
   "projectType": "application",
   "prefix": "postybirb",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "nx-electron:build",
@@ -12,9 +13,14 @@
         "main": "apps/postybirb/src/main.ts",
         "tsConfig": "apps/postybirb/tsconfig.app.json",
         "assets": [
-          "apps/postybirb/src/assets", 
+          "apps/postybirb/src/assets",
           "apps/postybirb/src/migrations",
-          "apps/postybirb/src/app/loader"
+          "apps/postybirb/src/app/loader",
+          {
+            "glob": "sharp-worker.js",
+            "input": "apps/client-server/src/assets",
+            "output": "assets"
+          }
         ]
       },
       "configurations": {
@@ -73,6 +79,5 @@
         "command": "tsc -b {projectRoot}/tsconfig.json --incremental --pretty"
       }
     }
-  },
-  "tags": []
+  }
 }

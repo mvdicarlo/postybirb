@@ -8,4 +8,15 @@ export type UpdateCookiesRemote = {
    * The cookies to be set for the account as base64.
    */
   cookies: string;
+
+  /**
+   * The local storages to be set for the account
+   */
+  localStorage?: {
+    /** Url to set the localStorage to */
+    url: string;
+
+    /** The actual local storage data */
+    data: Record<string, unknown>;
+  };
 };

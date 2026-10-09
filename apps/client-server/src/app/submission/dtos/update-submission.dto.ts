@@ -4,7 +4,8 @@ import {
   IUpdateSubmissionDto,
   IWebsiteFormFields,
   ScheduleType,
-  WebsiteOptionsDto
+  SubmissionId,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import {
   IsArray,
@@ -14,6 +15,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 
 export class UpdateSubmissionDto implements IUpdateSubmissionDto {
@@ -31,7 +33,7 @@ export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @IsOptional()
   @IsString()
   @IsISO8601()
-  scheduledFor?: string | null | undefined;
+  scheduledFor?: string | undefined;
 
   @ApiProperty({ enum: ScheduleType })
   @IsOptional()
@@ -41,7 +43,13 @@ export class UpdateSubmissionDto implements IUpdateSubmissionDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  cron?: string | null | undefined;
+  cron?: string | undefined;
+
+  @ApiProperty({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  dependsOn?: SubmissionId[];
 
   @ApiProperty()
   @IsOptional()

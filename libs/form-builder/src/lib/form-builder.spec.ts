@@ -31,6 +31,189 @@ describe('formBuilder', () => {
     });
   });
 
+  it('should derive', () => {
+    class DescriptionType {
+      @DescriptionField({
+        label: 'description',
+        derive: [{ key: 'v', populate: 'value' }],
+      })
+      public field = '';
+    }
+
+    expect(
+      formBuilder(new DescriptionType(), { v: 'description value to derive' }),
+    ).toMatchInlineSnapshot(`
+      {
+        "field": {
+          "defaultValue": "",
+          "derive": [
+            {
+              "key": "v",
+              "populate": "value",
+            },
+          ],
+          "descriptionType": "html",
+          "formField": "description",
+          "label": "description",
+          "order": 999,
+          "responsive": {
+            "xs": 12,
+          },
+          "section": "website",
+          "span": 12,
+          "type": "description",
+          "value": "description value to derive",
+        },
+      }
+    `);
+  });
+
+  it('should derive in extended class', () => {
+    class DescriptionType {
+      @DescriptionField({
+        label: 'description',
+        derive: [{ key: 'v', populate: 'value' }],
+      })
+      public field = '';
+    }
+
+    class DescriptionTypeExtended extends DescriptionType {
+      @BooleanField({ label: 'description' })
+      public field2 = false;
+    }
+
+    expect(
+      formBuilder(new DescriptionTypeExtended(), {
+        v: 'description value to derive',
+      }),
+    ).toMatchInlineSnapshot(`
+      {
+        "field": {
+          "defaultValue": "",
+          "derive": [
+            {
+              "key": "v",
+              "populate": "value",
+            },
+          ],
+          "descriptionType": "html",
+          "formField": "description",
+          "label": "description",
+          "order": 999,
+          "responsive": {
+            "xs": 12,
+          },
+          "section": "website",
+          "span": 12,
+          "type": "description",
+          "value": "description value to derive",
+        },
+        "field2": {
+          "defaultValue": false,
+          "formField": "checkbox",
+          "label": "description",
+          "order": 999,
+          "responsive": {
+            "xs": 12,
+          },
+          "section": "website",
+          "span": 12,
+          "type": "boolean",
+        },
+      }
+    `);
+  });
+
+  it('should call custom derive', () => {
+    const fn = jest.fn();
+
+    class DescriptionType {
+      @DescriptionField({
+        label: 'description',
+        customDerive() {
+          // @ts-expect-error
+          this.defaultValue = 'AAAAA';
+          this.responsive = { xs: 5 };
+          fn();
+        },
+      })
+      public field = '';
+    }
+
+    expect(formBuilder(new DescriptionType(), {})).toMatchInlineSnapshot(`
+      {
+        "field": {
+          "defaultValue": "AAAAA",
+          "descriptionType": "html",
+          "formField": "description",
+          "label": "description",
+          "order": 999,
+          "responsive": {
+            "xs": 5,
+          },
+          "section": "website",
+          "span": 12,
+          "type": "description",
+        },
+      }
+    `);
+    expect(fn).toHaveBeenCalled();
+  });
+
+  it('should call custom derive in extended class', () => {
+    const fn = jest.fn();
+
+    class DescriptionType {
+      @DescriptionField({
+        label: 'description',
+        customDerive() {
+          // @ts-expect-error
+          this.defaultValue = 'AAAAA';
+          this.responsive = { xs: 5 };
+          fn();
+        },
+      })
+      public field = '';
+    }
+
+    class DescriptionTypeExtended extends DescriptionType {
+      @BooleanField({ label: 'description' })
+      public field2 = false;
+    }
+
+    expect(formBuilder(new DescriptionTypeExtended(), {}))
+      .toMatchInlineSnapshot(`
+      {
+        "field": {
+          "defaultValue": "AAAAA",
+          "descriptionType": "html",
+          "formField": "description",
+          "label": "description",
+          "order": 999,
+          "responsive": {
+            "xs": 5,
+          },
+          "section": "website",
+          "span": 12,
+          "type": "description",
+        },
+        "field2": {
+          "defaultValue": false,
+          "formField": "checkbox",
+          "label": "description",
+          "order": 999,
+          "responsive": {
+            "xs": 12,
+          },
+          "section": "website",
+          "span": 12,
+          "type": "boolean",
+        },
+      }
+    `);
+    expect(fn).toHaveBeenCalled();
+  });
+
   it('should extend classes', () => {
     class BooleanType {
       @BooleanField({ label: 'description' })
@@ -101,7 +284,7 @@ describe('formBuilder', () => {
         order: 999,
         span: 12,
         defaultValue: {
-          description: [],
+          description: { type: 'doc', content: [] },
           overrideDefault: false,
         },
         descriptionType: 'html',
@@ -144,7 +327,7 @@ describe('formBuilder', () => {
         order: 999,
         span: 12,
         defaultValue: {
-          description: [],
+          description: { type: 'doc', content: [] },
           overrideDefault: false,
         },
         descriptionType: 'markdown',
@@ -183,25 +366,27 @@ describe('formBuilder', () => {
       field: string[];
     }
 
-    expect(formBuilder(new TestType(), {})).toEqual({
-      field: {
-        defaultValue: {
-          overrideDefault: false,
-          tags: [],
+    expect(formBuilder(new TestType(), {})).toMatchInlineSnapshot(`
+      {
+        "field": {
+          "defaultValue": {
+            "overrideDefault": false,
+            "tags": [],
+          },
+          "formField": "tag",
+          "label": "tags",
+          "minTagLength": 1,
+          "order": 999,
+          "responsive": {
+            "xs": 12,
+          },
+          "section": "website",
+          "spaceReplacer": "_",
+          "span": 12,
+          "type": "tag",
         },
-        formField: 'tag',
-        label: 'tags',
-        minTagLength: 1,
-        order: 999,
-        responsive: {
-          xs: 12,
-        },
-        section: 'website',
-        spaceReplacer: '_',
-        span: 12,
-        type: 'tag',
-      },
-    });
+      }
+    `);
   });
 
   it('should support section and layout properties', () => {

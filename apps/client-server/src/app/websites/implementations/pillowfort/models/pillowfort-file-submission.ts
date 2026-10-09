@@ -1,8 +1,4 @@
-import {
-  BooleanField,
-  RadioField,
-  RatingField
-} from '@postybirb/form-builder';
+import { BooleanField, RadioField, RatingField } from '@postybirb/form-builder';
 import { SubmissionRating } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
@@ -13,16 +9,19 @@ export class PillowfortFileSubmission extends BaseWebsiteOptions {
       { value: SubmissionRating.ADULT, label: 'NSFW' },
     ],
   })
-  rating: SubmissionRating;
+  declare rating: SubmissionRating;
 
   @RadioField({
     label: 'visibility',
     section: 'website',
-    span: 6,
+    span: 12,
     defaultValue: 'public',
     options: [
       { value: 'public', label: 'Public' },
       { value: 'private', label: 'Private' },
+      { value: 'followers', label: 'Followers' },
+      { value: 'mutuals', label: 'Mutuals' },
+      { value: 'users', label: 'Logged-in users' },
     ],
   })
   privacy: string;
@@ -30,7 +29,7 @@ export class PillowfortFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'allowComments',
     section: 'website',
-    span: 6,
+    span: 4,
     defaultValue: true,
   })
   allowComments: boolean;
@@ -38,7 +37,7 @@ export class PillowfortFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'allowReblogging',
     section: 'website',
-    span: 6,
+    span: 4,
     defaultValue: true,
   })
   allowReblogging: boolean;
@@ -46,7 +45,7 @@ export class PillowfortFileSubmission extends BaseWebsiteOptions {
   @BooleanField({
     label: 'useTitle',
     section: 'website',
-    span: 6,
+    span: 4,
     defaultValue: true,
   })
   useTitle: boolean;

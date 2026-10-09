@@ -6,6 +6,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { EntityId } from '@postybirb/types';
+import { TagGroupRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
 import { UpdateTagGroupDto } from './dtos/update-tag-group.dto';
@@ -17,7 +18,7 @@ import { TagGroupsService } from './tag-groups.service';
  */
 @ApiTags('tag-groups')
 @Controller('tag-groups')
-export class TagGroupsController extends PostyBirbController<'TagGroupSchema'> {
+export class TagGroupsController extends PostyBirbController<TagGroupRepository> {
   constructor(readonly service: TagGroupsService) {
     super(service);
   }

@@ -5,7 +5,6 @@ export class SettingsConstants {
 
   static readonly DEFAULT_SETTINGS: ISettingsOptions = {
     hiddenWebsites: [],
-    language: 'en',
     allowAd: true,
     queuePaused: false,
     desktopNotifications: {
@@ -18,6 +17,9 @@ export class SettingsConstants {
     tagSearchProvider: {
       id: undefined,
       showWikiInHelpOnHover: false,
+    },
+    cloudflareChallenge: {
+      openBrowserWindow: false,
     },
   };
 }

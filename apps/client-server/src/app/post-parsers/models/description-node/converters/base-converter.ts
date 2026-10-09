@@ -1,63 +1,69 @@
 import { UsernameShortcut } from '@postybirb/types';
-import {
-  ConversionContext,
-  IDescriptionBlockNodeClass,
-  IDescriptionInlineNodeClass,
-  IDescriptionTextNodeClass,
-  NodeConverter,
-} from '../description-node.base';
-import { IDescriptionBlockNode } from '../description-node.types';
-
-// Type for nodes that have the accept method
-export type AcceptableBlockNode = IDescriptionBlockNodeClass & {
-  accept<T>(converter: NodeConverter<T>, context: ConversionContext): T;
-};
+import { ConversionContext } from '../description-node.base';
+import { InlineTypes, isTextNode, TipTapNode } from '../description-node.types';
 
 /**
- * Base converter with common utilities.
+ * Base converter for transforming TipTap JSON into a target output format.
+ *
+ * Processes TipTap nodes directly (no wrapper classes). Block-level nodes,
+ * inline shortcut atoms, and text nodes each have dedicated abstract methods
+ * that subclasses must implement.
+ *
+ * Conversion flow:
+ * - `convert()` starts conversion of a node array and calls `convertBlocks()`
+ * - Recursion uses `convertContent()` for node content and `convertChildren()` for nested blocks.
+ * - A guard prevents infinite loops when processing the default description.
  */
-export abstract class BaseConverter implements NodeConverter<string> {
-  /** Current depth for nested block rendering */
+export abstract class BaseConverter {
+  /** Current nesting depth for hierarchical block formatting. */
   protected currentDepth = 0;
 
-  abstract convertBlockNode(
-    node: IDescriptionBlockNodeClass,
-    context: ConversionContext,
-  ): string;
-
-  abstract convertInlineNode(
-    node: IDescriptionInlineNodeClass,
-    context: ConversionContext,
-  ): string;
-
-  abstract convertTextNode(
-    node: IDescriptionTextNodeClass,
-    context: ConversionContext,
-  ): string;
-
-  private processingDefaultDescription = false;
+  /** Prevents infinite loops when processing the default description. */
+  protected processingDefaultDescription = false;
 
   /**
-   * Converts an array of block nodes.
+   * Converts a block-level TipTap node (e.g., paragraph, heading, list).
    */
-  convertBlocks(
-    nodes: AcceptableBlockNode[],
+  abstract convertBlockNode(
+    node: TipTapNode,
     context: ConversionContext,
-  ): string {
-    return nodes
-      .map((node) => node.accept(this, context))
-      .filter((result) => result !== '')
-      .join(this.getBlockSeparator());
+  ): string;
+
+  /**
+   * Converts an inline shortcut atom (e.g., mention, hashtag).
+   */
+  abstract convertInlineNode(
+    node: TipTapNode,
+    context: ConversionContext,
+  ): string;
+
+  /**
+   * Converts a plain text node.
+   */
+  abstract convertTextNode(
+    node: TipTapNode,
+    context: ConversionContext,
+  ): string;
+
+  /**
+   * Entry point for converting an array of TipTap nodes.
+   *
+   * The default implementation calls `convertBlocks()`. Subclasses may override
+   * this method if they need to produce a different output type (e.g., a JSON
+   * structure instead of a plain string).
+   */
+  convert(nodes: TipTapNode[], context: ConversionContext): string {
+    return this.convertBlocks(nodes, context);
   }
 
   /**
-   * Converts raw block data to nodes and then converts them.
+   * Converts an array of block nodes.
+   *
+   * Handles the special case where the input is the default description,
+   * preventing recursive reprocessing of the same content.
    */
-  convertRawBlocks(
-    blocks: IDescriptionBlockNode[],
-    context: ConversionContext,
-  ): string {
-    const isDefaultDescription = blocks === context.defaultDescription;
+  convertBlocks(nodes: TipTapNode[], context: ConversionContext): string {
+    const isDefaultDescription = nodes === context.defaultDescription;
     if (isDefaultDescription) {
       if (this.processingDefaultDescription) {
         return '';
@@ -66,11 +72,8 @@ export abstract class BaseConverter implements NodeConverter<string> {
     }
 
     try {
-      // Import locally to avoid circular dependency
-      // eslint-disable-next-line @typescript-eslint/no-var-requires, global-require
-      const { DescriptionBlockNode } = require('../block-description-node');
-      const nodes = blocks.map((block) => new DescriptionBlockNode(block));
-      return this.convertBlocks(nodes, context);
+      const results = nodes.map((node) => this.convertBlockNode(node, context));
+      return results.join(this.getBlockSeparator());
     } finally {
       if (isDefaultDescription) {
         this.processingDefaultDescription = false;
@@ -79,46 +82,69 @@ export abstract class BaseConverter implements NodeConverter<string> {
   }
 
   /**
-   * Returns the separator to use between blocks.
+   * Returns the string used to separate block-level nodes in the final output.
    */
   protected abstract getBlockSeparator(): string;
 
   /**
-   * Converts children blocks with increased depth.
-   * Override in subclasses to provide format-specific indentation.
+   * Converts the inline content of a block node.
+   *
+   * Handles text nodes, inline shortcuts, and nested blocks appropriately.
+   */
+  protected convertContent(
+    content: TipTapNode[] | undefined,
+    context: ConversionContext,
+  ): string {
+    if (!content || content.length === 0) return '';
+
+    return content
+      .map((child) => {
+        if (isTextNode(child)) {
+          return this.convertTextNode(child, context);
+        }
+        if (InlineTypes.includes(child.type)) {
+          return this.convertInlineNode(child, context);
+        }
+        // Nested block nodes (e.g., listItem content)
+        return this.convertBlockNode(child, context);
+      })
+      .join('');
+  }
+
+  /**
+   * Converts child blocks, maintaining proper nesting.
    */
   protected convertChildren(
-    children: IDescriptionBlockNodeClass[],
+    children: TipTapNode[],
     context: ConversionContext,
   ): string {
     if (!children || children.length === 0) return '';
 
     this.currentDepth += 1;
     try {
-      const result = children
-        .map((child) =>
-          (child as AcceptableBlockNode).accept(this, context),
-        )
-        .filter((r) => r !== '')
-        .join(this.getBlockSeparator());
-      return result;
+      const results = children.map((child) =>
+        this.convertBlockNode(child, context),
+      );
+      return results.join(this.getBlockSeparator());
     } finally {
       this.currentDepth -= 1;
     }
   }
 
   /**
-   * Helper to check if username shortcut should be rendered for this website.
+   * Determines whether a shortcut should be rendered for the target website.
+   *
+   * If the shortcut has an `only` restriction, the website must be listed;
+   * otherwise, the shortcut is always rendered.
    */
-  protected shouldRenderUsernameShortcut(
-    node: IDescriptionInlineNodeClass,
+  protected shouldRenderShortcut(
+    node: TipTapNode,
     context: ConversionContext,
   ): boolean {
-    if (node.type !== 'username') return true;
-
-    const onlyTo = (node.props.only?.split(',') ?? [])
-      .map((s) => s.trim().toLowerCase())
-      .filter((s) => s.length > 0);
+    const attrs = node.attrs ?? {};
+    const onlyTo = (attrs.only?.split(',') ?? [])
+      .map((s: string) => s.trim().toLowerCase())
+      .filter((s: string) => s.length > 0);
 
     if (onlyTo.length === 0) return true;
 
@@ -126,34 +152,39 @@ export abstract class BaseConverter implements NodeConverter<string> {
   }
 
   /**
-   * Helper to resolve username shortcut link.
+   * Resolves a username shortcut into a URL and the final username.
+   *
+   * Applies any context-specific username conversion, then looks up the
+   * corresponding shortcut definition. Returns `undefined` if the username
+   * or the resolved URL is missing.
    */
   protected getUsernameShortcutLink(
-    node: IDescriptionInlineNodeClass,
+    node: TipTapNode,
     context: ConversionContext,
   ):
     | {
-      url: string;
-      username: string;
-    }
+        url: string;
+        username: string;
+      }
     | undefined {
-    // Get username from props (new format) or content (old format for backwards compatibility)
-    const username = node.props.username 
-      ? (node.props.username as string).trim()
-      : (node.content as IDescriptionTextNodeClass[])
-          .map((child) => child.text)
-          .join('')
-          .trim();
+    const attrs = node.attrs ?? {};
+    const username = (attrs.username as string)?.trim() ?? '';
 
-    // Check if we have a conversion for this username to the target website
     let convertedUsername = username;
-    let effectiveShortcutId = node.props.shortcut;
+    let effectiveShortcutId = attrs.shortcut;
 
     const converted = context.usernameConversions?.get(username);
     if (converted && converted !== username) {
-      // Use the converted username and switch to target website's shortcut
       convertedUsername = converted;
-      effectiveShortcutId = context.website;
+      // Use the shortcut ID registered for the target website so the
+      // website-specific convert function (e.g. :icon$1: for FA) is invoked.
+      // If the target website has no shortcut, keep the original shortcut so
+      // the link still renders using the original URL template.
+      const targetShortcutId =
+        context.websiteToShortcutId?.[context.website];
+      if (targetShortcutId && context.shortcuts[targetShortcutId]) {
+        effectiveShortcutId = targetShortcutId;
+      }
     }
 
     const shortcut: UsernameShortcut | undefined =
@@ -163,7 +194,10 @@ export abstract class BaseConverter implements NodeConverter<string> {
       shortcut?.url;
 
     return convertedUsername && url
-      ? { url: url.replace('$1', convertedUsername), username: convertedUsername }
+      ? {
+          url: url.replace('$1', convertedUsername),
+          username: convertedUsername,
+        }
       : undefined;
   }
 }

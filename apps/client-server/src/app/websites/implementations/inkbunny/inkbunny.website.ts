@@ -1,17 +1,17 @@
-import { Http } from '@postybirb/http';
 import {
-  ILoginState,
   ImageResizeProps,
   InkbunnyAccountData,
   InkbunnyOAuthRoutes,
   IPostResponse,
+  LoginResult,
   OAuthRouteHandlers,
   PostData,
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { BaseConverter } from '../../../post-parsers/models/description-node/converters/base-converter';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -25,7 +25,9 @@ import {
   PostBatchData,
 } from '../../models/website-modifiers/file-website';
 import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
+import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
+import { InkbunnyConverter } from './inkbunny-description-converter';
 import { InkbunnyFileSubmission } from './models/inkbunny-file-submission';
 
 @WebsiteMetadata({
@@ -79,7 +81,8 @@ export default class Inkbunny
   extends Website<InkbunnyAccountData>
   implements
     FileWebsite<InkbunnyFileSubmission>,
-    OAuthWebsite<InkbunnyOAuthRoutes>
+    OAuthWebsite<InkbunnyOAuthRoutes>,
+    WithCustomDescriptionParser
 {
   protected BASE_URL = 'https://inkbunny.net';
 
@@ -96,7 +99,7 @@ export default class Inkbunny
     login: async (request) => {
       this.logger.info(`Attempting Inkbunny login for ${request.username}`);
 
-      const authResponse = await Http.get<{
+      const authResponse = await this.platform.http.get<{
         sid?: string;
         error_message?: string;
       }>(
@@ -119,15 +122,15 @@ export default class Inkbunny
     },
   };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     const data = this.websiteDataStore.getData();
 
     if (!data.username || !data.sid) {
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
 
     try {
-      const authCheck = await Http.post<{ error_code?: string }>(
+      const authCheck = await this.platform.http.post<{ error_code?: string }>(
         `${this.BASE_URL}/api_watchlist.php`,
         {
           partition: this.accountId,
@@ -140,13 +143,13 @@ export default class Inkbunny
       );
 
       if (authCheck.body && !authCheck.body.error_code) {
-        return this.loginState.setLogin(true, data.username);
+        return { loggedIn: true, username: data.username };
       }
 
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     } catch (error) {
       this.logger.error('Failed to check Inkbunny login status', error);
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
   }
 
@@ -154,18 +157,22 @@ export default class Inkbunny
     return new InkbunnyFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
+  }
+
+  getDescriptionConverter(): BaseConverter {
+    return new InkbunnyConverter();
   }
 
   async onPostFileSubmission(
     postData: PostData<InkbunnyFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
     batch: PostBatchData,
   ): Promise<IPostResponse> {
     try {
-      cancellationToken.throwIfCancelled();
+      cancellationToken.throwIfAborted();
 
       const data = this.websiteDataStore.getData();
       const { options } = postData;
@@ -173,8 +180,8 @@ export default class Inkbunny
       const builder = new PostBuilder(this, cancellationToken)
         .asMultipart()
         .setField('sid', data.sid)
-        .forEach(files, (file, index) => {
-          builder.addFile(`uploadedfile[${index}]`, file);
+        .forEach(files, (file, index, b) => {
+          b.addFile(`uploadedfile[${index}]`, file);
         })
         .setConditional(
           'uploadedthumbnail[]',
@@ -212,9 +219,9 @@ export default class Inkbunny
         .setConditional('visibility', options.notify, 'yes', 'yes_nowatch')
         .setConditional('guest_block', options.blockGuests, 'yes')
         .setConditional('friends_only', options.friendsOnly, 'yes')
-        .forEach(ratings.split(','), (rating) => {
+        .forEach(ratings.split(','), (rating, _, b) => {
           if (rating !== '0') {
-            editBuilder.setField(`tag[${rating}]`, 'yes');
+            b.setField(`tag[${rating}]`, 'yes');
           }
         });
 
@@ -243,10 +250,12 @@ export default class Inkbunny
     } catch (error) {
       this.logger.error('Unexpected error during Inkbunny submission', error);
       return PostResponse.fromWebsite(this)
-        .withException(
-          error instanceof Error ? error : new Error(String(error)),
-        )
-        .withAdditionalInfo({ postData, files, batch });
+        .withException(error)
+        .withAdditionalInfo({
+          fileCount: files.length,
+          batchIndex: batch.index,
+          totalBatches: batch.totalBatches,
+        });
     }
   }
 

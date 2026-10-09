@@ -1,16 +1,15 @@
-import { Http } from '@postybirb/http';
 import {
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import { BrowserWindowUtils } from '@postybirb/utils/electron';
+import { calculateImageResize } from '@postybirb/utils/file-type';
 import { mutation, query } from 'gql-query-builder';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
@@ -51,15 +50,15 @@ export default class Picarto
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     // Load the site and read localStorage to find the auth payload
     try {
-      const ls = await BrowserWindowUtils.getLocalStorage<{
+      const ls = await this.platform.browser.getLocalStorage<{
         auth?: string;
       }>(this.accountId, this.BASE_URL, 3000);
 
       if (!ls?.auth) {
-        return this.loginState.logout();
+        return { loggedIn: false };
       }
 
       const auth = JSON.parse(ls.auth) as {
@@ -74,10 +73,10 @@ export default class Picarto
       // Populate folders
       await this.retrieveAlbums();
 
-      return this.loginState.setLogin(true, auth.user.username);
+      return { loggedIn: true, username: auth.user.username };
     } catch (e) {
       this.logger.error('Picarto login check failed', e);
-      return this.loginState.logout();
+      return { loggedIn: false };
     }
   }
 
@@ -85,25 +84,20 @@ export default class Picarto
     return new PicartoFileSubmission();
   }
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
-    // Max 4K image size for non-member users and <= 15MB
-    if (file.width > 3840 || file.height > 2160) {
-      return {
-        width: 3840,
-        height: 2160,
-        maxBytes: FileSize.megabytes(15),
-      };
-    }
-
-    return undefined;
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
+    return calculateImageResize(file, {
+      maxWidth: 3840,
+      maxHeight: 2160,
+      maxBytes: FileSize.megabytes(15),
+    });
   }
 
   async onPostFileSubmission(
     postData: PostData<PicartoFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    cancellationToken.throwIfCancelled();
+    cancellationToken.throwIfAborted();
     const { accessToken, channelId } = this.sessionData;
     if (!accessToken || !channelId) {
       throw new Error('Not authenticated with Picarto');
@@ -120,7 +114,7 @@ export default class Picarto
       fields: ['key', '__typename'],
     });
 
-    const jwtResp = await Http.post<{
+    const jwtResp = await this.platform.http.post<{
       data: { generateJwtToken: { key: string } };
     }>('https://ptvintern.picarto.tv/ptvapi', {
       partition: this.accountId,
@@ -176,11 +170,6 @@ export default class Picarto
     const { options } = postData;
 
     const rating = this.convertRating(options.rating);
-    const tags = (options.tags || [])
-      .map((t) => t.trim().replace(/\s+/g, '_'))
-      .filter((t) => t.length >= 1)
-      .map((t) => (t.length > 30 ? t.slice(0, 30) : t))
-      .slice(0, 30);
 
     const createArtworkGql = mutation({
       operation: 'createArtwork',
@@ -200,7 +189,7 @@ export default class Picarto
             schedule_publishing_time: '',
             schedule_publishing_timezone: '',
             software: (options.softwares || []).join(','),
-            tags: tags.join(','),
+            tags: (options.tags || []).join(','),
             title: options.title || '',
             variations: variationUids.join(','),
             visibility: options.visibility || 'PUBLIC',
@@ -211,7 +200,7 @@ export default class Picarto
       fields: ['status', 'message', 'data', '__typename'],
     });
 
-    const finish = await Http.post<{
+    const finish = await this.platform.http.post<{
       errors?: unknown[];
       data?: { createArtwork?: { status: 'error' | 'ok'; message?: string } };
     }>('https://ptvintern.picarto.tv/ptvapi', {
@@ -249,8 +238,8 @@ export default class Picarto
         fields: ['id', 'title'],
       });
 
-      const res = await Http.post<{
-        data: { albums: { id: string | null; title: string }[] };
+      const res = await this.platform.http.post<{
+        data: { albums: { id: string; title: string }[] };
       }>('https://ptvintern.picarto.tv/ptvapi', {
         partition: this.accountId,
         type: 'json',

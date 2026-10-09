@@ -1,15 +1,14 @@
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, TagGroupRepository } from '@postybirb/database';
 import { ensureDirSync, PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
-import { PostyBirbDatabase } from '../../drizzle/postybirb-database/postybirb-database';
 import { LegacyTagGroupConverter } from './legacy-tag-group.converter';
 
 describe('LegacyTagGroupConverter', () => {
   let converter: LegacyTagGroupConverter;
   let testDataPath: string;
-  let repository: PostyBirbDatabase<'TagGroupSchema'>;
+  let repository: TagGroupRepository;
   const ts = Date.now();
 
   beforeEach(async () => {
@@ -29,7 +28,7 @@ describe('LegacyTagGroupConverter', () => {
     writeSync(destFile, testFile);
 
     converter = new LegacyTagGroupConverter(testDataPath);
-    repository = new PostyBirbDatabase('TagGroupSchema');
+    repository = new TagGroupRepository();
   });
 
   it('should import and convert legacy tag group data', async () => {
@@ -45,6 +44,22 @@ describe('LegacyTagGroupConverter', () => {
     expect(record.name).toBe('converter');
     // Verify tags array is preserved
     expect(record.tags).toEqual(['tag1', 'tag2']);
+  });
+
+  it('should call the inserted callback only for newly imported records', async () => {
+    const onInserted = jest.fn();
+    const callbackConverter = new LegacyTagGroupConverter(
+      testDataPath,
+      onInserted,
+    );
+
+    await callbackConverter.import();
+    await callbackConverter.import();
+
+    expect(onInserted).toHaveBeenCalledTimes(1);
+    expect(onInserted.mock.calls[0][0].toDTO()).toEqual(
+      (await repository.findAll())[0].toDTO(),
+    );
   });
 
   it('should handle tag group with empty tags array', async () => {

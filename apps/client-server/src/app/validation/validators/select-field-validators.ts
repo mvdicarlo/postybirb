@@ -10,9 +10,9 @@ function isSelectField(field: FieldAggregateType): field is SelectFieldType {
 }
 
 export async function validateSelectFieldMinSelected({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
   for (const [fieldName, field] of Object.entries(fields)) {
@@ -24,14 +24,14 @@ export async function validateSelectFieldMinSelected({
 
     const selected = options?.length ?? 0;
     if (selected < minSelected) {
-      result.errors.push({
-        id: 'validation.select-field.min-selected',
-        field: fieldName,
-        values: {
+      validator.error(
+        'validation.select-field.min-selected',
+        {
           currentSelected: selected,
           minSelected,
         },
-      });
+        fieldName,
+      );
     }
   }
 }
@@ -40,9 +40,9 @@ export async function validateSelectFieldMinSelected({
  * Validates that the selected value(s) for a select field are among the valid options.
  */
 export async function validateSelectFieldValidOptions({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
 
@@ -77,6 +77,7 @@ export async function validateSelectFieldValidOptions({
 
     // Flatten all available options to a simple array of values
     const availableOptions = flattenSelectOptions(field.options);
+    if (!availableOptions.length) continue;
 
     if (field.allowMultiple) {
       // For multi-select, validate each selected value
@@ -86,26 +87,20 @@ export async function validateSelectFieldValidOptions({
         );
 
         if (invalidOptions.length > 0) {
-          result.errors.push({
-            id: 'validation.select-field.invalid-option',
-            field: fieldName,
-            values: {
-              invalidOptions,
-              fieldName,
-              fieldLabel: field.label,
-            },
-          });
+          validator.error(
+            'validation.select-field.invalid-option',
+            { invalidOptions },
+            fieldName,
+          );
         }
       }
     } else if (currentValue && !availableOptions.includes(currentValue)) {
       // For single-select, validate the selected value
-      result.errors.push({
-        id: 'validation.select-field.invalid-option',
-        field: fieldName,
-        values: {
-          invalidOptions: [currentValue],
-        },
-      });
+      validator.error(
+        'validation.select-field.invalid-option',
+        { invalidOptions: [currentValue] },
+        fieldName,
+      );
     }
   }
 }

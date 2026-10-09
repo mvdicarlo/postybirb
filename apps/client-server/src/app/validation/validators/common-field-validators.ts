@@ -1,13 +1,12 @@
-import { DescriptionValue, TagValue } from '@postybirb/types';
 import { ValidatorParams } from './validator.type';
 
 /**
  * Validates that a required text field (input/textarea) is not empty.
  */
 export async function validateRequiredTextField({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
 
@@ -31,11 +30,7 @@ export async function validateRequiredTextField({
 
     // Check if the value is empty
     if (!value || value.trim() === '') {
-      result.errors.push({
-        id: 'validation.field.required',
-        field: fieldName,
-        values: {},
-      });
+      validator.error('validation.field.required', {}, fieldName);
     }
   }
 }
@@ -44,9 +39,9 @@ export async function validateRequiredTextField({
  * Validates that a required select field has a value selected.
  */
 export async function validateRequiredSelectField({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
 
@@ -65,11 +60,7 @@ export async function validateRequiredSelectField({
     const isEmpty = Array.isArray(value) ? value.length === 0 : !value;
 
     if (isEmpty) {
-      result.errors.push({
-        id: 'validation.field.required',
-        field: fieldName,
-        values: {},
-      });
+      validator.error('validation.field.required', {}, fieldName);
     }
   }
 }
@@ -78,9 +69,9 @@ export async function validateRequiredSelectField({
  * Validates that a required radio field has a value selected.
  */
 export async function validateRequiredRadioField({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
 
@@ -94,11 +85,7 @@ export async function validateRequiredRadioField({
     const value = data.options[fieldName];
 
     if (!value) {
-      result.errors.push({
-        id: 'validation.field.required',
-        field: fieldName,
-        values: {},
-      });
+      validator.error('validation.field.required', {}, fieldName);
     }
   }
 }
@@ -107,9 +94,9 @@ export async function validateRequiredRadioField({
  * Validates that a required boolean field (checkbox) is checked.
  */
 export async function validateRequiredBooleanField({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
 
@@ -123,11 +110,7 @@ export async function validateRequiredBooleanField({
     const value = data.options[fieldName] as boolean;
 
     if (typeof value !== 'boolean') {
-      result.errors.push({
-        id: 'validation.field.required',
-        field: fieldName,
-        values: {},
-      });
+      validator.error('validation.field.required', {}, fieldName);
     }
   }
 }
@@ -136,9 +119,9 @@ export async function validateRequiredBooleanField({
  * Validates that a required description field has content.
  */
 export async function validateRequiredDescriptionField({
-  result,
   data,
   mergedWebsiteOptions,
+  validator,
 }: ValidatorParams) {
   const fields = mergedWebsiteOptions.getFormFields();
 
@@ -150,14 +133,11 @@ export async function validateRequiredDescriptionField({
     if (field.formField !== 'description') continue;
 
     // Description field value structure
-    const value = fields.description as unknown as DescriptionValue;
+    let value: string = data.options[fieldName] || '';
+    value = value.replaceAll('<div></div>', '').trim();
 
-    if (!value || !value.description || value.description.length === 0) {
-      result.errors.push({
-        id: 'validation.field.required',
-        field: fieldName,
-        values: {},
-      });
+    if (!value || value.length === 0) {
+      validator.error('validation.description.required', {}, fieldName);
     }
   }
 }

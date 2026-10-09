@@ -20,6 +20,10 @@ export type MegalodonAccountData = {
 
   // Instance type for polymorphic behavior if needed
   instanceType?: string;
+
+  // Max status characters allowed by the instance, fetched on login.
+  // Used to derive the description field's maxDescriptionLength per instance.
+  maxCharacters?: number;
 };
 
 export type MegalodonOAuthRoutes = {

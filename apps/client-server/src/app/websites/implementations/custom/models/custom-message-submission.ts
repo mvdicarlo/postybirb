@@ -6,5 +6,5 @@ export class CustomMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.RUNTIME,
   })
-  description: DescriptionValue;
+  declare description: DescriptionValue;
 }

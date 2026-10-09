@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
+import { ImageProcessingModule } from '../image-processing/image-processing.module';
 import { FileController } from './file.controller';
 import { FileService } from './file.service';
 import { CreateFileService } from './services/create-file.service';
 import { UpdateFileService } from './services/update-file.service';
 
 @Module({
+  imports: [ImageProcessingModule],
   controllers: [FileController],
   providers: [FileService, CreateFileService, UpdateFileService],
   exports: [FileService],

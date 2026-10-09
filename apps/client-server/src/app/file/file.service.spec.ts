@@ -1,27 +1,30 @@
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase } from '@postybirb/database';
+import { clearDatabase, FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import { FileSubmission, SubmissionType } from '@postybirb/types';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
 import { CustomShortcutsService } from '../custom-shortcuts/custom-shortcuts.service';
-import { SubmissionFile } from '../drizzle/models';
-import { PostyBirbDatabase } from '../drizzle/postybirb-database/postybirb-database';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FormGeneratorService } from '../form-generator/form-generator.service';
+import { SharpInstanceManager } from '../image-processing/sharp-instance-manager';
+import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { DescriptionParserService } from '../post-parsers/parsers/description-parser.service';
 import { TagParserService } from '../post-parsers/parsers/tag-parser.service';
 import { TitleParser } from '../post-parsers/parsers/title-parser';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
+import { PostingActivityModule } from '../posting/posting-activity.module';
 import { SettingsService } from '../settings/settings.service';
 import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
+import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import { TagConvertersService } from '../tag-converters/tag-converters.service';
 import { UserConvertersService } from '../user-converters/user-converters.service';
-import { UserSpecifiedWebsiteOptionsService } from '../user-specified-website-options/user-specified-website-options.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
@@ -37,7 +40,7 @@ describe('FileService', () => {
   let service: FileService;
   let submissionService: SubmissionService;
   let module: TestingModule;
-  let fileBufferRepository: PostyBirbDatabase<'FileBufferSchema'>;
+  let fileBufferRepository: FileBufferRepository;
 
   async function createSubmission() {
     const dto = new CreateSubmissionDto();
@@ -54,7 +57,7 @@ describe('FileService', () => {
       originalname: 'small_image.jpg',
       encoding: '',
       mimetype: 'image/jpeg',
-      size: testFile.length,
+      size: testFile?.length ?? 0,
       destination: '',
       filename: 'small_image.jpg',
       path,
@@ -68,7 +71,7 @@ describe('FileService', () => {
       originalname: 'png_with_alpha.png',
       encoding: '',
       mimetype: 'image/png',
-      size: testFile2.length,
+      size: testFile2?.length ?? 0,
       destination: '',
       filename: 'png_with_alpha.jpg',
       path,
@@ -80,8 +83,8 @@ describe('FileService', () => {
     const path = `${PostyBirbDirectories.DATA_DIRECTORY}/${Date.now()}.jpg`;
     const path2 = `${PostyBirbDirectories.DATA_DIRECTORY}/${Date.now()}.png`;
 
-    writeSync(path, testFile);
-    writeSync(path2, testFile2);
+    writeSync(path, testFile!);
+    writeSync(path2, testFile2!);
     return [path, path2];
   }
 
@@ -97,11 +100,13 @@ describe('FileService', () => {
   beforeEach(async () => {
     clearDatabase();
     module = await Test.createTestingModule({
+      imports: [EventEmitterModule.forRoot(), PostingActivityModule],
       providers: [
-        UserSpecifiedWebsiteOptionsService,
+        AccountTemplateDefaultsService,
         SubmissionService,
         CreateFileService,
         UpdateFileService,
+        SharpInstanceManager,
         FileService,
         ValidationService,
         SubmissionService,
@@ -110,6 +115,7 @@ describe('FileService', () => {
         AccountService,
         WebsiteRegistryService,
         WebsiteOptionsService,
+        SubmissionEventPublisher,
         WebsiteImplProvider,
         PostParsersService,
         TagParserService,
@@ -121,9 +127,10 @@ describe('FileService', () => {
         FileConverterService,
         CustomShortcutsService,
         UserConvertersService,
+        ...[noopPlatformProvider],
       ],
     }).compile();
-    fileBufferRepository = new PostyBirbDatabase('FileBufferSchema');
+    fileBufferRepository = new FileBufferRepository();
     service = module.get<FileService>(FileService);
     submissionService = module.get<SubmissionService>(SubmissionService);
 
@@ -134,14 +141,14 @@ describe('FileService', () => {
   async function loadBuffers(rec: SubmissionFile) {
     // !bug - https://github.com/drizzle-team/drizzle-orm/issues/3497
     // eslint-disable-next-line no-param-reassign
-    rec.file = await fileBufferRepository.findById(rec.primaryFileId);
+    rec.file = await fileBufferRepository.findByIdOrThrow(rec.primaryFileId);
     // eslint-disable-next-line no-param-reassign
     rec.thumbnail = rec.thumbnailId
-      ? await fileBufferRepository.findById(rec.thumbnailId)
+      ? (await fileBufferRepository.findById(rec.thumbnailId)) || undefined
       : undefined;
     // eslint-disable-next-line no-param-reassign
     rec.altFile = rec.altFileId
-      ? await fileBufferRepository.findById(rec.altFileId)
+      ? (await fileBufferRepository.findById(rec.altFileId)) || undefined
       : undefined;
   }
 
@@ -160,7 +167,7 @@ describe('FileService', () => {
     await loadBuffers(file);
     expect(file.file).toBeDefined();
     expect(file.thumbnail).toBeDefined();
-    expect(file.thumbnail.fileName.startsWith('thumbnail_')).toBe(true);
+    expect(file.thumbnail?.fileName.startsWith('thumbnail_')).toBe(true);
     expect(file.fileName).toBe(fileInfo.originalname);
     expect(file.size).toBe(fileInfo.size);
     expect(file.hasThumbnail).toBe(true);
@@ -192,7 +199,7 @@ describe('FileService', () => {
       originalname: 'small_image.jpg',
       encoding: '',
       mimetype: 'image/png',
-      size: testFile.length,
+      size: testFile?.length ?? 0,
       destination: '',
       filename: 'small_image.jpg',
       path: path2[0],
@@ -253,9 +260,7 @@ describe('FileService', () => {
     const fileInfo = createMulterData(path[0]);
 
     // Get initial count of entities
-    const initialFiles = await new PostyBirbDatabase(
-      'SubmissionFileSchema',
-    ).findAll();
+    const initialFiles = await new SubmissionFileRepository().findAll();
     const initialBuffers = await fileBufferRepository.findAll();
     const initialFileCount = initialFiles.length;
     const initialBufferCount = initialBuffers.length;
@@ -281,9 +286,7 @@ describe('FileService', () => {
     ).rejects.toThrow('Simulated error during buffer creation');
 
     // Verify that entities were cleaned up
-    const finalFiles = await new PostyBirbDatabase(
-      'SubmissionFileSchema',
-    ).findAll();
+    const finalFiles = await new SubmissionFileRepository().findAll();
     const finalBuffers = await fileBufferRepository.findAll();
 
     expect(finalFiles.length).toBe(initialFileCount);

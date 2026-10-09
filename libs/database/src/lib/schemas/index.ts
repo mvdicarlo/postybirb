@@ -6,13 +6,14 @@ export * from './notification.schema';
 export * from './post-event.schema';
 export * from './post-queue-record.schema';
 export * from './post-record.schema';
+export * from './post.schema';
 export * from './settings.schema';
 export * from './submission-file.schema';
 export * from './submission.schema';
 export * from './tag-converter.schema';
 export * from './tag-group.schema';
+export * from './unit-of-work.schema';
 export * from './user-converter.schema';
-export * from './user-specified-website-options.schema';
 export * from './website-data.schema';
 export * from './website-options.schema';
 

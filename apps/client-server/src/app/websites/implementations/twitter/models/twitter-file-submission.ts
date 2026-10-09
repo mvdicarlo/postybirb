@@ -1,36 +1,8 @@
-import {
-  DescriptionField,
-  RadioField,
-  RatingField,
-} from '@postybirb/form-builder';
-import {
-  DescriptionType,
-  DescriptionValue,
-  SubmissionRating,
-} from '@postybirb/types';
-import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { RadioField } from '@postybirb/form-builder';
 import { ContentBlurValue } from '../twitter-api-service/twitter-api-service';
+import { TwitterMessageSubmission } from './twitter-message-submission';
 
-export class TwitterFileSubmission extends BaseWebsiteOptions {
-  @DescriptionField({
-    descriptionType: DescriptionType.PLAINTEXT,
-  })
-  description: DescriptionValue;
-
-  @RatingField({
-    options: [
-      {
-        label: 'Safe',
-        value: SubmissionRating.GENERAL,
-      },
-      {
-        label: 'Sensitive',
-        value: SubmissionRating.ADULT,
-      },
-    ],
-  })
-  rating: SubmissionRating;
-
+export class TwitterFileSubmission extends TwitterMessageSubmission {
   @RadioField({
     label: 'contentBlur',
     options: [

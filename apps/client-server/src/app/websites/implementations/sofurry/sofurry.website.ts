@@ -1,281 +1,356 @@
-import { Http } from '@postybirb/http';
 import {
   FileType,
-  ILoginState,
   ImageResizeProps,
   IPostResponse,
+  LoginResult,
+  OAuthRouteHandlers,
   PostData,
   PostResponse,
+  SofurryAccountData,
+  SofurryOAuthRoutes,
   SubmissionRating,
 } from '@postybirb/types';
-import { HTMLElement, parse } from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
-import FileSize from '../../../utils/filesize.util';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
-import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
-import { MessageWebsite } from '../../models/website-modifiers/message-website';
+import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
-import { SofurryAccountData } from './models/sofurry-account-data';
 import { SofurryFileSubmission } from './models/sofurry-file-submission';
-import { SofurryMessageSubmission } from './models/sofurry-message-submission';
+
+interface SofurrySubmissionResponse {
+  id: string;
+  title: string;
+  description: string | null;
+  author: string;
+  category: string | null;
+  type: string | null;
+  rating: string | null;
+  status: string;
+  privacy: string;
+  content: unknown[];
+  thumbUrl: string | null;
+  coverUrl: string | null;
+  artistTags: string[];
+  publishedAt: string | null;
+}
+
+interface SofurryUserResponse {
+  handle: string;
+  username: string;
+}
+
+interface SofurryFileContentResponse {
+  contentId: string;
+  title: string | null;
+  description: string | null;
+  body: { url?: string };
+  position: number;
+  type: string;
+}
+
+interface SofurryErrorResponse {
+  statusCode?: number;
+  message?: string;
+  description?: string;
+  errorCode?: number;
+}
 
 @WebsiteMetadata({
   name: 'sofurry',
   displayName: 'SoFurry',
 })
-@UserLoginFlow('https://www.sofurry.com/user/login')
+@CustomLoginFlow()
 @SupportsUsernameShortcut({
   id: 'sofurry',
-  url: 'https://$1.sofurry.com/',
+  url: 'https://sofurry.com/u/$1',
 })
 @SupportsFiles({
+  fileBatchSize: 10, // A guess
   acceptedMimeTypes: [
     'image/png',
     'image/jpeg',
     'image/jpg',
     'image/gif',
-    'application/x-shockwave-flash',
+    'image/webp',
     'text/plain',
+    'application/pdf',
     'audio/mp3',
     'audio/mpeg',
     'video/mp4',
+    'video/webm',
   ],
   acceptedFileSizes: {
-    '*': FileSize.megabytes(50),
+    '*': 104857600, // 100 MB (public API maxFileSize)
   },
 })
 export default class Sofurry
   extends Website<SofurryAccountData>
   implements
     FileWebsite<SofurryFileSubmission>,
-    MessageWebsite<SofurryMessageSubmission>
+    OAuthWebsite<SofurryOAuthRoutes>
 {
-  protected BASE_URL = 'https://www.sofurry.com';
+  protected BASE_URL = 'https://api.sofurry.com';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<SofurryAccountData> =
     {
+      token: false,
       folders: true,
     };
 
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
+    const { token } = this.websiteDataStore.getData();
+    if (!token) {
+      return { loggedIn: false };
+    }
+
     try {
-      const res = await Http.get<string>(
-        `${this.BASE_URL}/upload/details?contentType=1`,
+      const res = await this.platform.http.get<SofurryUserResponse>(
+        `${this.BASE_URL}/v1/user/me`,
         {
           partition: this.accountId,
+          headers: this.getAuthHeaders(token),
         },
       );
 
-      if (res.body.includes('Logout')) {
-        const $ = parse(res.body);
-        const username = $.querySelector('a.avatar')
-          ?.getAttribute('href')
-          ?.split('.')[0]
-          ?.split('/')
-          .pop();
-
-        this.getFolders($);
-        return this.loginState.setLogin(true, username || 'Unknown');
+      if (res.statusCode === 200 && res.body?.username) {
+        await this.getFolders(token);
+        return { loggedIn: true, username: res.body.username };
       }
 
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     } catch (e) {
-      return this.loginState.setLogin(false, null);
+      this.logger.error('Failed to login', e);
+      return { loggedIn: false };
     }
   }
 
-  private getFolders($: HTMLElement) {
-    const folders = [];
-    const folderSelect = $.querySelector('#UploadForm_folderId');
-    if (folderSelect) {
-      folderSelect.querySelectorAll('option').forEach((option) => {
-        const value = option.getAttribute('value');
-        const label = option.innerText;
-        if (value && label) {
-          folders.push({ value, label });
-        }
+  private async getFolders(token: string): Promise<void> {
+    try {
+      const res = await this.platform.http.get<
+        Array<{ id: string; name: string }>
+      >(`${this.BASE_URL}/v1/folders`, {
+        partition: this.accountId,
+        headers: this.getAuthHeaders(token),
       });
-    }
 
-    this.setWebsiteData({
-      folders,
-    });
+      if (res.statusCode === 200 && Array.isArray(res.body)) {
+        await this.setWebsiteData({
+          ...this.websiteDataStore.getData(),
+          folders: res.body.map((f) => ({ value: f.id, label: f.name })),
+        });
+      }
+    } catch (e) {
+      this.logger.withError(e).error('Failed to fetch folders');
+    }
+  }
+
+  onAuthRoute: OAuthRouteHandlers<SofurryOAuthRoutes> = {
+    login: async (data) => {
+      const token = data.token?.trim();
+      if (!token) {
+        return { result: false };
+      }
+
+      try {
+        const res = await this.platform.http.get<SofurryUserResponse>(
+          `${this.BASE_URL}/v1/user/me`,
+          {
+            partition: this.accountId,
+            headers: this.getAuthHeaders(token),
+          },
+        );
+
+        if (res.statusCode !== 200 || !res.body?.username) {
+          return { result: false };
+        }
+
+        await this.setWebsiteData({
+          ...this.websiteDataStore.getData(),
+          token,
+        });
+        const state = await this.login();
+        return { result: state.isLoggedIn };
+      } catch (e) {
+        this.logger.withError(e).error('onAuthRoute.login failed');
+        return { result: false };
+      }
+    },
+  };
+
+  private getAuthHeaders(token: string): Record<string, string> {
+    return {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    };
   }
 
   createFileModel(): SofurryFileSubmission {
     return new SofurryFileSubmission();
   }
 
-  calculateImageResize(): ImageResizeProps {
+  calculateImageResize(): ImageResizeProps | undefined {
     return undefined;
   }
 
-  private getSubmissionType(type: FileType): string {
-    switch (type) {
-      case FileType.AUDIO:
-        return '2';
-      case FileType.TEXT:
-        return '0';
-      case FileType.IMAGE:
-      case FileType.VIDEO:
+  private getRating(rating: SubmissionRating): number {
+    switch (rating) {
+      case SubmissionRating.EXTREME:
+      case SubmissionRating.ADULT:
+        return 20; // Adult
+      case SubmissionRating.MATURE:
+        return 10; // Mature
+      case SubmissionRating.GENERAL:
       default:
-        return '1';
+        return 0; // Clean
     }
   }
 
-  private getRating(rating: SubmissionRating): string {
-    switch (rating) {
-      case SubmissionRating.EXTREME:
-        return '2';
-      case SubmissionRating.ADULT:
-      case SubmissionRating.MATURE:
-        return '1';
-      case SubmissionRating.GENERAL:
+  private getDefaultCategoryAndType(fileType: FileType): {
+    category: number;
+    type: number;
+  } {
+    switch (fileType) {
+      case FileType.AUDIO:
+        return { category: 40, type: 41 }; // Music -> Track
+      case FileType.TEXT:
+        return { category: 20, type: 21 }; // Writing -> Short Story
+      case FileType.VIDEO:
+        return { category: 50, type: 59 }; // Video -> Other
+      case FileType.IMAGE:
       default:
-        return '0';
+        return { category: 10, type: 11 }; // Artwork -> Drawing
     }
   }
 
   async onPostFileSubmission(
     postData: PostData<SofurryFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<IPostResponse> {
-    const url = `${this.BASE_URL}/upload/details?contentType=${this.getSubmissionType(
-      files[0].fileType,
-    )}`;
-
-    const page = await Http.get<string>(url, {
-      partition: this.accountId,
-    });
-
-    PostResponse.validateBody(this, page);
-
-    const csrfToken = parse(page.body)
-      .querySelector('input[name="YII_CSRF_TOKEN"]')
-      ?.getAttribute('value');
-    if (!csrfToken) {
-      throw new Error('Failed to find CSRF token');
+    const { token } = this.websiteDataStore.getData();
+    if (!token) {
+      return PostResponse.fromWebsite(this).withException(
+        new Error('Not logged in. Please add your SoFurry access token.'),
+      );
     }
 
-    // Parse description to remove newlines after closing div tags
-    const processedDescription = this.parseDescription(
-      postData.options.description,
+    // Step 1: Create an empty draft submission.
+    cancellationToken.throwIfAborted();
+    const createRes = await this.platform.http.put<SofurrySubmissionResponse>(
+      `${this.BASE_URL}/v1/submission`,
+      {
+        partition: this.accountId,
+        type: 'json',
+        data: {},
+        headers: this.getAuthHeaders(token),
+      },
     );
 
-    const builder = new PostBuilder(this, cancellationToken)
-      .asMultipart()
-      .setField('YII_CSRF_TOKEN', csrfToken)
-      .setField('UploadForm[P_title]', postData.options.title)
-      .setField('UploadForm[description]', processedDescription)
-      .setField('UploadForm[formtags]', postData.options.tags.join(', '))
-      .setField(
-        'UploadForm[contentLevel]',
-        this.getRating(postData.options.rating),
-      )
-      .setField('UploadForm[P_hidePublic]', '0')
-      .setField('UploadForm[folderId]', postData.options.folder || '0');
-
-    if (files[0].fileType === FileType.TEXT) {
-      builder.setField('UploadForm[textcontent]', files[0].buffer.toString());
-      if (postData.options.thumbnailAsCoverArt && files[0].thumbnail) {
-        builder.addThumbnail('UploadForm[binarycontent_5]', files[0]);
-      }
-    } else {
-      builder.addFile('UploadForm[binarycontent]', files[0]);
-      builder.addThumbnail('UploadForm[binarycontent_5]', files[0]);
-    }
-
-    const postResponse = await builder
-      .withHeader('referer', url)
-      .send<string>(url);
-
-    if (postResponse.body.includes('edit')) {
+    if (createRes.statusCode >= 400 || !createRes.body?.id) {
       return PostResponse.fromWebsite(this)
-        .withSourceUrl(postResponse.responseUrl)
-        .withMessage('File posted successfully')
-        .withAdditionalInfo(postResponse.body);
+        .withException(new Error('Failed to create submission'))
+        .withAdditionalInfo(JSON.stringify(createRes.body));
     }
 
-    throw new Error(`Failed to post file: ${postResponse.body}`);
+    const submissionId = createRes.body.id;
+
+    // Step 2: Upload files one at a time to maintain content order.
+    const contentIds: string[] = [];
+    for (const file of files) {
+      cancellationToken.throwIfAborted();
+      const uploadRes = await new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .withHeader('Authorization', `Bearer ${token}`)
+        .withHeader('Accept', 'application/json')
+        .addFile('file', file)
+        .send<SofurryFileContentResponse>(
+          `${this.BASE_URL}/v1/submission/${submissionId}/content`,
+        );
+
+      if (uploadRes.statusCode >= 400 || !uploadRes.body?.contentId) {
+        return PostResponse.fromWebsite(this)
+          .withException(
+            new Error(
+              `Failed to upload file "${file.fileName}" (${
+                contentIds.length + 1
+              }/${files.length})`,
+            ),
+          )
+          .withAdditionalInfo(JSON.stringify(uploadRes.body));
+      }
+
+      contentIds.push(uploadRes.body.contentId);
+    }
+
+    const defaults = this.getDefaultCategoryAndType(files[0].fileType);
+    const category = postData.options.category
+      ? parseInt(postData.options.category, 10)
+      : defaults.category;
+    const type = postData.options.type
+      ? parseInt(postData.options.type, 10)
+      : defaults.type;
+
+    // Step 3: Finalize the submission with metadata.
+    cancellationToken.throwIfAborted();
+    const finalizeRes = await new PostBuilder(this, cancellationToken)
+      .asJson()
+      .withHeader('Authorization', `Bearer ${token}`)
+      .withHeader('Accept', 'application/json')
+      .setField('title', postData.options.title)
+      .setField('category', category)
+      .setField('type', type)
+      .setField('rating', this.getRating(postData.options.rating))
+      .setField('privacy', postData.options.privacy)
+      .setField('allowComments', postData.options.allowComments ?? true)
+      .setField('allowDownloads', postData.options.allowDownloads ?? true)
+      .setField('isWip', postData.options.markAsWorkInProgress ?? false)
+      .setField('optimize', true)
+      .setField('pixelPerfect', postData.options.pixelPerfectDisplay ?? false)
+      .setField('isAdvert', postData.options.intendedAsAdvertisement ?? false)
+      .setField('description', postData.options.description)
+      .setField('artistTags', postData.options.tags)
+      .setField('canPurchase', false)
+      .setField('contentOrder', contentIds)
+      .send<SofurrySubmissionResponse | SofurryErrorResponse>(
+        `${this.BASE_URL}/v1/submission/${submissionId}`,
+      );
+
+    if (finalizeRes.statusCode >= 400) {
+      return PostResponse.fromWebsite(this)
+        .withException(new Error('Failed to finalize submission'))
+        .withAdditionalInfo(JSON.stringify(finalizeRes.body));
+    }
+
+    // Step 4: Insert submission into each selected folder.
+    for (const folderId of postData.options.folders ?? []) {
+      try {
+        await this.platform.http.post(
+          `${this.BASE_URL}/v1/folder/${folderId}/${submissionId}`,
+          {
+            partition: this.accountId,
+            type: 'urlencoded',
+            data: {},
+            headers: this.getAuthHeaders(token),
+          },
+        );
+      } catch (e) {
+        this.logger
+          .withError(e)
+          .warn(`Failed to add submission to folder "${folderId}"`);
+      }
+    }
+
+    return PostResponse.fromWebsite(this)
+      .withSourceUrl(`https://sofurry.com/s/${submissionId}`)
+      .withMessage('File posted successfully');
   }
 
   onValidateFileSubmission = validatorPassthru;
-
-  createMessageModel(): SofurryMessageSubmission {
-    return new SofurryMessageSubmission();
-  }
-
-  async onPostMessageSubmission(
-    postData: PostData<SofurryMessageSubmission>,
-    cancellationToken: CancellableToken,
-  ): Promise<IPostResponse> {
-    const url = `${this.BASE_URL}/upload/details?contentType=3`;
-
-    const page = await Http.get<string>(url, {
-      partition: this.accountId,
-    });
-
-    PostResponse.validateBody(this, page);
-
-    const csrfToken = parse(page.body)
-      .querySelector('input[name="YII_CSRF_TOKEN"]')
-      ?.getAttribute('value');
-    const uploadFormId = parse(page.body)
-      .querySelector('input[name="UploadForm[P_id]"]')
-      ?.getAttribute('value');
-
-    if (!csrfToken) {
-      throw new Error('Failed to find CSRF token');
-    }
-
-    // Use first line of description as the summary
-    const description = this.parseDescription(postData.options.description);
-    const descriptionLines = description.split('\n');
-    const summary = descriptionLines.length > 0 ? descriptionLines[0] : '';
-
-    const builder = new PostBuilder(this, cancellationToken)
-      .asMultipart()
-      .setField('YII_CSRF_TOKEN', csrfToken)
-      .setField('UploadForm[P_id]', uploadFormId || '')
-      .setField('UploadForm[P_title]', postData.options.title)
-      .setField('UploadForm[textcontent]', description)
-      .setField('UploadForm[description]', summary)
-      .setField('UploadForm[formtags]', postData.options.tags.join(', '))
-      .setField(
-        'UploadForm[contentLevel]',
-        this.getRating(postData.options.rating),
-      )
-      .setField('UploadForm[P_hidePublic]', '0')
-      .setField('UploadForm[folderId]', postData.options.folder || '0')
-      .setField('UploadForm[newFolderName]', '')
-      .setField('UploadForm[P_isHTML]', '1')
-      .setField('save', 'Publish');
-
-    const postResponse = await builder
-      .withHeader('referer', url)
-      .send<string>(url);
-
-    if (postResponse.body.includes('edit')) {
-      return PostResponse.fromWebsite(this)
-        .withSourceUrl(postResponse.responseUrl)
-        .withMessage('Message posted successfully')
-        .withAdditionalInfo(postResponse.body);
-    }
-
-    throw new Error(`Failed to post message: ${postResponse.body}`);
-  }
-
-  onValidateMessageSubmission = validatorPassthru;
-
-  private parseDescription(text: string): string {
-    return text.replace(/<\/div>(\n|\r)/g, '</div>').replace(/\n/g, '');
-  }
 }

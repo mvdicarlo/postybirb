@@ -1,27 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { Interval } from '@nestjs/schedule';
+import { Injectable, Optional } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
+import { UPDATE_UPDATES } from '@postybirb/socket-events';
+import { ReleaseNoteInfo, UpdateState } from '@postybirb/types';
 import { ProgressInfo, UpdateInfo, autoUpdater } from 'electron-updater';
-
-interface ReleaseNoteInfo {
-  /**
-   * The version.
-   */
-  readonly version: string;
-  /**
-   * The note.
-   */
-  readonly note: string | null;
-}
-
-export type UpdateState = {
-  updateAvailable?: boolean;
-  updateDownloaded?: boolean;
-  updateDownloading?: boolean;
-  updateError?: string;
-  updateProgress?: number;
-  updateNotes?: ReleaseNoteInfo[];
-};
+import isDocker from 'is-docker';
+import { WSGateway } from '../web-socket/web-socket-gateway';
 
 /**
  * Handles updates for the application.
@@ -41,14 +24,26 @@ export class UpdateService {
     updateNotes: undefined,
   };
 
-  constructor() {
+  constructor(@Optional() private readonly webSocket?: WSGateway) {
     autoUpdater.logger = this.logger;
     autoUpdater.autoDownload = false;
     autoUpdater.fullChangelog = true;
     autoUpdater.allowPrerelease = true;
 
     this.registerListeners();
-    setTimeout(() => this.checkForUpdates(), 5_000);
+    if (!isDocker()) setTimeout(() => this.checkForUpdates(), 5_000);
+  }
+
+  /**
+   * Emit update state changes via WebSocket.
+   */
+  private emit() {
+    if (this.webSocket) {
+      this.webSocket.emit({
+        event: UPDATE_UPDATES,
+        data: this.getUpdateState(),
+      });
+    }
   }
 
   private registerListeners() {
@@ -70,12 +65,10 @@ export class UpdateService {
     this.updateState = {
       ...this.updateState,
       updateDownloaded: true,
+      updateDownloading: false,
       updateProgress: 100,
     };
-
-    setTimeout(() => {
-      autoUpdater.quitAndInstall(false, true);
-    }, 1000);
+    this.emit();
   }
 
   private onUpdateAvailable(update: UpdateInfo) {
@@ -84,6 +77,7 @@ export class UpdateService {
       updateAvailable: true,
       updateNotes: (update.releaseNotes as ReleaseNoteInfo[]) ?? [],
     };
+    this.emit();
   }
 
   private onUpdateError(error: Error) {
@@ -91,7 +85,9 @@ export class UpdateService {
     this.updateState = {
       ...this.updateState,
       updateError: error.message,
+      updateDownloading: false,
     };
+    this.emit();
   }
 
   private onDownloadProgress(progress: ProgressInfo) {
@@ -99,9 +95,9 @@ export class UpdateService {
       ...this.updateState,
       updateProgress: progress.percent,
     };
+    this.emit();
   }
 
-  @Interval(600_000)
   public checkForUpdates() {
     if (
       this.updateState.updateDownloading ||
@@ -130,7 +126,20 @@ export class UpdateService {
       ...this.updateState,
       updateDownloading: true,
     };
+    this.emit();
 
     autoUpdater.downloadUpdate();
+  }
+
+  /**
+   * Quit the application and install the downloaded update.
+   * Only works if an update has been downloaded.
+   */
+  public install() {
+    if (!this.updateState.updateDownloaded) {
+      return;
+    }
+
+    autoUpdater.quitAndInstall(false, true);
   }
 }

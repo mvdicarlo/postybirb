@@ -3,6 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/client-server/src",
   "projectType": "application",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "nx-electron:build",
@@ -52,6 +53,5 @@
         "command": "tsc -b {projectRoot}/tsconfig.json --incremental --pretty"
       }
     }
-  },
-  "tags": []
+  }
 }

@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { AnySQLiteColumn, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { AccountSchema } from './account.schema';
 import { CommonSchema, id } from './common.schema';
 
@@ -10,7 +10,7 @@ export const WebsiteDataSchema = sqliteTable('website-data', {
     .primaryKey()
     .unique()
     .notNull()
-    .references(() => AccountSchema.id, {
+    .references((): AnySQLiteColumn => AccountSchema.id, {
       onDelete: 'cascade',
     }),
   createdAt: commonSchema.createdAt,

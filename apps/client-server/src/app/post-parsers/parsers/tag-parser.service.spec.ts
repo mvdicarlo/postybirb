@@ -21,7 +21,7 @@ describe('TagParserService', () => {
         {
           provide: TagConvertersService,
           useValue: {
-            convert: (_, tags: string[]) => tags,
+            convert: (_: unknown, tags: string[]) => tags,
           },
         },
       ],
@@ -54,8 +54,8 @@ describe('TagParserService', () => {
       },
     } as IWebsiteOptions;
     const tags = [
-      ...websiteOptions.data.tags.tags,
-      ...defaultOptions.data.tags.tags,
+      ...websiteOptions.data.tags!.tags,
+      ...defaultOptions.data.tags!.tags,
     ];
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
@@ -83,7 +83,7 @@ describe('TagParserService', () => {
         },
       },
     } as IWebsiteOptions;
-    const { tags } = websiteOptions.data.tags;
+    const tags = websiteOptions.data.tags?.tags;
 
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
@@ -106,7 +106,7 @@ describe('TagParserService', () => {
     const websiteOptions: IWebsiteOptions = {
       data: {},
     } as IWebsiteOptions;
-    const { tags } = defaultOptions.data.tags;
+    const tags = defaultOptions.data.tags?.tags;
 
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
@@ -125,7 +125,7 @@ describe('TagParserService', () => {
     const websiteOptions: IWebsiteOptions = {
       data: {},
     } as IWebsiteOptions;
-    const tags = [];
+    const tags: string[] = [];
 
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
@@ -152,10 +152,10 @@ describe('TagParserService', () => {
         },
       },
     } as IWebsiteOptions;
-    const tags = [];
+    const tags: string[] = [];
     class TagOptions extends BaseWebsiteOptions {
       @TagField({ hidden: true })
-      tags: TagValue;
+      declare tags: TagValue;
     }
     const result = await service.parse(
       instance as unknown as UnknownWebsite,
@@ -170,7 +170,7 @@ describe('TagParserService', () => {
     const instance = {};
     class TagOptions extends BaseWebsiteOptions {
       @TagField({})
-      tags: TagValue;
+      declare tags: TagValue;
 
       protected processTag(tag: string): string {
         return tag.toUpperCase();
@@ -191,8 +191,8 @@ describe('TagParserService', () => {
       },
     } as IWebsiteOptions;
     const tags = [
-      ...websiteOptions.data.tags.tags,
-      ...defaultOptions.data.tags.tags,
+      ...websiteOptions.data.tags!.tags,
+      ...defaultOptions.data.tags!.tags,
     ].map((tag) => tag.toUpperCase());
 
     const result = await service.parse(
@@ -220,10 +220,10 @@ describe('TagParserService', () => {
         },
       },
     } as IWebsiteOptions;
-    const tags = [websiteOptions.data.tags.tags[0]];
+    const tags = [websiteOptions.data.tags?.tags[0]];
     class TagOptions extends BaseWebsiteOptions {
       @TagField({ maxTags: 1 })
-      tags: TagValue;
+      declare tags: TagValue;
     }
     const result = await service.parse(
       instance as unknown as UnknownWebsite,

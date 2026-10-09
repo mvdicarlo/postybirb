@@ -1,15 +1,14 @@
-import { Http } from '@postybirb/http';
 import {
-  ILoginState,
   ImageResizeProps,
   ISubmissionFile,
+  LoginResult,
   PostData,
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
 import parse from 'node-html-parser';
-import { CancellableToken } from '../../../post/models/cancellable-token';
-import { PostingFile } from '../../../post/models/posting-file';
+import { CancellationToken } from '../../../posting/cancellation-token';
+import { PostingFile } from '../../../posting/models/posting-file';
 import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
@@ -35,28 +34,49 @@ export abstract class PhilomenaWebsite<
     {} as DataPropertyAccessibility<PhilomenaAccountData>;
 
   /**
-   * Check if the user is logged in by looking for the logout link
-   * and extracting the username from the data-user-name attribute.
+   * Check structured session indicators, falling back to a header logout action.
    */
-  public async onLogin(): Promise<ILoginState> {
-    const res = await Http.get<string>(`${this.BASE_URL}`, {
+  public async onLogin(): Promise<LoginResult> {
+    const res = await this.platform.http.get<string>(`${this.BASE_URL}`, {
       partition: this.accountId,
     });
 
-    if (res.body.includes('Logout')) {
-      const document = parse(res.body);
-      const usernameElement = document.querySelector('[data-user-name]');
-      const username =
-        usernameElement?.getAttribute('data-user-name') || 'Unknown';
-      return this.loginState.setLogin(true, username);
+    const statusCode = res.statusCode ?? 0;
+    if (statusCode < 200 || statusCode >= 300) {
+      throw new Error(`Unable to check login: HTTP ${statusCode}`);
+    }
+    if (typeof res.body !== 'string') {
+      throw new Error('Unable to determine login state: expected HTML');
     }
 
-    return this.loginState.setLogin(false, null);
+    const document = parse(res.body);
+    const sessionElement = document.querySelector('[data-user-is-signed-in]');
+    if (sessionElement) {
+      const signedIn = sessionElement.getAttribute('data-user-is-signed-in');
+      if (signedIn === 'true') {
+        const username =
+          sessionElement.getAttribute('data-user-name')?.trim() || 'Unknown';
+        return { loggedIn: true, username };
+      }
+      if (signedIn === 'false') {
+        return { loggedIn: false };
+      }
+      throw new Error('Unable to determine login state: invalid session indicator');
+    }
+
+    if (document.querySelector('header a[href="/sessions"][data-method="delete"]')) {
+      const usernameElement = document.querySelector('[data-user-name]');
+      const username =
+        usernameElement?.getAttribute('data-user-name')?.trim() || 'Unknown';
+      return { loggedIn: true, username };
+    }
+
+    throw new Error('Unable to determine login state: missing session indicators');
   }
 
   abstract createFileModel(): TFileSubmission;
 
-  calculateImageResize(file: ISubmissionFile): ImageResizeProps {
+  calculateImageResize(file: ISubmissionFile): ImageResizeProps | undefined {
     return undefined;
   }
 
@@ -127,15 +147,18 @@ export abstract class PhilomenaWebsite<
    * Philomena sites use CSRF tokens and other hidden fields.
    */
   protected async getUploadFormFields(): Promise<Record<string, string>> {
-    const uploadPage = await Http.get<string>(`${this.BASE_URL}/images/new`, {
-      partition: this.accountId,
-    });
+    const uploadPage = await this.platform.http.get<string>(
+      `${this.BASE_URL}/images/new`,
+      {
+        partition: this.accountId,
+      },
+    );
 
     const root = parse(uploadPage.body);
     const form = root.querySelector('#content form');
-    const inputs = form.querySelectorAll('input, textarea, select');
+    const inputs = form?.querySelectorAll('input, textarea, select') || [];
 
-    return inputs.reduce((acc, input) => {
+    return inputs.reduce((acc: Record<string, string>, input) => {
       const name = input.getAttribute('name');
       if (name) {
         const value = input.getAttribute('value') || input.textContent.trim();
@@ -151,7 +174,7 @@ export abstract class PhilomenaWebsite<
   async onPostFileSubmission(
     postData: PostData<TFileSubmission>,
     files: PostingFile[],
-    cancellationToken: CancellableToken,
+    cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
     const fields = await this.getUploadFormFields();
     const { rating, tags, description } = postData.options;
@@ -162,14 +185,40 @@ export abstract class PhilomenaWebsite<
       .asMultipart()
       .withData(fields)
       .setField('_method', 'post')
+      .setField('image[anonymous]', 'false')
       .setField('image[tag_input]', tagsWithRating.join(', ').trim())
       .addFile('image[image]', file)
       .setField('image[description]', description || '')
-      .setField('image[source_url]', file.metadata.sourceUrls?.[0] || '');
+      .setField(
+        'image[sources][0][source]',
+        file.metadata.sourceUrls?.[0] || '',
+      );
 
     const result = await builder.send<string>(`${this.BASE_URL}/images`);
 
-    return PostResponse.fromWebsite(this).withAdditionalInfo(result.body);
+    const { body, responseUrl } = result;
+    if (body.includes('Image has already been uploaded')) {
+      return PostResponse.fromWebsite(this)
+        .withAdditionalInfo(result.body)
+        .withException(
+          new Error(
+            'Duplicate image - the file you uploaded already exists on the site.',
+          ),
+        );
+    }
+
+    let response = PostResponse.fromWebsite(this).withAdditionalInfo(
+      result.body,
+    );
+
+    if (responseUrl) {
+      const { pathname } = new URL(responseUrl);
+      if (pathname && pathname !== '/') {
+        response = response.withSourceUrl(`${this.BASE_URL}${pathname}`);
+      }
+    }
+
+    return response;
   }
 
   onValidateFileSubmission = validatorPassthru;

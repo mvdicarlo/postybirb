@@ -1,3 +1,3 @@
 export interface IUpdateAltFileDto {
-  html: string;
+  text: string;
 }

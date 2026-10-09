@@ -5,7 +5,7 @@ be figured out when adding a new website.
 
 ## OnLogin
 
-All websites are required to implement the `onLogin` function, returning a `ILoginState` value.
+All websites are required to implement the `onLogin` function, returning a `LoginResult` value.
 
 This `onLogin` method is responsible for handling all login state for a user and is called in the
 following scenarios:
@@ -15,12 +15,14 @@ following scenarios:
 - When the `refreshInterval` is reached (default 1 hour)
 
 > [!IMPORTANT]
-> Implementations of onLogin should catch its own errors, log, and update state appropriately.
+> Implementations of onLogin should catch their own errors and log. Return
+> `{ loggedIn: false }` when the user is not logged in; the login lifecycle
+> applies the result and owns the pending state.
 
 ### Sample
 
 ```ts
-  public async onLogin(): Promise<ILoginState> {
+  public async onLogin(): Promise<LoginResult> {
     try {
       const res = await Http.get<string>(
         `${this.BASE_URL}/user`,
@@ -29,16 +31,16 @@ following scenarios:
 
       if (res.body.includes('logout-link')) {
         const $ = load(res.body);
-        return this.loginState.setLogin(
-          true,
-          $('.loggedin_user_avatar').attr('alt'),
-        );
+        return {
+          loggedIn: true,
+          username: $('.loggedin_user_avatar').attr('alt'),
+        };
       }
 
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     } catch (e) {
       this.logger.error('Failed to login', e);
-      return this.loginState.setLogin(false, null);
+      return { loggedIn: false };
     }
   }
 ```

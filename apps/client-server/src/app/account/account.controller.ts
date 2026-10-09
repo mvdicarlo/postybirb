@@ -1,12 +1,20 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AccountId } from '@postybirb/types';
-import { PostyBirbController } from '../common/controller/postybirb-controller';
+import { AccountId, EntityId } from '@postybirb/types';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dtos/create-account.dto';
 import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
@@ -18,18 +26,26 @@ import { UpdateAccountDto } from './dtos/update-account.dto';
  */
 @ApiTags('account')
 @Controller('account')
-export class AccountController extends PostyBirbController<'AccountSchema'> {
-  constructor(readonly service: AccountService) {
-    super(service);
+export class AccountController {
+  constructor(private readonly service: AccountService) {}
+
+  @Get(':id')
+  @ApiOkResponse({ description: 'Account by Id.' })
+  findOne(@Param('id') id: AccountId) {
+    return this.service.findDtoByIdOrThrow(id);
+  }
+
+  @Get()
+  @ApiOkResponse({ description: 'A list of all Accounts.' })
+  findAll() {
+    return this.service.findAllDtos();
   }
 
   @Post()
   @ApiOkResponse({ description: 'Account created.' })
   @ApiBadRequestResponse({ description: 'Bad request made.' })
   create(@Body() createAccountDto: CreateAccountDto) {
-    return this.service
-      .create(createAccountDto)
-      .then((account) => account.toDTO());
+    return this.service.createDto(createAccountDto);
   }
 
   @Post('/clear/:id')
@@ -38,16 +54,25 @@ export class AccountController extends PostyBirbController<'AccountSchema'> {
   async clear(@Param('id') id: AccountId) {
     await this.service.clearAccountData(id);
     try {
-      this.service.manuallyExecuteOnLogin(id);
+      await this.service.manuallyExecuteOnLogin(id);
     } catch {
       // For some reason throws error that crashes app when deleting account
     }
   }
 
   @Get('/refresh/:id')
-  @ApiOkResponse({ description: 'Account login check queued.' })
+  @ApiOkResponse({ description: 'Account login check completed.' })
   async refresh(@Param('id') id: AccountId) {
-    this.service.manuallyExecuteOnLogin(id);
+    // Await so the caller's request resolves only once the login check has
+    // actually finished. This lets the UI's trailing-rerun scheduler run its
+    // follow-up check against the freshest cookies/session state rather than
+    // racing a fire-and-forget check that may have read stale cookies.
+    try {
+      await this.service.manuallyExecuteOnLogin(id);
+    } catch {
+      // Login errors are handled/logged internally by the website instance;
+      // never surface them as a 500 that would trigger a UI error toast.
+    }
   }
 
   @Patch(':id')
@@ -57,9 +82,16 @@ export class AccountController extends PostyBirbController<'AccountSchema'> {
     @Body() updateAccountDto: UpdateAccountDto,
     @Param('id') id: AccountId,
   ) {
-    return this.service
-      .update(id, updateAccountDto)
-      .then((account) => account.toDTO());
+    return this.service.updateDto(id, updateAccountDto);
+  }
+
+  @Delete()
+  @ApiOkResponse({ description: 'Accounts removed.' })
+  async remove(@Query('ids') ids: EntityId | EntityId[]) {
+    await Promise.all(
+      (Array.isArray(ids) ? ids : [ids]).map((id) => this.service.remove(id)),
+    );
+    return { success: true };
   }
 
   @Post('/account-data')

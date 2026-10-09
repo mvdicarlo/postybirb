@@ -1,0 +1,133 @@
+/**
+ * SubmissionEditCardBody - Body content of the submission edit card.
+ */
+
+import { Trans } from '@lingui/react/macro';
+import { Box, Stack } from '@mantine/core';
+import {
+  ISubmissionScheduleInfo,
+  SubmissionId,
+  SubmissionType,
+} from '@postybirb/types';
+import { useCallback } from 'react';
+import submissionApi from '../../../../../api/submission.api';
+import { showUpdateErrorNotification } from '../../../../../utils/notifications';
+import { ComponentErrorBoundary } from '../../../../error-boundary';
+import { SubmissionPicker } from '../../../../shared';
+import { AccountSelect, SelectedAccountsForms } from '../account-selection';
+import { useSubmissionEditCardContext } from '../context';
+import { DefaultsForm } from '../defaults-form';
+import { SubmissionFileManager } from '../file-management';
+import { ScheduleForm } from '../schedule-form';
+
+/**
+ * Body content of the submission edit card.
+ * Contains file management (conditional), schedule form, defaults form, and account selection form.
+ */
+export function SubmissionEditCardBody() {
+  const { submission } = useSubmissionEditCardContext();
+
+  const handleScheduleChange = useCallback(
+    async (schedule: ISubmissionScheduleInfo, isScheduled: boolean) => {
+      try {
+        await submissionApi.update(submission.id, {
+          isScheduled,
+          ...schedule,
+        });
+      } catch {
+        showUpdateErrorNotification();
+      }
+    },
+    [submission.id],
+  );
+
+  const handleDependenciesChange = useCallback(
+    async (dependsOn: string[]) => {
+      try {
+        await submissionApi.update(submission.id, {
+          dependsOn: dependsOn as SubmissionId[],
+        });
+      } catch {
+        showUpdateErrorNotification();
+      }
+    },
+    [submission.id],
+  );
+
+  const isMultiOrTemplate =
+    submission.isMultiSubmission || submission.isTemplate;
+
+  const showFileManagement =
+    submission.type === SubmissionType.FILE && !isMultiOrTemplate;
+
+  // Don't show schedule form for templates or multi-submissions
+  const showScheduleForm = !isMultiOrTemplate;
+
+  return (
+    <Stack gap="md" p="md">
+      {/* File Management Section (conditional) */}
+      {showFileManagement && (
+        <ComponentErrorBoundary>
+          <Box data-tour-id="edit-card-files">
+            <SubmissionFileManager />
+          </Box>
+        </ComponentErrorBoundary>
+      )}
+
+      {/* Schedule Form - configure when submission should be posted */}
+      {showScheduleForm && (
+        <ComponentErrorBoundary>
+          <Box data-tour-id="edit-card-schedule">
+            <ScheduleForm
+              schedule={submission.schedule}
+              isScheduled={submission.isScheduled}
+              disabled={submission.isArchived}
+              onChange={handleScheduleChange}
+            />
+          </Box>
+        </ComponentErrorBoundary>
+      )}
+
+      {showScheduleForm && (
+        <ComponentErrorBoundary>
+          <Box data-tour-id="edit-card-dependencies">
+            <SubmissionPicker
+              value={submission.dependsOn}
+              onChange={handleDependenciesChange}
+              type={submission.type}
+              excludeIds={[submission.id]}
+              label={<Trans>Post after</Trans>}
+              description={
+                <Trans>
+                  Choose which submissions should be posted before this one.
+                </Trans>
+              }
+              disabled={submission.isArchived}
+            />
+          </Box>
+        </ComponentErrorBoundary>
+      )}
+
+      {/* Defaults Form - global options like title, description, tags */}
+      <ComponentErrorBoundary>
+        <Box data-tour-id="edit-card-defaults">
+          <DefaultsForm />
+        </Box>
+      </ComponentErrorBoundary>
+
+      {/* Account Selection - dropdown for selecting accounts */}
+      <ComponentErrorBoundary>
+        <Box data-tour-id="edit-card-accounts">
+          <AccountSelect />
+        </Box>
+      </ComponentErrorBoundary>
+
+      {/* Website Options - per-website forms for selected accounts */}
+      <ComponentErrorBoundary>
+        <Box data-tour-id="edit-card-website-forms">
+          <SelectedAccountsForms />
+        </Box>
+      </ComponentErrorBoundary>
+    </Stack>
+  );
+}
