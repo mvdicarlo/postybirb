@@ -13,30 +13,42 @@ const logger = Logger('Diagnostics');
 /** Report otherwise-fatal main-process errors and (in dev) exit. */
 export function registerProcessErrorHandlers(): void {
   process.on('uncaughtException', (error: Error) => {
-    logger.withError(error).error('Uncaught exception in main process.');
+    logger
+      .withMetadata({ telemetry: false })
+      .withError(error)
+      .error('Uncaught exception in main process.');
     trackException(error, {
       source: 'electron-main',
       type: 'uncaughtException',
     });
 
     // Give telemetry a chance to flush before exiting (dev only).
-    flushAppInsights().then(() => {
-      if (!environment.production) {
-        process.exit(1);
-      }
-    });
+    flushAppInsights()
+      .catch((flushError) => {
+        // eslint-disable-next-line no-console
+        console.warn('Failed to flush Application Insights:', flushError);
+      })
+      .finally(() => {
+        if (!environment.production) {
+          process.exit(1);
+        }
+      });
   });
 
   process.on('unhandledRejection', (reason: unknown) => {
     const error = toError(reason);
     logger
+      .withMetadata({ telemetry: false })
       .withError(error)
       .error('Unhandled promise rejection in main process.');
     trackException(error, {
       source: 'electron-main',
       type: 'unhandledRejection',
     });
-    flushAppInsights();
+    flushAppInsights().catch((flushError) => {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to flush Application Insights:', flushError);
+    });
   });
 }
 
@@ -70,7 +82,7 @@ export function registerChildProcessDiagnostics(): void {
       return;
     }
 
-    logger.error(message);
+    logger.withMetadata({ telemetry: false }).error(message);
     trackException(new Error(message), {
       source: 'electron-main',
       type: 'childProcessGone',

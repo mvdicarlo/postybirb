@@ -98,11 +98,6 @@ export class Http {
     };
   }
 
-  /**
-   * Tracks an HTTP request as a dependency in Application Insights
-   * This populates the Application Map and dependency views
-   * Creates a hierarchical structure: postybirb-app -> hostname -> method + pathname
-   */
   private static trackHttpDependency(
     method: string,
     url: string,
@@ -112,38 +107,27 @@ export class Http {
     error?: Error,
   ): void {
     try {
-      const urlObj = new URL(url);
-      const target = urlObj.origin;
-      const name = `${method} ${urlObj.pathname}`;
-
-      // Track as HTTP dependency
-      // Using origin as the target creates sub-dependency trees
-      // origin -> method + pathname hierarchy in Application Map
-      trackDependency(
-        name,
-        target,
-        'HTTP',
-        url.substring(0, 500), // Full URL as data
-        duration,
-        success,
-        statusCode,
-        {
-          method,
-          domain: target,
-          hasError: error ? 'true' : 'false',
-        },
-      );
-
-      // Track exception separately if request failed
-      if (error || statusCode >= 400) {
-        trackException(error ?? new Error(`Status ${statusCode}`), {
+      if (error) {
+        trackException(error, {
           source: 'http-dependency',
           method,
-          url: url.substring(0, 200),
-          domain: target,
           statusCode: String(statusCode),
         });
       }
+
+      trackDependency({
+        name: `${method} ${new URL(url).pathname}`,
+        target: url,
+        dependencyType: 'HTTP',
+        duration,
+        success,
+        resultCode: statusCode,
+        properties: {
+          source: 'http-dependency',
+          method,
+          hasError: error ? 'true' : 'false',
+        },
+      });
     } catch (trackingError) {
       // Don't let tracking errors break the actual HTTP request
       console.error('Error tracking HTTP dependency:', trackingError);
@@ -460,11 +444,18 @@ export class Http {
           options,
           crOptions,
         );
-        return browserResponse ?? Http.toHttpResponse(response);
+        const finalResponse = browserResponse ?? Http.toHttpResponse(response);
+        statusCode = finalResponse.statusCode ?? 0;
+        success =
+          browserResponse !== undefined &&
+          statusCode >= 200 &&
+          statusCode < 400;
+        return finalResponse;
       }
       return Http.toHttpResponse(response);
     } catch (err) {
       error = err instanceof Error ? err : new Error(String(err));
+      success = false;
       throw err;
     } finally {
       const duration = Date.now() - startTime;
@@ -582,11 +573,18 @@ export class Http {
           true,
           body,
         );
-        return browserResponse ?? Http.toHttpResponse(response);
+        const finalResponse = browserResponse ?? Http.toHttpResponse(response);
+        statusCode = finalResponse.statusCode ?? 0;
+        success =
+          browserResponse !== undefined &&
+          statusCode >= 200 &&
+          statusCode < 400;
+        return finalResponse;
       }
       return Http.toHttpResponse(response);
     } catch (err) {
       error = err instanceof Error ? err : new Error(String(err));
+      success = false;
       throw err;
     } finally {
       const duration = Date.now() - startTime;

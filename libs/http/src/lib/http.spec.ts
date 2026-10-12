@@ -4,6 +4,7 @@ import {
   type ClientRequestConstructorOptions,
   net,
 } from 'electron';
+import { trackDependency, trackException } from '@postybirb/logger';
 import { EventEmitter } from 'events';
 import * as http from 'http';
 import { Http } from './http';
@@ -20,6 +21,12 @@ const BACKGROUND_DETECTION_HTML =
   '<html><head><title>Homepage - Derpibooru</title></head><body>Logout' +
   '<script src="/cdn-cgi/challenge-platform/scripts/precursor/main.js"></script>' +
   '<script src="/cdn-cgi/challenge-platform/scripts/jsd/api.js"></script></body></html>';
+
+jest.mock('@postybirb/logger', () => ({
+  ...jest.requireActual('@postybirb/logger'),
+  trackDependency: jest.fn(),
+  trackException: jest.fn(),
+}));
 
 interface HttpInternals {
   isCloudflareChallengeResponse(
@@ -84,6 +91,11 @@ class TestServer {
 
   constructor() {
     this.server = http.createServer((req, res) => {
+      if (req.url?.startsWith('/controls/submissions')) {
+        res.end('hello');
+        return;
+      }
+
       if (req.url === '/test') {
         res.write('hello');
         res.end();
@@ -104,7 +116,8 @@ class TestServer {
         return;
       }
 
-      if (req.url === '/cloudflare') {
+      if (req.url === '/cloudflare' || req.url === '/cloudflare-200') {
+        res.statusCode = req.url === '/cloudflare' ? 403 : 200;
         res.setHeader('cf-mitigated', 'challenge');
         res.end(CHALLENGE_HTML);
       }
@@ -132,8 +145,34 @@ const server = new TestServer();
 
 beforeAll(() => server.start());
 afterAll(() => server.stop());
+beforeEach(() => {
+  jest.mocked(trackDependency).mockClear();
+  jest.mocked(trackException).mockClear();
+});
 
 describe('http', () => {
+  it.each(['GET', 'POST'] as const)(
+    'reports %s endpoint paths without query strings or fragments',
+    async (method) => {
+      const url =
+        'http://localhost:3000/controls/submissions?token=secret#private';
+      if (method === 'GET') {
+        await Http.get(url, {});
+      } else {
+        await Http.post(url, { type: 'json', data: {} });
+      }
+
+      expect(trackDependency).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: `${method} /controls/submissions`,
+          dependencyType: 'HTTP',
+          success: true,
+          properties: expect.objectContaining({ method }),
+        }),
+      );
+    },
+  );
+
   describe('request timeouts', () => {
     let request: EventEmitter & {
       setHeader: jest.Mock;
@@ -170,6 +209,15 @@ describe('http', () => {
       expect(request.abort).toHaveBeenCalledTimes(1);
       await response;
       expect(onRejected).toHaveBeenCalledWith(expect.objectContaining({ name: 'TimeoutError' }));
+      expect(trackDependency).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: `${method.toUpperCase()} /stalled`,
+          dependencyType: 'HTTP',
+          duration: 15 * 60 * 1000,
+          success: false,
+          resultCode: 0,
+        }),
+      );
       expect(jest.getTimerCount()).toBe(0);
     });
 
@@ -180,6 +228,14 @@ describe('http', () => {
 
       expect(request.abort).toHaveBeenCalledTimes(1);
       await rejected;
+      expect(trackDependency).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: 'GET /stalled',
+          duration: 60 * 1000,
+          success: false,
+          resultCode: 0,
+        }),
+      );
       expect(jest.getTimerCount()).toBe(0);
     });
 
@@ -363,7 +419,7 @@ describe('http', () => {
     },
   );
 
-  it.each([
+  it.each<Record<string, string | string[]>>([
     { 'cf-mitigated': 'challenge' },
     { 'CF-Mitigated': [' challenge '] },
   ])('detects a challenge header without HTML markers: %j', (headers) => {
@@ -399,6 +455,13 @@ describe('http', () => {
 
     expect(browserRequest).toHaveBeenCalledTimes(1);
     expect(response).toEqual(browserResponse);
+    expect(trackDependency).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'GET /cloudflare',
+        success: true,
+        resultCode: 200,
+      }),
+    );
   });
 
   it('returns the original GET challenge when invisible resolution fails and interaction is disabled', async () => {
@@ -415,6 +478,13 @@ describe('http', () => {
     );
 
     expect(response.body).toBe(CHALLENGE_HTML);
+    expect(trackDependency).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'GET /cloudflare',
+        success: false,
+        resultCode: 403,
+      }),
+    );
   });
 
   it('attempts an invisible browser resolution for a POST when interaction is disabled', async () => {
@@ -440,6 +510,57 @@ describe('http', () => {
 
     expect(browserRequest).toHaveBeenCalledTimes(1);
     expect(response).toEqual(browserResponse);
+    expect(trackDependency).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'POST /cloudflare',
+        success: true,
+        resultCode: 200,
+      }),
+    );
+  });
+
+  it('records a failed browser fallback rather than the initial response as a success', async () => {
+    const error = new Error('Cloudflare browser resolution failed');
+    jest
+      .spyOn(httpInternals, 'performBrowserWindowGetRequest')
+      .mockRejectedValue(error);
+
+    await expect(
+      Http.get('http://localhost:3000/cloudflare', {
+        partition: 'test',
+        cloudflareChallenge: { openBrowserWindow: false },
+      }),
+    ).rejects.toThrow(error);
+
+    expect(trackDependency).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'GET /cloudflare',
+        success: false,
+      }),
+    );
+    expect(trackException).toHaveBeenCalledWith(error, {
+      source: 'http-dependency',
+      method: 'GET',
+      statusCode: '403',
+    });
+  });
+
+  it('records an unresolved HTTP 200 challenge as a failed dependency', async () => {
+    jest
+      .spyOn(httpInternals, 'performBrowserWindowGetRequest')
+      .mockResolvedValue(undefined);
+    const response = await Http.get('http://localhost:3000/cloudflare-200', {
+      partition: 'test',
+      cloudflareChallenge: { openBrowserWindow: false },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(trackDependency).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'GET /cloudflare-200',
+        success: false,
+        resultCode: 200,
+      }),
+    );
   });
 });
 

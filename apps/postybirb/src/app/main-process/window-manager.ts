@@ -149,7 +149,7 @@ export class WindowManager {
     // log, track, and attempt an in-place reload to recover the UI.
     webContents.on('render-process-gone', (_event, details) => {
       const message = `Main window renderer gone — reason: ${details.reason}, exitCode: ${details.exitCode}`;
-      logger.error(message);
+      logger.withMetadata({ telemetry: false }).error(message);
       trackException(new Error(message), {
         source: 'electron-main',
         type: 'renderProcessGone',

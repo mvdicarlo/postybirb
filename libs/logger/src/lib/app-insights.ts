@@ -1,292 +1,267 @@
-import * as appInsights from 'applicationinsights';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
+import {
+  AzureMonitorExporterOptions,
+  AzureMonitorLogExporter,
+  AzureMonitorTraceExporter,
+} from '@azure/monitor-opentelemetry-exporter';
+import {
+  Attributes,
+  diag,
+  DiagConsoleLogger,
+  DiagLogLevel,
+  ROOT_CONTEXT,
+  SpanKind,
+  SpanStatusCode,
+  Tracer,
+} from '@opentelemetry/api';
+import {
+  SeverityNumber,
+  Logger as TelemetryLogger,
+} from '@opentelemetry/api-logs';
+import { resourceFromAttributes } from '@opentelemetry/resources';
+import {
+  BatchLogRecordProcessor,
+  LoggerProvider,
+} from '@opentelemetry/sdk-logs';
+import {
+  BasicTracerProvider,
+  BatchSpanProcessor,
+} from '@opentelemetry/sdk-trace-base';
+import { getTelemetryInstallationId } from './telemetry-identity';
+import {
+  anonymizeDependencyTarget,
+  filterTelemetryProperties,
+  sanitizeError,
+  stripLocalPaths,
+} from './telemetry-privacy';
 
-let client: appInsights.TelemetryClient | null = null;
-let isInitialized = false;
-let diagInitialized = false;
+let loggerProvider: LoggerProvider | undefined;
+let tracerProvider: BasicTracerProvider | undefined;
+let logger: TelemetryLogger | undefined;
+let tracer: Tracer | undefined;
+let diagnosticsInitialized = false;
 
 export interface AppInsightsConfig {
   connectionString?: string;
-  instrumentationKey?: string;
   enabled: boolean;
   cloudRole?: string;
   appVersion?: string;
 }
 
+export interface DependencyTelemetry {
+  name: string;
+  target: string;
+  dependencyType: 'HTTP' | 'Website';
+  duration: number;
+  success: boolean;
+  resultCode?: number;
+  properties?: Record<string, string>;
+}
+
 const appInsightsConnectionString: string | null = null;
 
-/**
- * Initialize Application Insights
- * Call this once during application startup
- * Subsequent calls will update the cloud role only
- */
 export function initializeAppInsights(config: AppInsightsConfig): void {
-  // eslint-disable-next-line no-param-reassign
-  config.connectionString = appInsightsConnectionString ?? undefined;
-  // eslint-disable-next-line no-param-reassign
-  config.cloudRole = 'postybirb';
-  if (
-    !config.enabled ||
-    (!config.connectionString && !config.instrumentationKey)
-  ) {
-    // eslint-disable-next-line no-console
-    console.log('Application Insights is disabled or not configured');
+  const connectionString =
+    config.connectionString?.trim() ||
+    process.env.APPLICATIONINSIGHTS_CONNECTION_STRING?.trim() ||
+    appInsightsConnectionString;
+
+  if (!config.enabled || !connectionString) {
+    return;
+  }
+  if (isAppInsightsInitialized()) {
     return;
   }
 
-  if (isInitialized && client) {
-    return;
-  }
+  // The exporters otherwise emit their own metrics and resource diagnostics.
+  process.env.APPLICATIONINSIGHTS_STATSBEAT_DISABLED = 'true';
+  process.env.APPLICATION_INSIGHTS_NO_STATSBEAT = 'true';
+  process.env.APPLICATIONINSIGHTS_OPENTELEMETRY_RESOURCE_METRIC_DISABLED =
+    'true';
+  delete process.env.APPLICATIONINSIGHTS_SDKSTATS_ENABLED_PREVIEW;
 
   try {
-    // Enable OpenTelemetry diagnostic logging to capture SDK initialization errors
-    // This helps debug silent failures in the Application Insights SDK v3
-    if (!diagInitialized) {
+    getTelemetryInstallationId();
+    if (!diagnosticsInitialized) {
       diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN);
-      diagInitialized = true;
+      diagnosticsInitialized = true;
     }
-
-    // Disable metrics to avoid AzureMonitorMetricExporter initialization issues
-    // This is a workaround for a bug in applicationinsights v3.x where the
-    // metrics exporter fails to initialize due to version incompatibilities
-    // process.env.APPLICATION_INSIGHTS_NO_STANDARD_METRICS = 'true';
-
-    // For Application Insights SDK v3 (OpenTelemetry-based), we need to set
-    // OTEL_RESOURCE_ATTRIBUTES to properly configure cloud role name and instance
-    // This must be set BEFORE calling setup()
-    const cloudRoleName = config.cloudRole || 'postybirb';
-    const cloudRoleInstance = 'postybirb-app';
-
-    // Build the OTEL resource attributes
-    // service.name maps to cloud_RoleName
-    // service.instance.id maps to cloud_RoleInstance
-    const resourceAttributes = [
-      `service.name=${cloudRoleName}`,
-      `service.instance.id=${cloudRoleInstance}`,
-    ];
-
-    if (config.appVersion) {
-      resourceAttributes.push(`service.version=${config.appVersion}`);
-    }
-
-    // Set the environment variable that OpenTelemetry uses
-    process.env.OTEL_RESOURCE_ATTRIBUTES = resourceAttributes.join(',');
-
-    appInsights
-      .setup(config.connectionString || config.instrumentationKey)
-      .setAutoDependencyCorrelation(false)
-      .setAutoCollectRequests(true)
-      .setAutoCollectPerformance(false, false) // Disable extended metrics
-      .setAutoCollectExceptions(true)
-      .setAutoCollectDependencies(false)
-      .setAutoCollectConsole(false) // We'll use Winston transport instead
-      .setUseDiskRetryCaching(true)
-      .setSendLiveMetrics(false)
-      .setDistributedTracingMode(
-        appInsights.DistributedTracingModes.AI_AND_W3C,
-      );
-
-    // Start the Application Insights client
-    appInsights.start();
-    client = appInsights.defaultClient;
-
-    // Verify the client is properly initialized
-    // The SDK v3 has a bug where _logApi can be undefined if internal init fails
-    if (client) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, no-underscore-dangle
-      const clientAny = client as any;
-      // eslint-disable-next-line no-underscore-dangle
-      if (!clientAny._logApi) {
-        // eslint-disable-next-line no-console
-        console.error(
-          'Application Insights client exists but _logApi is undefined - SDK initialization failed silently',
-        );
-        /* eslint-disable no-console, no-underscore-dangle */
-        console.error('Client internal state:', {
-          _isInitialized: clientAny._isInitialized,
-          _options: clientAny._options ? 'present' : 'missing',
-          hasConfig: !!clientAny.config,
-          configConnectionString: clientAny.config?.connectionString
-            ? 'present'
-            : 'missing',
-        });
-        /* eslint-enable no-console, no-underscore-dangle */
-        // Don't set isInitialized - the client is broken
-        client = null;
-        return;
-      }
-    } else {
-      // eslint-disable-next-line no-console
-      console.error('Application Insights defaultClient is null after start()');
-      return;
-    }
-
-    isInitialized = true;
-
-    // eslint-disable-next-line no-console
-    console.log(
-      `Application Insights initialized for ${cloudRoleName} (instance: ${cloudRoleInstance})`,
-    );
+    const resource = resourceFromAttributes({
+      'service.name': config.cloudRole ?? 'postybirb',
+      'service.instance.id': 'postybirb-app',
+      ...(config.appVersion ? { 'service.version': config.appVersion } : {}),
+    });
+    const exporterOptions: AzureMonitorExporterOptions = {
+      connectionString,
+      disableOfflineStorage: true,
+      additionalPolicies: [
+        {
+          position: 'perCall',
+          policy: {
+            name: 'postybirb-telemetry-privacy',
+            sendRequest(request, next) {
+              request.headers.set('User-Agent', 'PostyBirbTelemetry');
+              return next(request);
+            },
+          },
+        },
+      ],
+    };
+    tracerProvider = new BasicTracerProvider({
+      resource,
+      spanProcessors: [
+        new BatchSpanProcessor(new AzureMonitorTraceExporter(exporterOptions), {
+          exportTimeoutMillis: 5_000,
+        }),
+      ],
+    });
+    loggerProvider = new LoggerProvider({
+      resource,
+      processors: [
+        new BatchLogRecordProcessor(
+          new AzureMonitorLogExporter(exporterOptions),
+          {
+            exportTimeoutMillis: 5_000,
+          },
+        ),
+      ],
+    });
+    tracer = tracerProvider.getTracer('postybirb');
+    logger = loggerProvider.getLogger('postybirb');
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Failed to initialize Application Insights:', error);
-  }
-}
-
-/**
- * Get the Application Insights client
- */
-export function getAppInsightsClient(): appInsights.TelemetryClient | null {
-  return client;
-}
-
-/**
- * Check if Application Insights is initialized
- */
-export function isAppInsightsInitialized(): boolean {
-  return isInitialized && client !== null;
-}
-
-/**
- * Track a custom event
- */
-export function trackEvent(
-  name: string,
-  properties?: { [key: string]: string },
-  measurements?: { [key: string]: number },
-): void {
-  if (client) {
-    try {
-      client.trackEvent({
-        name,
-        properties,
-        measurements,
-      });
-    } catch (error) {
-      // Telemetry should never break the application
+    shutdownAppInsights().catch((shutdownError) => {
       // eslint-disable-next-line no-console
-      console.warn('Failed to track event:', error);
-    }
+      console.warn('Failed to clean up Application Insights:', shutdownError);
+    });
   }
 }
 
-/**
- * Track an exception
- */
+export function isAppInsightsInitialized(): boolean {
+  return logger !== undefined && tracer !== undefined;
+}
+
+function telemetryAttributes(properties?: Record<string, unknown>): Attributes {
+  return {
+    ...filterTelemetryProperties(properties),
+    'microsoft.client.ip': '0.0.0.0',
+    'enduser.pseudo.id': getTelemetryInstallationId(),
+  };
+}
+
 export function trackException(
   error: Error,
-  properties?: { [key: string]: string },
+  properties?: Record<string, string>,
 ): void {
-  if (client) {
-    try {
-      client.trackException({
-        exception: error,
-        properties,
-      });
-    } catch (err) {
-      // Telemetry should never break the application
-      // eslint-disable-next-line no-console
-      console.warn('Failed to track exception:', err);
-    }
+  if (!logger) return;
+
+  try {
+    const sanitized = sanitizeError(error);
+    logger.emit({
+      context: ROOT_CONTEXT,
+      severityNumber: SeverityNumber.ERROR,
+      severityText: 'ERROR',
+      body: sanitized.message,
+      attributes: {
+        ...telemetryAttributes(properties),
+        'exception.type': sanitized.name,
+        'exception.message': sanitized.message,
+        'exception.stacktrace':
+          sanitized.stack || `${sanitized.name}: ${sanitized.message}`,
+      },
+    });
+  } catch (trackingError) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to track exception:', trackingError);
   }
 }
 
-/**
- * Track a metric
- */
-export function trackMetric(
-  name: string,
-  value: number,
-  properties?: { [key: string]: string },
-): void {
-  if (client) {
-    try {
-      client.trackMetric({
-        name,
-        value,
-        properties,
-      });
-    } catch (error) {
-      // Telemetry should never break the application
-      // eslint-disable-next-line no-console
-      console.warn('Failed to track metric:', error);
-    }
-  }
-}
-
-/**
- * Track a trace/log message
- */
-export function trackTrace(
+export function trackErrorLog(
   message: string,
-  properties?: { [key: string]: string },
+  properties?: Record<string, string>,
 ): void {
-  if (client) {
-    try {
-      client.trackTrace({
-        message,
-        properties,
-      });
-    } catch (error) {
-      // Telemetry should never break the application
-      // eslint-disable-next-line no-console
-      console.warn('Failed to track trace:', error);
-    }
+  if (!logger) return;
+
+  try {
+    logger.emit({
+      context: ROOT_CONTEXT,
+      severityNumber: SeverityNumber.ERROR,
+      severityText: 'ERROR',
+      body: stripLocalPaths(message),
+      attributes: telemetryAttributes(properties),
+    });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to track error log:', error);
   }
 }
 
-/**
- * Track a dependency (HTTP call, database query, etc.)
- * This populates the Application Map and Dependency views in App Insights
- */
-export function trackDependency(
-  name: string,
-  target: string,
-  dependencyTypeName: string,
-  data: string,
-  duration: number,
-  success: boolean,
-  resultCode?: number,
-  properties?: { [key: string]: string },
-): void {
-  if (client) {
-    try {
-      client.trackDependency({
-        name,
-        dependencyTypeName,
-        target,
-        data,
-        duration,
-        success,
-        resultCode,
-        properties,
-      });
-    } catch (error) {
-      // Telemetry should never break the application
-      // eslint-disable-next-line no-console
-      console.warn('Failed to track dependency:', error);
+export function trackDependency(dependency: DependencyTelemetry): void {
+  if (!tracer) return;
+
+  try {
+    if (!Number.isFinite(dependency.duration) || dependency.duration < 0) {
+      throw new RangeError('Dependency duration must be a non-negative number');
     }
+    const target =
+      dependency.dependencyType === 'HTTP'
+        ? anonymizeDependencyTarget(dependency.target)
+        : dependency.target;
+    const endTime = Date.now();
+    const span = tracer.startSpan(
+      dependency.name,
+      {
+        kind: SpanKind.CLIENT,
+        startTime: endTime - dependency.duration,
+        attributes: {
+          ...telemetryAttributes(dependency.properties),
+          dependencyType: dependency.dependencyType,
+          'http.request.method':
+            dependency.dependencyType === 'HTTP'
+              ? dependency.name.split(' ', 1)[0]
+              : 'POST',
+          'peer.service': target,
+          ...(dependency.resultCode
+            ? { 'http.response.status_code': dependency.resultCode }
+            : {}),
+        },
+      },
+      ROOT_CONTEXT,
+    );
+    span.setStatus({
+      code: dependency.success ? SpanStatusCode.OK : SpanStatusCode.ERROR,
+    });
+    span.end(endTime);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to track dependency:', error);
   }
 }
 
-/**
- * Flush any pending telemetry
- */
-export function flushAppInsights(): Promise<void> {
-  return new Promise((resolve) => {
-    if (client) {
-      try {
-        client.flush();
-      } catch (error) {
-        // Telemetry should never break the application
-        // eslint-disable-next-line no-console
-        console.warn('Failed to flush telemetry:', error);
-      }
-      // Give it a moment to flush
-      setTimeout(() => resolve(), 100);
-    } else {
-      resolve();
-    }
-  });
+async function awaitTelemetry(
+  operations: Array<Promise<void> | undefined>,
+): Promise<void> {
+  const results = await Promise.allSettled(operations);
+  const failures = results.flatMap((result) =>
+    result.status === 'rejected' ? [result.reason] : [],
+  );
+  if (failures.length > 0) {
+    throw new AggregateError(failures, 'Application Insights export failed');
+  }
+}
+
+export async function flushAppInsights(): Promise<void> {
+  await awaitTelemetry([
+    loggerProvider?.forceFlush(),
+    tracerProvider?.forceFlush(),
+  ]);
+}
+
+export async function shutdownAppInsights(): Promise<void> {
+  const providers = [loggerProvider, tracerProvider];
+  logger = undefined;
+  tracer = undefined;
+  loggerProvider = undefined;
+  tracerProvider = undefined;
+  await awaitTelemetry(providers.map((provider) => provider?.shutdown()));
 }

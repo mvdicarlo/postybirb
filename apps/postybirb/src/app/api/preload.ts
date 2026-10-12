@@ -44,6 +44,7 @@ const bridge: PreloadBridge = {
   platform: metadata.platform,
   app_port: metadata.app_port,
   app_version: metadata.app_version,
+  telemetry_installation_id: metadata.telemetry_installation_id,
   systemLocale: metadata.systemLocale,
 
   setSpellCheckerEnabled: (value: boolean) =>

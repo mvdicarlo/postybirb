@@ -1,6 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import { PostyBirbDirectories } from '@postybirb/fs';
-import { flushAppInsights, Logger, trackException } from '@postybirb/logger';
+import {
+  flushAppInsights,
+  Logger,
+  shutdownAppInsights,
+  trackException,
+} from '@postybirb/logger';
 import {
   PostyBirbEnvConfig,
   RemoteConfigManager,
@@ -110,7 +115,10 @@ export function quitOnStartupFailure(error: unknown): void {
   isQuittingDueToStartupFailure = true;
 
   const startupError = toError(error);
-  logger.withError(startupError).error('Fatal startup failure. Quitting app.');
+  logger
+    .withMetadata({ telemetry: false })
+    .withError(startupError)
+    .error('Fatal startup failure. Quitting app.');
   trackException(startupError, {
     source: 'electron-main',
     type: 'startupFailure',
@@ -123,9 +131,14 @@ export function quitOnStartupFailure(error: unknown): void {
   }, 5_000);
   forceExitTimer.unref();
 
-  flushAppInsights().finally(() => {
-    app.quit();
-  });
+  flushAppInsights()
+    .catch((flushError) => {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to flush Application Insights:', flushError);
+    })
+    .finally(() => {
+      app.quit();
+    });
 }
 
 /**
@@ -159,6 +172,11 @@ export function registerGracefulShutdown(nestApp: INestApplication): void {
         logger
           .withError(toError(error))
           .error('Error while closing the embedded server during shutdown.');
+      })
+      .then(() => shutdownAppInsights())
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.warn('Failed to shut down Application Insights:', error);
       })
       .finally(() => {
         clearTimeout(forceExitTimer);

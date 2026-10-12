@@ -6,7 +6,7 @@
  * synchronous metadata channels exist so the sandboxed preload — which can no
  * longer read process.env — can still expose app metadata synchronously.
  */
-import { Logger } from '@postybirb/logger';
+import { getTelemetryInstallationId, Logger } from '@postybirb/logger';
 import {
     getPartitionKey,
     PostyBirbEnvConfig,
@@ -47,10 +47,21 @@ export function bootstrapElectronEvents(): Electron.IpcMain {
       return;
     }
 
+    let telemetryInstallationId: string | undefined;
+    try {
+      telemetryInstallationId = getTelemetryInstallationId();
+    } catch (error) {
+      logger
+        .withMetadata({ telemetry: false })
+        .withError(error)
+        .error('Failed to load the UI telemetry installation ID.');
+    }
+
     const metadata: AppMetadata = {
       platform: process.platform,
       app_port: String(PostyBirbEnvConfig.port),
       app_version: environment.version,
+      telemetry_installation_id: telemetryInstallationId,
       systemLocale: app.getSystemLocale(),
     };
     event.returnValue = metadata;

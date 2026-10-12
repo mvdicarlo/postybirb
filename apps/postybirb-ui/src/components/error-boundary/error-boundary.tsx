@@ -1,6 +1,5 @@
 /**
  * Error boundary component for the remake UI.
- * Adapted from src/components/error-boundary with App Insights removed.
  */
 
 /* eslint-disable lingui/no-unlocalized-strings */
@@ -18,7 +17,12 @@ import {
 } from '@mantine/core';
 import { IconAlertTriangle, IconRefresh } from '@tabler/icons-react';
 import { Component, ReactNode } from 'react';
+import { trackUIException } from '../../app-insights-ui';
 import { CopyToClipboard } from '../shared/copy-to-clipboard';
+
+function getComponentName(componentStack?: string): string | null {
+  return componentStack?.match(/^\s*(?:in|at)\s+([\w$]+)/m)?.[1] ?? null;
+}
 
 /**
  * Copyable error details component
@@ -30,23 +34,6 @@ function CopyableErrorDetails({
   error: Error;
   errorInfo?: { componentStack: string };
 }) {
-  // Extract the component name from the component stack
-  const getComponentName = (componentStack?: string): string | null => {
-    if (!componentStack) return null;
-
-    const lines = componentStack.trim().split('\n');
-    const firstComponentLine = lines.find((line) =>
-      line.trim().startsWith('in '),
-    );
-
-    if (firstComponentLine) {
-      const match = firstComponentLine.trim().match(/^in (\w+)/);
-      return match ? match[1] : null;
-    }
-
-    return null;
-  };
-
   const componentName = getComponentName(errorInfo?.componentStack);
 
   const errorDetails = [
@@ -159,22 +146,14 @@ export class ErrorBoundary extends Component<
 
     this.setState({ error, errorInfo });
 
-    // Extract component name from stack for better tracking
-    const getComponentName = (componentStack?: string): string | null => {
-      if (!componentStack) return null;
-      const lines = componentStack.trim().split('\n');
-      const firstComponentLine = lines.find((line) =>
-        line.trim().startsWith('in '),
-      );
-      if (firstComponentLine) {
-        const match = firstComponentLine.trim().match(/^in (\w+)/);
-        return match ? match[1] : null;
-      }
-      return null;
-    };
-
     const componentName = getComponentName(errorInfo.componentStack);
     const { level = 'section' } = this.props;
+
+    trackUIException(error, {
+      source: 'error-boundary',
+      level,
+      component: componentName || 'unknown',
+    });
 
     // Log for debugging
     // eslint-disable-next-line no-console

@@ -13,11 +13,10 @@ import {
     WebsiteOptionsRepository,
 } from '@postybirb/database';
 import {
-    Logger,
-    PostyBirbLogger,
-    trackEvent,
-    trackException,
-    trackMetric,
+  Logger,
+  PostyBirbLogger,
+  trackDependency,
+  trackException,
 } from '@postybirb/logger';
 import {
     AccountId,
@@ -80,7 +79,6 @@ type PostBatchResult = {
 
 type PostFailureTelemetry = {
   error?: unknown;
-  postData?: PostData<IWebsiteFormFields>;
   stage?: string;
 };
 
@@ -172,10 +170,8 @@ export class PostingWorker {
         where: (options, { eq }) => eq(options.submissionId, submission.id),
       });
       const allUnitsOfWork = await this.unitOfWorkRepository.find({
-        where: (unit, { and, eq }) => and(
-          eq(unit.postId, post.id),
-          eq(unit.evicted, false),
-        ),
+        where: (unit, { and, eq }) =>
+          and(eq(unit.postId, post.id), eq(unit.evicted, false)),
         orderBy: (unit, { asc }) => asc(unit.createdAt),
       });
       const unitsOfWork = allUnitsOfWork.filter(
@@ -193,7 +189,10 @@ export class PostingWorker {
           `No website options found for submission '${submission.id}'`,
         );
         await this.postRepository.cancel(post.id);
-        publishSubmissionProjectionChanged(this.eventEmitter, post.submissionId);
+        publishSubmissionProjectionChanged(
+          this.eventEmitter,
+          post.submissionId,
+        );
         return;
       }
 
@@ -214,9 +213,13 @@ export class PostingWorker {
       });
 
       if (await this.completePost(post.submissionId)) {
-        this.logger.info(`All units of work for post '${post.id}' have been completed`);
+        this.logger.info(
+          `All units of work for post '${post.id}' have been completed`,
+        );
       } else {
-        this.logger.info(`Some units of work for post '${post.id}' are still pending or failed`);
+        this.logger.info(
+          `Some units of work for post '${post.id}' are still pending or failed`,
+        );
       }
     } catch (error) {
       this.logger.withError(error).error('Error during processing');
@@ -265,17 +268,19 @@ export class PostingWorker {
     context: PostingWorkerContext,
   ): Promise<void> {
     for (const batch of accountWorkBatches) {
-      await Promise.all(batch.map(async ([accountId, accountWork]) => {
-        try {
-          this.logger.info(
-            `Processing ${accountWork.length} units of work for account '${accountId}'`,
-          );
+      await Promise.all(
+        batch.map(async ([accountId, accountWork]) => {
+          try {
+            this.logger.info(
+              `Processing ${accountWork.length} units of work for account '${accountId}'`,
+            );
 
-          await this.post(accountId, accountWork, context);
-        } catch (error) {
-          this.logger.withError(error).error('Error during posting');
-        }
-      }));
+            await this.post(accountId, accountWork, context);
+          } catch (error) {
+            this.logger.withError(error).error('Error during posting');
+          }
+        }),
+      );
     }
   }
 
@@ -310,11 +315,17 @@ export class PostingWorker {
     accountId: AccountId,
   ): Promise<boolean> {
     const account = await this.accountRepository.findByIdOrThrow(accountId);
-    return this.websiteRegistry.findInstance(account)?.decoratedProps
-      .fileOptions?.acceptsExternalSourceUrls ?? false;
+    return (
+      this.websiteRegistry.findInstance(account)?.decoratedProps.fileOptions
+        ?.acceptsExternalSourceUrls ?? false
+    );
   }
 
-  private async post(accountId: AccountId, unitsOfWork: UnitOfWork[], context: PostingWorkerContext): Promise<void> {
+  private async post(
+    accountId: AccountId,
+    unitsOfWork: UnitOfWork[],
+    context: PostingWorkerContext,
+  ): Promise<void> {
     await this.updateUnits(unitsOfWork, {
       state: UnitOfWorkState.VALIDATING,
     });
@@ -342,11 +353,8 @@ export class PostingWorker {
       // Login check
       const loginState = await websiteInstance.login();
       if (!loginState.isLoggedIn) {
-        const message =
-          `Login failed for account '${accountId}': ${loginState.status}`;
-        this.logger.warn(
-          message,
-        );
+        const message = `Login failed for account '${accountId}': ${loginState.status}`;
+        this.logger.warn(message);
         await this.failUnitsOfWork(
           unitsOfWork,
           websiteInstance,
@@ -367,7 +375,9 @@ export class PostingWorker {
     }
 
     // Website Option Selection
-    const websiteOption = context.options.find(opt => opt.accountId === accountId);
+    const websiteOption = context.options.find(
+      (opt) => opt.accountId === accountId,
+    );
     if (!websiteOption) {
       const message = `No website options found for account '${accountId}'`;
       this.logger.warn(message);
@@ -383,7 +393,12 @@ export class PostingWorker {
     let postData: PostData<IWebsiteFormFields>;
     try {
       // Post data parsing
-      postData = await this.postParsersService.parse(context.submission, websiteInstance, websiteOption, false);
+      postData = await this.postParsersService.parse(
+        context.submission,
+        websiteInstance,
+        websiteOption,
+        false,
+      );
     } catch (error) {
       await this.failUnitsOfWorkWithError(
         unitsOfWork,
@@ -395,18 +410,25 @@ export class PostingWorker {
       return;
     }
 
-    await Promise.all(unitsOfWork.map((unit) => this.updateUnits([unit], {
-      data: { ...unit.data, postData: { options: postData.options } },
-    })));
+    await Promise.all(
+      unitsOfWork.map((unit) =>
+        this.updateUnits([unit], {
+          data: { ...unit.data, postData: { options: postData.options } },
+        }),
+      ),
+    );
 
     try {
       // Submission Validation
-      const validationResult = await this.validationService.validate(context.submission, websiteOption);
+      const validationResult = await this.validationService.validate(
+        context.submission,
+        websiteOption,
+      );
       if (validationResult.errors.length > 0) {
         const message = `Validation failed for account '${accountId}'`;
-        this.logger.withMetadata({ errors: validationResult.errors }).warn(
-          message,
-        );
+        this.logger
+          .withMetadata({ errors: validationResult.errors })
+          .warn(message);
         await this.failUnitsOfWork(
           unitsOfWork,
           websiteInstance,
@@ -414,9 +436,9 @@ export class PostingWorker {
           message,
           {
             error: message,
-            validationResult
+            validationResult,
           },
-          { postData },
+          { stage: 'validation' },
         );
         return;
       }
@@ -427,7 +449,6 @@ export class PostingWorker {
         context.submission,
         `Error validating post data for account '${accountId}'`,
         error,
-        postData,
       );
       return;
     }
@@ -486,7 +507,6 @@ export class PostingWorker {
           context.submission,
           `Error posting batch for account '${accountId}'`,
           error,
-          postData,
         );
         result = { failed: true };
       }
@@ -585,17 +605,40 @@ export class PostingWorker {
       }),
     );
     this.cancellationToken.throwIfAborted();
-    const response = await websiteInstance.post(
-      postData,
-      files,
-      {
-        ...batch,
-        ...(accountSourceUrls.length > 0
-          ? { sourceUrls: accountSourceUrls }
-          : {}),
-      },
-      this.cancellationToken,
-    );
+    const startedAt = Date.now();
+    let response: IPostResponse;
+    try {
+      response = await websiteInstance.post(
+        postData,
+        files,
+        {
+          ...batch,
+          ...(accountSourceUrls.length > 0
+            ? { sourceUrls: accountSourceUrls }
+            : {}),
+        },
+        this.cancellationToken,
+      );
+    } catch (error) {
+      if (error !== this.cancellationToken.signal.reason) {
+        this.trackPostDependency(websiteInstance, submission, startedAt, false);
+      }
+      throw error;
+    }
+
+    if (
+      !response.exception ||
+      response.exception !== this.cancellationToken.signal.reason
+    ) {
+      this.trackPostDependency(
+        websiteInstance,
+        submission,
+        startedAt,
+        !response.exception && !response.rateLimitedUntil,
+        response.stage,
+        response.rateLimitedUntil ? 429 : undefined,
+      );
+    }
 
     if (response.rateLimitedUntil) {
       const rateLimitedUntil = await this.postingRateLimiter.setRateLimit(
@@ -621,7 +664,6 @@ export class PostingWorker {
         this.getResponseData(response),
         {
           error: response.exception,
-          postData,
           stage: response.stage,
         },
       );
@@ -633,13 +675,6 @@ export class PostingWorker {
       response: this.getResponseData(response),
       url: response.sourceUrl,
     });
-    this.trackPostSuccess(
-      websiteInstance,
-      submission,
-      unitsOfWork,
-      postData,
-      response,
-    );
     return {};
   }
 
@@ -651,9 +686,11 @@ export class PostingWorker {
   ): Array<{ metadata: PostBatchData; units: UnitOfWork[] }> {
     const readyIds = new Set(readyUnitsOfWork.map((unit) => unit.id));
     const selectionId = readyUnitsOfWork[0]?.data?.postingSelectionId;
-    const isSingleSelection = selectionId && readyUnitsOfWork.every(
-      (unit) => unit.data?.postingSelectionId === selectionId,
-    );
+    const isSingleSelection =
+      selectionId &&
+      readyUnitsOfWork.every(
+        (unit) => unit.data?.postingSelectionId === selectionId,
+      );
     const fileOrder = new Map(
       (submission.files ?? []).map((file) => [file.id, file.order]),
     );
@@ -662,7 +699,10 @@ export class PostingWorker {
       Number.MAX_SAFE_INTEGER;
     const orderedUnits = allUnitsOfWork
       .filter((unit) => unit.accountId === accountId)
-      .filter((unit) => !isSingleSelection || unit.data?.postingSelectionId === selectionId)
+      .filter(
+        (unit) =>
+          !isSingleSelection || unit.data?.postingSelectionId === selectionId,
+      )
       .sort(
         (left, right) =>
           getFileOrder(left) - getFileOrder(right) ||
@@ -689,10 +729,12 @@ export class PostingWorker {
     return batches.flatMap((grouped, index) => {
       const readyUnits = grouped.units.filter((unit) => readyIds.has(unit.id));
       return readyUnits.length > 0
-        ? [{
-            metadata: { index, totalBatches: batches.length },
-            units: readyUnits,
-          }]
+        ? [
+            {
+              metadata: { index, totalBatches: batches.length },
+              units: readyUnits,
+            },
+          ]
         : [];
     });
   }
@@ -705,16 +747,18 @@ export class PostingWorker {
     const currentUnitIds = new Set(currentUnits.map((unit) => unit.id));
     const selectionId = currentUnits[0]?.data?.postingSelectionId;
     const sourceUnits = await this.unitOfWorkRepository.find({
-      where: (unit, { and, eq }) => and(
-        eq(unit.postId, this.postId),
-        eq(unit.accountId, accountId),
-        eq(unit.evicted, false),
-      ),
+      where: (unit, { and, eq }) =>
+        and(
+          eq(unit.postId, this.postId),
+          eq(unit.accountId, accountId),
+          eq(unit.evicted, false),
+        ),
     });
     const sourceUrls = new Map<string, PostBatchSourceUrl>();
 
     for (const unit of sourceUnits) {
-      if (selectionId && unit.data?.postingSelectionId !== selectionId) continue;
+      if (selectionId && unit.data?.postingSelectionId !== selectionId)
+        continue;
       const url = unit.url?.trim();
       if (!url || unit.evicted || currentUnitIds.has(unit.id)) {
         continue;
@@ -747,11 +791,12 @@ export class PostingWorker {
     }
 
     const sourceUnits = await this.unitOfWorkRepository.find({
-      where: (unit, { and, eq, ne }) => and(
-        eq(unit.postId, this.postId),
-        eq(unit.evicted, false),
-        ne(unit.accountId, accountId),
-      ),
+      where: (unit, { and, eq, ne }) =>
+        and(
+          eq(unit.postId, this.postId),
+          eq(unit.evicted, false),
+          ne(unit.accountId, accountId),
+        ),
     });
 
     return uniqueUrls(sourceUnits.map((unit) => unit.url));
@@ -771,93 +816,51 @@ export class PostingWorker {
       : responseData;
   }
 
-  private trackPostSuccess(
+  private trackPostDependency(
     websiteInstance: UnknownWebsite,
     submission: Submission,
-    units: UnitOfWork[],
-    postData: PostData<IWebsiteFormFields>,
-    response: IPostResponse,
+    startedAt: number,
+    success: boolean,
+    stage?: string,
+    resultCode?: number,
   ): void {
     const websiteName = this.getWebsiteName(websiteInstance);
-    trackEvent('PostSuccess', {
-      website: websiteName,
-      accountId: websiteInstance.accountId,
-      submissionId: submission.id,
-      submissionType: submission.type,
-      hasSourceUrl: response.sourceUrl ? 'true' : 'false',
-      fileCount: this.getFileCount(units),
-      options: this.redactPostDataForTelemetry(postData),
-    });
-    trackMetric(`post.success.${websiteName}`, 1, {
-      website: websiteName,
-      submissionType: submission.type,
+    trackDependency({
+      name: `Post ${submission.type}`,
+      target: websiteName,
+      dependencyType: 'Website',
+      duration: Math.max(0, Date.now() - startedAt),
+      success,
+      resultCode,
+      properties: {
+        website: websiteName,
+        submissionType: submission.type,
+        stage: stage ?? 'post',
+      },
     });
   }
 
   private trackPostFailure(
     websiteInstance: UnknownWebsite,
     submission: Submission,
-    units: UnitOfWork[],
     message: string,
     telemetry: PostFailureTelemetry,
   ): void {
     const websiteName = this.getWebsiteName(websiteInstance);
     const exception =
-      telemetry.error === undefined
-        ? undefined
-        : telemetry.error instanceof Error
-          ? telemetry.error
-          : new Error(this.getErrorMessage(telemetry.error, message));
-    trackEvent('PostFailure', {
+      telemetry.error instanceof Error
+        ? telemetry.error
+        : new Error(this.getErrorMessage(telemetry.error, message));
+    trackException(exception, {
+      source: 'posting',
       website: websiteName,
-      accountId: websiteInstance.accountId,
-      submissionId: submission.id,
       submissionType: submission.type,
-      errorMessage: message,
       stage: telemetry.stage ?? 'unknown',
-      hasException: exception ? 'true' : 'false',
-      fileCount: this.getFileCount(units),
-      options: this.redactPostDataForTelemetry(telemetry.postData),
     });
-    trackMetric(`post.failure.${websiteName}`, 1, {
-      website: websiteName,
-      submissionType: submission.type,
-    });
-    if (exception) {
-      trackException(exception, {
-        website: websiteName,
-        accountId: websiteInstance.accountId,
-        submissionId: submission.id,
-        stage: telemetry.stage ?? 'unknown',
-        errorMessage: message,
-      });
-    }
-  }
-
-  private getFileCount(units: UnitOfWork[]): string {
-    return String(units.filter((unit) => unit.fileId).length);
   }
 
   private getWebsiteName(websiteInstance: UnknownWebsite): string {
     return websiteInstance.decoratedProps?.metadata?.name ?? 'unknown';
-  }
-
-  private redactPostDataForTelemetry(
-    postData?: PostData<IWebsiteFormFields>,
-  ): string {
-    if (!postData) {
-      return '';
-    }
-
-    const options = { ...postData.options };
-    if (options.description) {
-      options.description = `[REDACTED ${options.description.length}]`;
-    }
-    try {
-      return JSON.stringify({ options });
-    } catch {
-      return '';
-    }
   }
 
   private async prepareBatchFiles(
@@ -924,10 +927,7 @@ export class PostingWorker {
         acceptedMimeTypes,
       )
         ? file.altFile
-        : await this.convertToAcceptedMimeType(
-            file.altFile,
-            acceptedMimeTypes,
-          );
+        : await this.convertToAcceptedMimeType(file.altFile, acceptedMimeTypes);
       if (alternateFile) {
         return this.withPreparedFile(file, alternateFile);
       }
@@ -1023,15 +1023,9 @@ export class PostingWorker {
     response: Record<string, unknown> = { error: message },
     telemetry: PostFailureTelemetry = {},
   ): Promise<void> {
+    this.trackPostFailure(websiteInstance, submission, message, telemetry);
     await this.markUnitsOfWorkAsFailed(units, response);
     await this.notifyPostFailure(websiteInstance, submission, message);
-    this.trackPostFailure(
-      websiteInstance,
-      submission,
-      units,
-      message,
-      telemetry,
-    );
   }
 
   /** Logs a thrown error and fails the units with its message. */
@@ -1041,9 +1035,11 @@ export class PostingWorker {
     submission: Submission,
     message: string,
     error: unknown,
-    postData?: PostData<IWebsiteFormFields>,
   ): Promise<void> {
-    this.logger.withError(error).error(message);
+    this.logger
+      .withMetadata({ telemetry: false })
+      .withError(error)
+      .error(message);
     const errorMessage = this.getErrorMessage(error, message);
     await this.failUnitsOfWork(
       units,
@@ -1051,7 +1047,7 @@ export class PostingWorker {
       submission,
       errorMessage,
       { error: errorMessage },
-      { error, postData },
+      { error },
     );
   }
 
@@ -1094,9 +1090,8 @@ export class PostingWorker {
 
   private async completePost(submissionId: SubmissionId): Promise<boolean> {
     try {
-      const completed = await this.postRepository.completeIfAllActiveUnitsSettled(
-        this.postId,
-      );
+      const completed =
+        await this.postRepository.completeIfAllActiveUnitsSettled(this.postId);
       if (completed) {
         const units = await this.unitOfWorkRepository.find({
           where: (unit, { and, eq }) =>
@@ -1105,9 +1100,8 @@ export class PostingWorker {
         const allSucceeded =
           units.length > 0 &&
           units.every((unit) => unit.state === UnitOfWorkState.SUCCEEDED);
-        const submission = await this.submissionRepository.findByIdOrThrow(
-          submissionId,
-        );
+        const submission =
+          await this.submissionRepository.findByIdOrThrow(submissionId);
 
         if (allSucceeded) {
           const isRecurringScheduled =

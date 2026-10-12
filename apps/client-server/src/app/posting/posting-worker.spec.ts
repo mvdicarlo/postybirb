@@ -1,5 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { trackEvent, trackException, trackMetric } from '@postybirb/logger';
+import { trackDependency, trackException } from '@postybirb/logger';
 import { UnitOfWorkState } from '@postybirb/types';
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -14,9 +14,8 @@ import { PostingWorker } from './posting-worker';
 
 jest.mock('@postybirb/logger', () => ({
   ...jest.requireActual('@postybirb/logger'),
-  trackEvent: jest.fn(),
+  trackDependency: jest.fn(),
   trackException: jest.fn(),
-  trackMetric: jest.fn(),
 }));
 
 interface WorkerMocks {
@@ -212,9 +211,8 @@ function mockCompletedUnitStates(
 
 describe('PostingWorker', () => {
   beforeEach(() => {
-    jest.mocked(trackEvent).mockClear();
+    jest.mocked(trackDependency).mockClear();
     jest.mocked(trackException).mockClear();
-    jest.mocked(trackMetric).mockClear();
   });
 
   it('archives a submission after all active work succeeds', async () => {
@@ -363,28 +361,20 @@ describe('PostingWorker', () => {
       url: 'https://example.com/post/1',
     });
     expect(mocks.notificationService.create).not.toHaveBeenCalled();
-    expect(trackEvent).toHaveBeenCalledWith('PostSuccess', {
-      website: 'test-website',
-      accountId: 'account-1',
-      submissionId: 'submission-1',
-      submissionType: 'FILE',
-      hasSourceUrl: 'true',
-      fileCount: '0',
-      options: JSON.stringify({
-        options: {
-          description: '[REDACTED 19]',
-          title: 'Prepared title',
-        },
-      }),
-    });
-    expect(trackMetric).toHaveBeenCalledWith(
-      'post.success.test-website',
-      1,
-      {
+    expect(trackDependency).toHaveBeenCalledTimes(1);
+    expect(trackDependency).toHaveBeenCalledWith({
+      name: 'Post FILE',
+      target: 'test-website',
+      dependencyType: 'Website',
+      duration: expect.any(Number),
+      success: true,
+      resultCode: undefined,
+      properties: {
         website: 'test-website',
         submissionType: 'FILE',
+        stage: 'post',
       },
-    );
+    });
     expect(trackException).not.toHaveBeenCalled();
     expect(mocks.unitOfWorkRepository.update).not.toHaveBeenCalledWith(
       'work-1',
@@ -432,9 +422,8 @@ describe('PostingWorker', () => {
     expect(mocks.fileRepository.findByIdOrThrow).not.toHaveBeenCalled();
     expect(mocks.websitePost).not.toHaveBeenCalled();
     expect(mocks.notificationService.create).not.toHaveBeenCalled();
-    expect(trackEvent).not.toHaveBeenCalled();
+    expect(trackDependency).not.toHaveBeenCalled();
     expect(trackException).not.toHaveBeenCalled();
-    expect(trackMetric).not.toHaveBeenCalled();
   });
 
   it('executes only ready batches in a mixed post', async () => {
@@ -970,31 +959,25 @@ describe('PostingWorker', () => {
       },
       true,
     );
-    expect(trackEvent).toHaveBeenCalledWith('PostFailure', {
-      website: 'test-website',
-      accountId: 'account-1',
-      submissionId: 'submission-1',
-      submissionType: 'FILE',
-      errorMessage: exception.message,
-      stage: 'submission',
-      hasException: 'true',
-      fileCount: '0',
-      options: JSON.stringify({ options: {} }),
-    });
-    expect(trackMetric).toHaveBeenCalledWith(
-      'post.failure.test-website',
-      1,
-      {
+    expect(trackDependency).toHaveBeenCalledTimes(1);
+    expect(trackDependency).toHaveBeenCalledWith({
+      name: 'Post FILE',
+      target: 'test-website',
+      dependencyType: 'Website',
+      duration: expect.any(Number),
+      success: false,
+      resultCode: undefined,
+      properties: {
         website: 'test-website',
         submissionType: 'FILE',
+        stage: 'submission',
       },
-    );
+    });
     expect(trackException).toHaveBeenCalledWith(exception, {
+      source: 'posting',
       website: 'test-website',
-      accountId: 'account-1',
-      submissionId: 'submission-1',
+      submissionType: 'FILE',
       stage: 'submission',
-      errorMessage: exception.message,
     });
   });
 
@@ -1120,9 +1103,8 @@ describe('PostingWorker', () => {
       expect.objectContaining({ state: 'FAILED' }),
     );
     expect(mocks.notificationService.create).not.toHaveBeenCalled();
-    expect(trackEvent).not.toHaveBeenCalled();
+    expect(trackDependency).not.toHaveBeenCalled();
     expect(trackException).not.toHaveBeenCalled();
-    expect(trackMetric).not.toHaveBeenCalled();
   });
 
   it('marks a returned cancellation response without reporting a failure', async () => {
@@ -1141,6 +1123,8 @@ describe('PostingWorker', () => {
       state: 'CANCELLED',
     });
     expect(mocks.notificationService.create).not.toHaveBeenCalled();
+    expect(trackDependency).not.toHaveBeenCalled();
+    expect(trackException).not.toHaveBeenCalled();
   });
 
   it('leaves a post that is already cancelled unchanged', async () => {

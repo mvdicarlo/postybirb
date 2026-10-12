@@ -1,75 +1,36 @@
+import { Logform } from 'winston';
 import TransportStream from 'winston-transport';
-import { getAppInsightsClient } from './app-insights';
+import { trackErrorLog, trackException } from './app-insights';
+import { filterTelemetryProperties } from './telemetry-privacy';
 
-/**
- * Custom Winston transport for Application Insights
- * Only logs error level messages to reduce noise
- */
 export class AppInsightsTransport extends TransportStream {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  log(info: any, callback: () => void) {
-    setImmediate(() => {
-      this.emit('logged', info);
-    });
-
-    const client = getAppInsightsClient();
-    if (!client) {
-      callback();
-      return;
-    }
+  log(info: Logform.TransformableInfo, callback: () => void): void {
+    setImmediate(() => this.emit('logged', info));
 
     try {
-      const { level, message, ...meta } = info;
-      const properties: { [key: string]: string } = {};
-
-      // Convert metadata to string properties
-      Object.keys(meta).forEach((key) => {
-        if (key !== 'timestamp') {
-          try {
-            properties[key] =
-              typeof meta[key] === 'object'
-                ? JSON.stringify(meta[key])
-                : String(meta[key]);
-          } catch {
-            properties[key] = '[Unable to serialize]';
-          }
-        }
-      });
-
-      // Map Winston levels to App Insights severity
-      // 0 = Verbose, 1 = Information, 2 = Warning, 3 = Error, 4 = Critical
-      const severityMap: { [key: string]: number } = {
-        error: 3, // Error
-        warn: 2, // Warning
-        info: 1, // Information
-        debug: 0, // Verbose
-      };
-
-      const severity = severityMap[level] ?? 1;
-
-      // Track as trace (log message) in App Insights
-      // Note: Severity is omitted due to type compatibility issues
-      client.trackTrace({
-        message: `[${level.toUpperCase()}] ${message}`,
-        properties,
-      });
-
-      // If it's an error with an exception, also track it as an exception
-      let err = meta.error;
-      if (!(meta.error instanceof Error) && info.message instanceof Error) {
-        err = info.message;
-      }
-      if (level === 'error' && err instanceof Error) {
-        client.trackException({
-          exception: err,
-          properties,
+      // Explicit exception reporting can keep its contextual log local.
+      if (info.level === 'error' && info.telemetry !== false) {
+        const properties = filterTelemetryProperties({
+          source: 'winston',
+          ...info,
         });
+        const error = [info.err, info.error, info.message].find(
+          (value): value is Error => value instanceof Error,
+        );
+        if (error) {
+          trackException(error, properties);
+        } else {
+          trackErrorLog(String(info.message), properties);
+        }
       }
     } catch (error) {
       // eslint-disable-next-line no-console
-      console.error('Error in AppInsightsTransport:', error);
+      console.warn(
+        'Failed to forward error log to Application Insights:',
+        error,
+      );
+    } finally {
+      callback();
     }
-
-    callback();
   }
 }
