@@ -44,7 +44,8 @@
     "setup:husky": "yarn husky",
     "generate:sql": "drizzle-kit generate",
     "inject:app-insights": "node scripts/inject-app-insights.js",
-    "inject:app-insights:clear": "node scripts/inject-app-insights.js --clear"
+    "inject:app-insights:clear": "node scripts/inject-app-insights.js --clear",
+    "refresh:sql": "rm -rf node_modules/better-sqlite3/; yarn; yarn run electron-builder install-app-deps"
   },
   "dependencies": {
     "@atproto/api": "^0.15.7",

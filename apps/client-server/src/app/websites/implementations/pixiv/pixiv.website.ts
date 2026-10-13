@@ -128,7 +128,6 @@ export default class Pixiv
       )
       .setField('restrict', 'public')
       .setField('responseAutoAccept', 'false')
-      .setField('suggestedtags[]', '')
       .setField('original', options.original)
       .setField('ratings[violent]', 'false')
       .setField('ratings[drug]', 'false')
@@ -139,10 +138,10 @@ export default class Pixiv
       .setField('attributes[bl]', 'false')
       .setField('attributes[furry]', 'false')
       .setField('attributes[lo]', 'false')
-      .setField('tweet', 'false')
       .setField('allowComment', 'true')
       .setField('titleTranslations[en]', '')
       .setField('captionTranslations[en]', '')
+      .setField('allowCitationWork', '1')
       .addFiles('files[]', files)
       .forEach(postFiles, (_, index, b) => {
         b.setField(`imageOrder[${index}][type]`, 'newFile');
@@ -171,7 +170,7 @@ export default class Pixiv
         .withAdditionalInfo(post)
         .withException(
           new Error(
-            post.body.error ? JSON.stringify(post.body.error) : 'Unknown error',
+            post.body.error ? JSON.stringify(post.body) : 'Unknown error',
           ),
         );
     } catch (error) {

@@ -29,6 +29,7 @@ export class PixivFileSubmission extends BaseWebsiteOptions {
 
   @TagField({
     maxTags: 10,
+    minTags: 1,
   })
   tags: TagValue = DefaultTagValue();
 
