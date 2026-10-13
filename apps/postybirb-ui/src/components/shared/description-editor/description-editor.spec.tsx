@@ -226,6 +226,30 @@ describe('DescriptionEditor external updates', () => {
     expect(onChange).toHaveBeenCalledTimes(1);
   });
 
+  it('does not drop a newer local edit when a stale external value arrives mid-session', () => {
+    // Reproduces the "shortcuts disappearing" regression: a NodeView like the
+    // username shortcut's inline input (or a shortcut's website-only selector
+    // popover) steals DOM focus away from the editor while the user keeps
+    // editing. If a debounced-save round trip lands in that window, it must
+    // not clobber edits made after the snapshot it carries.
+    const onChange = jest.fn();
+    renderEditor({ value: description('Original'), onChange });
+    const editor = getEditor();
+
+    act(() => editor.commands.insertContentAt(1, 'First '));
+    const firstEdit = onChange.mock.calls[0][0];
+
+    act(() => editor.commands.insertContentAt(1, 'Second '));
+    expect(onChange).toHaveBeenCalledTimes(2);
+
+    // Simulate the server confirming the (now stale) first edit while the
+    // editor never regained DOM focus in between (e.g. the user was typing
+    // into a shortcut's embedded username/website-only input the whole time).
+    renderEditor({ value: firstEdit, onChange });
+
+    expect(getEditor().getText()).toContain('Second');
+  });
+
   it('does not replace an unsaved draft on an unchanged external value', () => {
     const value = description('Original');
     const onChange = jest.fn();

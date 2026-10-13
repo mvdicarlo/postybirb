@@ -197,6 +197,17 @@ export function DescriptionEditor({
   // Editor ref for use in callbacks before editor is created
   const editorRef = useRef<Editor | null>(null);
 
+  // Tracks whether the live document has local edits that haven't been
+  // echoed back yet through the `value` prop. This is intentionally
+  // independent of `editor.isFocused`: focus is unreliable here because
+  // several of our custom shortcut NodeViews (e.g. the username shortcut's
+  // text input, and the website-only selector popover shared by every
+  // shortcut type) render real DOM inputs. Interacting with those blurs the
+  // ProseMirror view even though the user is still actively editing the
+  // document, which previously let a stale external `value` silently
+  // overwrite newer local changes.
+  const pendingLocalChangeRef = useRef(false);
+
   // Get username shortcuts from websites
   const usernameShortcuts = useMemo(
     () =>
@@ -463,6 +474,7 @@ export function DescriptionEditor({
       editable: !readOnly,
       onUpdate: ({ editor: e }) => {
         if (readOnly) return;
+        pendingLocalChangeRef.current = true;
         onChangeRef.current(e.getJSON() as Description);
       },
       editorProps: {
@@ -531,17 +543,33 @@ export function DescriptionEditor({
   // When value passed externally updates, update the editor too
   const lastValueRef = useRef({ editor, value });
   useEffect(() => {
-    // Don't update the editor while user is typing to prevent shortcuts from disappearing
-    if (!editor || editor.isFocused) return;
+    if (!editor) return;
+
+    // If the incoming value already matches the live document, we're fully
+    // caught up: any local edits have been confirmed by this round-trip, so
+    // it's safe to clear the pending flag. This also covers the normal
+    // "editor just mounted/switched" case.
+    if (isEqual(editor.getJSON(), value)) {
+      pendingLocalChangeRef.current = false;
+      lastValueRef.current = { editor, value };
+      return;
+    }
+
+    // There are local edits the outside world hasn't echoed back yet (e.g. a
+    // debounced save is still in flight). Don't let a stale `value` clobber
+    // them. We can't rely on `editor.isFocused` for this: clicking into a
+    // shortcut's embedded input/popover blurs the ProseMirror view even
+    // though the user is still actively editing via that shortcut's UI.
+    if (pendingLocalChangeRef.current) return;
+
+    // Don't fight the user while they're actively typing/selecting directly
+    // in the editor to prevent shortcuts from disappearing.
+    if (editor.isFocused) return;
 
     const previous = lastValueRef.current;
     lastValueRef.current = { editor, value };
 
-    if (
-      !editor ||
-      (previous.editor === editor && isEqual(previous.value, value)) ||
-      isEqual(editor.getJSON(), value)
-    ) {
+    if (previous.editor === editor && isEqual(previous.value, value)) {
       return;
     }
 
