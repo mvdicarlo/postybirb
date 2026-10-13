@@ -1,2 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type PhilomenaAccountData = {};
+export type {
+  PhilomenaAccountData,
+  PhilomenaOAuthRoutes,
+} from '@postybirb/types';

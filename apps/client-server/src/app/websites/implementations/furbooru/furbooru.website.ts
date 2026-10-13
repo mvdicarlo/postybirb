@@ -1,9 +1,6 @@
-import { PostData, PostResponse } from '@postybirb/types';
-import { CancellationToken } from '../../../posting/cancellation-token';
-import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
-import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -11,7 +8,7 @@ import { PhilomenaWebsite } from '../philomena/philomena.website';
 import { FurbooruFileSubmission } from './models/furbooru-file-submission';
 
 @WebsiteMetadata({ name: 'furbooru', displayName: 'Furbooru' })
-@UserLoginFlow('https://furbooru.org/session/new')
+@CustomLoginFlow('Philomena')
 @SupportsFiles({
   acceptedMimeTypes: [
     'image/png',
@@ -33,29 +30,5 @@ export default class Furbooru extends PhilomenaWebsite<FurbooruFileSubmission> {
 
   createFileModel(): FurbooruFileSubmission {
     return new FurbooruFileSubmission();
-  }
-
-  async onPostFileSubmission(
-    postData: PostData<FurbooruFileSubmission>,
-    files: PostingFile[],
-    cancellationToken: CancellationToken,
-  ): Promise<PostResponse> {
-    try {
-      const result = await super.onPostFileSubmission(
-        postData,
-        files,
-        cancellationToken,
-      );
-      return result;
-    } catch (err) {
-      // Users have reported it working on a second attempt
-      this.logger?.warn(err, 'Furbooru Post Retry');
-      const retry = await super.onPostFileSubmission(
-        postData,
-        files,
-        cancellationToken,
-      );
-      return retry;
-    }
   }
 }
