@@ -126,7 +126,7 @@ export default class Pixiv
         'aiGenerated',
         'notAiGenerated',
       )
-      .setField('restrict', 'private')
+      .setField('restrict', 'public')
       .setField('responseAutoAccept', 'false')
       .setField('original', options.original)
       .setField('ratings[violent]', 'false')
