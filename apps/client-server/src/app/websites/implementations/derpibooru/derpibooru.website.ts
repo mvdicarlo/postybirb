@@ -1,5 +1,5 @@
 import FileSize from '../../../utils/filesize.util';
-import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -10,7 +10,7 @@ import { DerpibooruFileSubmission } from './models/derpibooru-file-submission';
   name: 'derpibooru',
   displayName: 'Derpibooru',
 })
-@UserLoginFlow('https://derpibooru.org/sessions/new')
+@CustomLoginFlow('Philomena')
 @SupportsFiles({
   acceptedMimeTypes: [
     'image/jpeg',

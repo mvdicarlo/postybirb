@@ -11,6 +11,7 @@ import { InkbunnyLoginView } from './inkbunny';
 import { InstagramLoginView } from './instagram';
 import { MegalodonLoginView } from './megalodon';
 import { MisskeyLoginView } from './misskey';
+import { PhilomenaLoginView } from './philomena';
 import { PrometheusLoginView } from './prometheus';
 import { SofurryLoginView } from './sofurry';
 import { SubscribeStarAdultLoginView } from './subscribe-star-adult';
@@ -20,10 +21,10 @@ import type { LoginViewComponent } from './types';
 
 // Re-export types and helpers
 export {
-    createLoginHttpErrorHandler,
-    notifyInfo,
-    notifyLoginError,
-    notifyLoginFailed
+  createLoginHttpErrorHandler,
+  notifyInfo,
+  notifyLoginError,
+  notifyLoginFailed,
 } from './helpers';
 export { LoginViewContainer } from './login-view-container';
 export type { LoginViewComponent, LoginViewProps } from './types';
@@ -43,6 +44,7 @@ const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
   Instagram: InstagramLoginView,
   Mastodon: MegalodonLoginView,
   Misskey: MisskeyLoginView,
+  Philomena: PhilomenaLoginView,
   Pixelfed: MegalodonLoginView,
   Pleroma: MegalodonLoginView,
   Prometheus: PrometheusLoginView,

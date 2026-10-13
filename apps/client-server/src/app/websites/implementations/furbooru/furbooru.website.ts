@@ -1,6 +1,6 @@
 import FileSize from '../../../utils/filesize.util';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
-import { UserLoginFlow } from '../../decorators/login-flow.decorator';
+import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -8,7 +8,7 @@ import { PhilomenaWebsite } from '../philomena/philomena.website';
 import { FurbooruFileSubmission } from './models/furbooru-file-submission';
 
 @WebsiteMetadata({ name: 'furbooru', displayName: 'Furbooru' })
-@UserLoginFlow('https://furbooru.org/session/new')
+@CustomLoginFlow('Philomena')
 @SupportsFiles({
   acceptedMimeTypes: [
     'image/png',

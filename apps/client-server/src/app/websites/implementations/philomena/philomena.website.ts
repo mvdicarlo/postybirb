@@ -2,20 +2,30 @@ import {
   ImageResizeProps,
   ISubmissionFile,
   LoginResult,
+  OAuthRouteHandlers,
   PostData,
   PostResponse,
   SubmissionRating,
 } from '@postybirb/types';
-import parse from 'node-html-parser';
 import { CancellationToken } from '../../../posting/cancellation-token';
 import { PostingFile } from '../../../posting/models/posting-file';
-import { PostBuilder } from '../../commons/post-builder';
 import { validatorPassthru } from '../../commons/validator-passthru';
 import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
+import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { Website } from '../../website';
-import { PhilomenaAccountData } from './models/philomena-account-data';
+import {
+  PhilomenaAccountData,
+  PhilomenaOAuthRoutes,
+} from './models/philomena-account-data';
 import { PhilomenaFileSubmission } from './models/philomena-file-submission';
+
+type PhilomenaImageResponse = {
+  image?: {
+    id?: number;
+  };
+  errors?: Record<string, string | string[]>;
+};
 
 /**
  * Base abstract class for Philomena-based booru websites.
@@ -26,57 +36,60 @@ export abstract class PhilomenaWebsite<
   TFileSubmission extends PhilomenaFileSubmission = PhilomenaFileSubmission,
 >
   extends Website<PhilomenaAccountData>
-  implements FileWebsite<TFileSubmission>
+  implements FileWebsite<TFileSubmission>, OAuthWebsite<PhilomenaOAuthRoutes>
 {
   protected abstract BASE_URL: string;
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<PhilomenaAccountData> =
-    {} as DataPropertyAccessibility<PhilomenaAccountData>;
+    {
+      username: true,
+      key: false,
+    };
 
-  /**
-   * Check structured session indicators, falling back to a header logout action.
-   */
   public async onLogin(): Promise<LoginResult> {
-    const res = await this.platform.http.get<string>(`${this.BASE_URL}`, {
-      partition: this.accountId,
-    });
-
-    const statusCode = res.statusCode ?? 0;
-    if (statusCode < 200 || statusCode >= 300) {
-      throw new Error(`Unable to check login: HTTP ${statusCode}`);
-    }
-    if (typeof res.body !== 'string') {
-      throw new Error('Unable to determine login state: expected HTML');
+    const { username, key } = this.websiteDataStore.getData();
+    if (!username?.trim() || !key?.trim()) {
+      return { loggedIn: false };
     }
 
-    const document = parse(res.body);
-    const sessionElement = document.querySelector('[data-user-is-signed-in]');
-    if (sessionElement) {
-      const signedIn = sessionElement.getAttribute('data-user-is-signed-in');
-      if (signedIn === 'true') {
-        const username =
-          sessionElement.getAttribute('data-user-name')?.trim() || 'Unknown';
-        return { loggedIn: true, username };
-      }
-      if (signedIn === 'false') {
-        return { loggedIn: false };
-      }
-      throw new Error(
-        'Unable to determine login state: invalid session indicator',
-      );
-    }
-
-    if (
-      document.querySelector('header a[href="/sessions"][data-method="delete"]')
-    ) {
-      const usernameElement = document.querySelector('[data-user-name]');
-      const username =
-        usernameElement?.getAttribute('data-user-name')?.trim() || 'Unknown';
+    if (await this.checkApiKey(key)) {
       return { loggedIn: true, username };
     }
 
+    return { loggedIn: false };
+  }
+
+  public onAuthRoute: OAuthRouteHandlers<PhilomenaOAuthRoutes> = {
+    login: async (data) => {
+      const username = data.username?.trim();
+      const key = data.key?.trim();
+      if (!username || !key || !(await this.checkApiKey(key))) {
+        return { result: false };
+      }
+
+      await this.setWebsiteData({ username, key });
+      const state = await this.login();
+      return { result: state.isLoggedIn };
+    },
+  };
+
+  private async checkApiKey(key: string): Promise<boolean> {
+    const response = await this.platform.http.get(
+      `${this.BASE_URL}/api/v1/json/filters/user?key=${encodeURIComponent(
+        key,
+      )}&per_page=1`,
+      { partition: '' },
+    );
+
+    if (response.statusCode === 200) {
+      return true;
+    }
+    if (response.statusCode === 401 || response.statusCode === 403) {
+      return false;
+    }
+
     throw new Error(
-      'Unable to determine login state: missing session indicators',
+      `Unable to validate the Philomena API key: HTTP ${response.statusCode}`,
     );
   }
 
@@ -129,7 +142,6 @@ export abstract class PhilomenaWebsite<
     const knownRatings = this.getKnownRatings();
     const lowerCaseTags = tags.map((t) => t.toLowerCase());
 
-    // Add rating tag if not already present
     if (!lowerCaseTags.includes(ratingTag)) {
       let add = true;
 
@@ -148,115 +160,98 @@ export abstract class PhilomenaWebsite<
     return tags;
   }
 
-  /**
-   * Extract form fields from the upload page.
-   * Philomena sites use CSRF tokens and other hidden fields.
-   */
-  protected async getUploadFormFields(): Promise<Record<string, string>> {
-    const uploadPage = await this.platform.http.get<string>(
-      `${this.BASE_URL}/images/new`,
-      {
-        partition: this.accountId,
-      },
-    );
-
-    const statusCode = uploadPage.statusCode ?? 0;
-    if (statusCode < 200 || statusCode >= 300) {
-      throw new Error(`Unable to load the upload form: HTTP ${statusCode}`);
-    }
-    if (typeof uploadPage.body !== 'string') {
-      throw new Error('Unable to load the upload form: expected HTML');
+  private getApiError(
+    body: PhilomenaImageResponse | string,
+    statusCode: number,
+  ): string {
+    if (typeof body === 'string' && body.trim()) {
+      return body.trim();
     }
 
-    const root = parse(uploadPage.body);
-    const form = root.querySelector('#content form');
-    if (!form) {
-      throw new Error(
-        'Unable to load the upload form. The site may require you to sign in again.',
+    if (typeof body !== 'string' && body.errors) {
+      const errors = Object.entries(body.errors).flatMap(([field, messages]) =>
+        (Array.isArray(messages) ? messages : [messages]).map(
+          (message) => `${field.replaceAll('_', ' ')} ${message}`,
+        ),
       );
+      if (errors.length) {
+        return errors.join('; ');
+      }
     }
 
-    const inputs = form.querySelectorAll('input, textarea, select');
+    if (statusCode === 401) {
+      return 'Philomena rejected the API key. Update the account credentials and try again.';
+    }
+    if (statusCode === 403) {
+      return 'This account is not allowed to post through the Philomena API.';
+    }
+    if (statusCode >= 200 && statusCode < 300) {
+      return 'Philomena did not return the created image ID.';
+    }
 
-    return inputs.reduce((acc: Record<string, string>, input) => {
-      const name = input.getAttribute('name');
-      if (name) {
-        const value = input.getAttribute('value') || input.textContent.trim();
-        acc[name] = value;
-      }
-      return acc;
-    }, {});
+    return `Philomena image upload failed with HTTP ${statusCode}.`;
   }
 
-  private getUploadErrors(body: string): string[] {
-    const document = parse(body);
-    const errors = document
-      .querySelectorAll('.help-block, .flash--warning')
-      .map((element) => element.textContent.trim())
-      .filter(Boolean);
-
-    return [...new Set(errors)];
-  }
-
-  /**
-   * Post a file submission to a Philomena site.
-   */
   async onPostFileSubmission(
     postData: PostData<TFileSubmission>,
     files: PostingFile[],
     cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
-    const fields = await this.getUploadFormFields();
+    cancellationToken.throwIfAborted();
     const { rating, tags, description } = postData.options;
     const tagsWithRating = this.tagsWithRatingTag([...tags], rating);
     const file = files[0];
-
-    const builder = new PostBuilder(this, cancellationToken)
-      .asMultipart()
-      .withData(fields)
-      .setField('_method', 'post')
-      .setField('image[anonymous]', 'false')
-      .setField('image[tag_input]', tagsWithRating.join(', ').trim())
-      .addFile('image[image]', file)
-      .setField('image[description]', description || '')
-      .setField(
-        'image[sources][0][source]',
-        file.metadata.sourceUrls?.[0] || '',
+    const { key } = this.websiteDataStore.getData();
+    if (!key?.trim()) {
+      return PostResponse.fromWebsite(this).withException(
+        new Error(
+          'A Philomena API key is required. Update the account credentials and try again.',
+        ),
       );
-
-    const result = await builder.send<string>(`${this.BASE_URL}/images`);
-
-    const { body, responseUrl } = result;
-    const response = PostResponse.fromWebsite(this).withAdditionalInfo(body);
-    const errors = this.getUploadErrors(body);
-    const duplicateError = errors.find((error) =>
-      error.includes('Image has already been uploaded'),
+    }
+    const sources = (file.metadata?.sourceUrls ?? [])
+      .filter(Boolean)
+      .slice(0, 15);
+    const sourceFields = Object.fromEntries(
+      sources.map((source, index) => [
+        `image[sources][${index}][source]`,
+        source,
+      ]),
     );
 
-    if (duplicateError) {
-      return PostResponse.fromWebsite(this)
-        .withAdditionalInfo(body)
-        .withException(new Error(duplicateError));
+    const result = await this.platform.http.post<
+      PhilomenaImageResponse | string
+    >(`${this.BASE_URL}/api/v1/json/images`, {
+      partition: '',
+      type: 'multipart',
+      data: {
+        key: key.trim(),
+        'image[anonymous]': 'false',
+        'image[tag_input]': tagsWithRating.join(', ').trim(),
+        'image[image]': file.toPostFormat(),
+        'image[description]': description || '',
+        ...sourceFields,
+      },
+    });
+
+    const response = PostResponse.fromWebsite(this).withAdditionalInfo({
+      body: result.body,
+      statusCode: result.statusCode,
+    });
+    const imageId =
+      typeof result.body === 'string' ? undefined : result.body.image?.id;
+
+    if (
+      result.statusCode >= 200 &&
+      result.statusCode < 300 &&
+      typeof imageId === 'number'
+    ) {
+      return response.withSourceUrl(`${this.BASE_URL}/images/${imageId}`);
     }
 
-    const rateLimitError = errors.find((error) =>
-      error.includes('You may only upload images once every 3 seconds.'),
+    return response.withException(
+      new Error(this.getApiError(result.body, result.statusCode)),
     );
-    if (rateLimitError) {
-      return response.withMessage(rateLimitError).withRateLimit(3_000);
-    }
-
-    if (responseUrl) {
-      const { pathname } = new URL(responseUrl);
-      if (/^\/images\/\d+$/.test(pathname)) {
-        return response.withSourceUrl(`${this.BASE_URL}${pathname}`);
-      }
-    }
-
-    const message =
-      errors.join('; ') ||
-      'Philomena did not confirm that the image was created. You may need to sign in again.';
-    return response.withException(new Error(message));
   }
 
   onValidateFileSubmission = validatorPassthru;
