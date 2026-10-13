@@ -1,215 +1,242 @@
-# Azure Application Insights Implementation
+# Application Insights: errors and integration health
 
-## Overview
+PostyBirb uses Application Insights for:
 
-Azure Application Insights has been successfully integrated into PostyBirb to track:
+- Diagnosing application errors in Electron, the embedded backend, and the UI.
+- Finding broken website integrations through dependency success/failure and latency.
+- Aggregating existing error/dependency telemetry by a random installation ID.
 
-- **Uncaught exceptions** in Electron main process, NestJS backend, and React UI
-- **Posting success/failure events** with granular website-level tracking
-- **Error-level logs** from Winston (to reduce noise)
-- **Application version** - Automatically injected into all telemetry for version tracking
+It does not send computer resource-usage measurements, page views, app-start
+events, or activity heartbeats.
 
-## What's Being Tracked
+## Implementation
 
-### 1. Uncaught Exceptions
+The backend uses the Azure Monitor OpenTelemetry exporter directly, with isolated
+log and trace providers. It does not install automatic instrumentation, register a
+global telemetry provider, create a meter provider, or discover host/OS resources.
+The compatible exporter/OpenTelemetry versions are declared directly in the
+dependency manifest rather than supplied by the legacy `applicationinsights` shim.
 
-**Electron Main Process:**
+The UI retains the browser Application Insights SDK, configured for manually
+reported exceptions only. Its final telemetry initializer rejects every other
+telemetry type and removes the SDK's identity, device, session, and page context.
+It then supplies the same app-managed pseudonymous installation ID as the backend.
 
-- Uncaught exceptions
-- Unhandled promise rejections
-- Tagged with `source: 'electron-main'`
+See Microsoft's [exporter documentation](https://learn.microsoft.com/javascript/api/overview/azure/monitor-opentelemetry-exporter-readme?view=azure-node-preview)
+for the supported log/trace provider APIs.
 
-**NestJS Backend:**
+### Configuration
 
-- Uncaught exceptions
-- Unhandled promise rejections
-- Tagged with `source: 'nestjs-backend'`
+- `initializeAppInsights({ enabled, connectionString, appVersion, cloudRole })`
+  initializes the backend once. Passing `enabled: false`, or providing no
+  connection string, leaves it disabled.
+- Connection-string precedence is explicit configuration, then the
+  `APPLICATIONINSIGHTS_CONNECTION_STRING` environment variable, then the build
+  placeholder. Configuration objects are not modified.
+- `initializeAppInsightsUI({ enabled, connectionString })` initializes the browser
+  SDK once. The normal UI entry point uses the build placeholder.
+- `yarn inject:app-insights` fills both build placeholders from `APP_INSIGHTS_KEY`.
+  Despite the legacy variable name, supply the complete Azure connection string,
+  not a bare instrumentation key. `yarn inject:app-insights:clear` resets them.
+- A runtime backend environment variable does not automatically configure the UI.
+  Distributed builds inject both placeholders through the existing build script.
+- These are startup switches, not a live settings/consent toggle.
 
-**React UI:**
+Do not commit injected connection strings or log credentials. Keep the existing
+build-time injection in CI.
 
-- Window errors
-- Unhandled promise rejections
-- **React Error Boundary catches** - Component rendering failures with component name and stack
-- Tagged with `source: 'window.onerror'`, `'unhandledrejection'`, or `'error-boundary'`
+### Installation identity
 
-### 2. HTTP Dependencies ⭐ NEW
+On telemetry initialization or a trusted UI metadata request, the main process
+creates a random UUID v4 in
+`telemetry-installation-id.txt` inside the configured PostyBirb data directory.
+The file is reused across launches and app updates; the ID is not derived from
+an account, computer name, email address, hardware identifier, or local path.
 
-**All outgoing HTTP requests are tracked as dependencies:**
+Every remote exception, error trace, and dependency carries this ID in the native
+Application Insights `user_Id` field (`ai.user.id` on the wire). The backend uses
+the exporter's `enduser.pseudo.id` attribute, not an authenticated user identity.
+The trusted Electron metadata/preload bridge supplies the same ID to the UI
+without cookies or browser storage.
 
-- Populates the **Application Map** - Visual representation of all external services
-- Populates the **Dependencies view** - Performance and reliability metrics
-- Tracked details:
-  - HTTP method (GET, POST, PATCH)
-  - Target domain and path
-  - Full URL (truncated to 500 chars)
-  - Status code
-  - Request duration (ms)
-  - Success/failure status
-  - Protocol (http/https)
+This identifies a data-directory installation, not a person. Separate data
+directories have separate IDs; copying the directory also copies its identity.
+To reset it, close the app and delete only `telemetry-installation-id.txt` before
+restarting. Resetting does not remove previously ingested Azure records.
 
-**Benefits:**
-- Visual service discovery in Application Map
-- Identify slow APIs and bottlenecks
-- Track failure rates per website
-- Correlate HTTP errors with posting failures
+Unreadable, invalid, or unwritable identity files are reported locally and leave
+the affected remote telemetry disabled rather than silently rotating the ID or
+using a temporary one. The app and local logging still operate. UI identity does
+not depend on the backend exporter's connection or provider lifecycle.
 
-See [HTTP Dependency Tracking Guide](./APP_INSIGHTS_HTTP_TRACKING.md) for detailed documentation.
+No startup/activity record is sent. Distinct IDs therefore count installations
+observed through existing error/dependency telemetry, not all launches or every
+active installation.
 
-### 3. Posting Events
+## What is sent
 
-**PostSuccess Event:**
+Every item contains `customDimensions.telemetrySchemaVersion = "2"`. Queries in
+[APP_INSIGHTS_QUERIES.md](./APP_INSIGHTS_QUERIES.md) filter this version so old
+events do not distort the new dependency-based health views.
 
-- Tracked when a post succeeds to a website
-- Properties:
-  - `website` - The website name (e.g., "FurAffinity", "Twitter")
-  - `accountId` - The account ID
-  - `submissionId` - The submission ID
-  - `submissionType` - File or Message
-  - `hasSourceUrl` - Whether a source URL was returned
-  - `completed` - Whether fully completed
-  - `isFileBatch` - Whether this was a file batch
-  - `fileCount` - Number of files in batch
+### Errors
 
-**PostFailure Event:**
+- Main-process uncaught exceptions and unhandled rejections.
+- Startup failures and abnormal process/window failures reported by the existing
+  diagnostics.
+- Error-level Winston logs. LogLayer's `err` field is recognized correctly:
+  errors with an `Error` become exception telemetry; plain messages become
+  error-severity traces.
+- UI window errors, unhandled rejections, and caught React error-boundary failures.
+- Posting failures, including failures that return a message rather than throw.
+- HTTP transport exceptions. Ordinary HTTP failure responses are dependencies,
+  not additional synthetic exceptions.
 
-- Tracked when a post fails to a website
-- Properties:
-  - `website` - The website name
-  - `accountId` - The account ID
-  - `submissionId` - The submission ID
-  - `submissionType` - File or Message
-  - `errorMessage` - The error message
-  - `stage` - What stage the error occurred
-  - `hasException` - Whether an exception was thrown
-  - `isFileBatch` - Whether this was a file batch
-  - `fileCount` - Number of files in batch
+Explicit exception reports keep their corresponding Winston log local using
+`withMetadata({ telemetry: false })`, preventing duplicate remote reports while
+preserving local diagnostic logs.
 
-**PostCompleted Event:**
+### HTTP dependencies
 
-- Tracked when an entire post (all websites) completes
-- Properties:
-  - `submissionId` - The submission ID
-  - `submissionType` - File or Message
-  - `state` - DONE or FAILED
-  - `websiteCount` - Total websites attempted
-  - `successCount` - Successful posts
-  - `failureCount` - Failed posts
+The Electron HTTP wrapper reports:
 
-### 4. Metrics
+- HTTP method and URL pathname as the dependency name, such as
+  `GET /controls/submissions`.
+- Public remote hostname as the target.
+- Duration, final status code, and success/failure.
+- `customDimensions.dependencyType = "HTTP"`.
 
-**Success Metrics:**
+It does **not** send query strings, fragments, URL credentials, ports,
+headers, request bodies, response bodies, cookies, or partition/account identifiers
+as dependency data. IP-address targets, local/single-label hostnames, and
+`.local`/`.localhost`/`.internal` targets become `private-host`.
+The dependency's URL-data field stays empty; the pathname is retained in `name`.
+Path segments are not templated or redacted and can contain usernames, IDs, or
+tokens supplied by an integration.
 
-- `post.success.{websiteName}` - Counter for each successful post per website
+Cloudflare resolution reports the final browser response rather than the initial
+challenge status. An unresolved challenge or a thrown browser fallback is a
+failed dependency, even when the challenge page had HTTP status 200.
 
-**Failure Metrics:**
+### Website-posting dependencies
 
-- `post.failure.{websiteName}` - Counter for each failed post per website
+Each actual `websiteInstance.post` attempt also reports:
 
-### 5. Winston Logs
+- `Post FILE` or `Post MESSAGE`.
+- The integration's stable code-defined website name as the target.
+- Duration and success/failure.
+- Website, submission type, and failure stage.
+- `customDimensions.dependencyType = "Website"`.
 
-**Only ERROR level logs** are sent to Application Insights to reduce noise:
+This includes integrations using third-party SDKs that bypass the Electron HTTP
+wrapper. Thrown errors and returned exceptions are failures. Server-imposed rate
+limits are failures with result code 429, distinguishable from integration defects.
+Locally deferred rate limits and user cancellations are not posting attempts in
+these health statistics. Preparation/validation/login failures still generate
+error reports, but are not counted as attempted website posts.
 
-- All error logs from Winston are tracked as traces
-- Errors with exceptions are also tracked as exceptions
+Both dependency categories are client spans mapped by the Azure exporter to its
+HTTP dependency representation (`type` is emitted as `Http`). Filter
+`customDimensions.dependencyType`, not the SDK-specific casing of `type`, to
+separate them. They populate Application Map and Dependencies without automatic
+HTTP instrumentation or adding correlation headers to website requests.
 
-## Querying Data in Azure Portal
+Do not combine HTTP and website-posting counts when computing a posting success
+rate: one website attempt can involve several HTTP requests. There is no
+account or per-submission correlation; items can be grouped by installation ID.
 
-All Azure Application Insights queries are available in the [APP_INSIGHTS_QUERIES.md](./APP_INSIGHTS_QUERIES.md) file, organized by category:
+## Privacy policy and limitations
 
-- **HTTP Dependencies** - Performance, reliability, and volume metrics
-- **Posting Events** - Success rates, recent activity, and metrics
-- **Exceptions** - By source, React errors, and HTTP errors
-- **Correlation Queries** - HTTP failures + post failures, slow requests, etc.
-- **Version Tracking** - Compare metrics across versions
-- **Alerts** - Ready-to-use alert queries
-- **Dashboard Tiles** - Key metrics for monitoring dashboards
+### Kept deliberately
 
-See [APP_INSIGHTS_QUERIES.md](./APP_INSIGHTS_QUERIES.md) for 50+ ready-to-use Kusto queries.
+- **Error messages remain useful and otherwise unchanged.** Local filesystem
+  paths are stripped where recognized; arbitrary emails, tokens, IDs, or remote
+  URLs inside a message are not redacted.
+- Stack traces preserve function names and code filenames/line/column locations,
+  without installation paths or renderer origins/query strings.
+- Public dependency hostnames identify failing services. A self-hosted or
+  federated hostname can identify its server owner.
+- HTTP dependency names retain endpoint paths for endpoint-level diagnosis.
+- A persistent random installation ID links telemetry across app sessions without
+  using an account or machine identifier.
+- App version and fixed component roles distinguish releases and error sources.
+  Backend role defaults to `postybirb`; UI role is `postybirb-ui`. Role instances
+  are fixed strings, not computer names.
+- A small allowlist of structural properties is accepted, including source,
+  website, stage, method, status code, process failure reason, and UI component.
 
-## Architecture
+### Not collected
 
-### Cloud Role
+- CPU, memory, disk, network-utilization, event-loop, or other computer
+  resource-usage measurements.
+- Performance counters, standard metrics, Live Metrics, SDK Statsbeat, resource
+  metrics, or SDK statistics.
+- Posting success/failure custom events or custom metric counters. Dependency
+  counts provide the denominators needed for health rates.
+- Page views, navigation history, page-visit timing, or user activity events.
+- Account/submission IDs, personal user identities, or posting form options as
+  structured properties. The random installation ID is retained separately.
+- Machine hostname, device/OS resource attributes, authenticated user IDs,
+  SDK-generated user IDs, or session IDs.
+- Browser telemetry cookies or browser storage buffers.
+- Disk-backed telemetry retry caches. Telemetry uses memory-only queues; offline
+  failures or process termination can lose pending reports.
 
-The implementation uses a single cloud role **`postybirb`** for all components:
+Items explicitly override Application Insights' client IP tag to `0.0.0.0`.
+The backend uses a fixed ingestion User-Agent rather than the SDK's
+OS/architecture/runtime-bearing default. Browsers still control their own
+transport headers. Azure necessarily sees the network source IP while accepting a connection;
+this is not a network-anonymization mechanism.
 
-- Electron main process
-- NestJS backend
-- React UI
+**This is pseudonymous data minimization, not guaranteed anonymity.** A stable
+random ID makes records linkable even though it does not encode personal details.
+Full error messages and endpoint path segments can contain personal information
+or secrets supplied by a website or SDK. Filesystem path recognition in errors
+is best-effort. Keeping messages and endpoint names is an intentional debugging
+tradeoff; callers should avoid embedding sensitive payloads in their own errors.
+Existing local application logs remain unchanged by the remote telemetry policy.
 
-This simplifies queries and avoids duplicate initialization issues in the Electron process where the backend runs in the same Node.js runtime.
+## Lifecycle and failure handling
 
-You can still distinguish the source of errors/events using the **`source`** property in custom dimensions:
+`flushAppInsights()` awaits both providers' real flush promises. There is no fixed
+100 ms sleep masquerading as successful export. Failed exports surface through
+local SDK diagnostics and rejected flushes, handled by startup/crash diagnostics.
 
-- `source: 'electron-main'` - Electron main process exceptions
-- `source: 'nestjs-backend'` - Backend exceptions
-- `source: 'window.onerror'` - UI window errors
-- `source: 'unhandledrejection'` - Promise rejections
-- `source: 'error-boundary'` - React Error Boundary catches
+`shutdownAppInsights()` flushes and stops both providers during graceful shutdown.
+The existing bounded Electron shutdown timer still guards against a hung exit.
+Telemetry failures never replace posting results or interrupt error logging.
 
-Example query filtering by source:
+## Portal views and alert proposals
 
-```kusto
-exceptions
-| where customDimensions.source == "electron-main"
-| order by timestamp desc
-```
+Use Application Map for the service topology and Dependencies for failures.
+Use the queries in [APP_INSIGHTS_QUERIES.md](./APP_INSIGHTS_QUERIES.md) to build:
 
-### Application Version
+1. Website-posting failure-rate table with attempt-count thresholds.
+2. HTTP failures by target, endpoint name, and status code.
+3. Recent exceptions and error logs, broken down by source and app version.
+4. A release regression chart and rate-limit table.
+5. Integration usage and distinct reporting-installation counts.
 
-The application version is automatically injected into all telemetry:
+The query reference also supplies candidate scheduled-query alert conditions.
+Thresholds are starting points; tune them against real traffic. Compare distinct
+reporting installations with attempt counts to distinguish a noisy single
+installation from failures affecting several installations.
 
-- **Electron main process** - Uses `environment.version` from the build
-- **NestJS backend** - Uses `process.env.POSTYBIRB_VERSION`
-- **React UI** - Uses `window.electron.app_version`
+Creating workbooks, dashboards, saved queries, action groups, alert rules, changing
+retention, or purging historical data requires explicit Azure-resource approval.
+The code migration does not change Azure resources or delete historical telemetry.
+Historical records can still contain previously collected identifiers/options.
 
-This allows you to:
+## Validation
 
-- Track which versions have errors
-- Compare metrics across versions
-- Filter telemetry by version in Azure Portal
-- Create alerts for specific version issues
+Focused tests cover real Azure exporter serialization with a fake HTTP transport,
+absence of resource metrics and account/device metadata, exact dependency
+durations and endpoint names, SDK configuration, UI context filtering,
+LogLayer/Winston integration, Cloudflare
+outcomes, and existing posting/cancellation/rate-limit behavior.
 
-Example query to see errors by version:
-
-```kusto
-exceptions
-| summarize Count = count() by Version = tostring(application_Version)
-| order by Count desc
-```
-
-### Data Flow
-
-```
-┌─────────────────────┐
-│  Electron Main      │──► Application Insights
-│  (main.ts)          │    (Exceptions, Events)
-└─────────────────────┘
-
-┌─────────────────────┐
-│  NestJS Backend     │──► Application Insights
-│  (post-manager)     │    (Posting Events, Errors)
-└─────────────────────┘
-
-┌─────────────────────┐
-│  React UI           │──► Application Insights
-│  (app-insights-ui)  │    (UI Errors, Error Boundary)
-└─────────────────────┘
-
-┌─────────────────────┐
-│  Winston Logger     │──► Application Insights
-│  (error level only) │    (Error Logs)
-└─────────────────────┘
-```
-
-│ React UI │──► Application Insights
-│ (app-insights-ui) │ (UI Errors)
-└─────────────────────┘
-
-┌─────────────────────┐
-│ Winston Logger │──► Application Insights
-│ (error level only) │ (Error Logs)
-└─────────────────────┘
-
-```
-
-```
+The SQLite addon's native ABI must match the test runtime. If the installed addon
+was built for Electron and Node-based posting tests report an ABI mismatch, run
+the existing Jest suites with the installed Electron executable and
+`ELECTRON_RUN_AS_NODE=1`. Use Node when the addon was built for Node, rather than
+rebuilding a shared native addon merely to run these tests.

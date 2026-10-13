@@ -52,5 +52,6 @@ export type AppMetadata = {
   platform: NodeJS.Platform;
   app_port: string;
   app_version: string;
+  telemetry_installation_id?: string;
   systemLocale?: string;
 };

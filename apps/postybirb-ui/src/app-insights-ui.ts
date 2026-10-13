@@ -1,113 +1,112 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { ApplicationInsights } from '@microsoft/applicationinsights-web';
+import {
+  filterTelemetryProperties,
+  isTelemetryInstallationId,
+  sanitizeError,
+} from '@postybirb/logger/telemetry-privacy';
 
 let appInsights: ApplicationInsights | null = null;
+const appInsightsConnectionString: string | null = null;
 
-/**
- * Initialize Application Insights for the React UI
- * Call this once during application startup
- */
-export function initializeAppInsightsUI(): void {
+export function initializeAppInsightsUI(
+  config: { connectionString?: string; enabled?: boolean } = {},
+): void {
+  const connectionString =
+    config.connectionString ?? appInsightsConnectionString;
+  if (config.enabled === false || !connectionString || appInsights) return;
+
   try {
-    const appInsightsConnectionString = null;
-
-    if (!appInsightsConnectionString) {
-      // App Insights not configured - this is expected in development
-      return;
+    const installationId = window.electron?.telemetry_installation_id;
+    if (!isTelemetryInstallationId(installationId)) {
+      throw new Error('UI telemetry installation ID is unavailable or invalid');
     }
-
-    appInsights = new ApplicationInsights({
+    const insights = new ApplicationInsights({
       config: {
-        connectionString: appInsightsConnectionString,
-        enableAutoRouteTracking: true,
+        connectionString,
+        cookieCfg: { enabled: false },
+        disableCookiesUsage: true,
+        isStorageUseDisabled: true,
+        enableSessionStorageBuffer: false,
+        disableUserInitMessage: true,
+        enableAutoRouteTracking: false,
+        autoTrackPageVisitTime: false,
+        disableExceptionTracking: true,
+        enableUnhandledPromiseRejectionTracking: false,
         disableFetchTracking: true,
         disableAjaxTracking: true,
-        autoTrackPageVisitTime: false,
-        enableCorsCorrelation: true,
-        enableRequestHeaderTracking: true,
-        enableResponseHeaderTracking: true,
+        disableCorrelationHeaders: true,
+        enableCorsCorrelation: false,
+        enableRequestHeaderTracking: false,
+        enableResponseHeaderTracking: false,
       },
     });
+    insights.addTelemetryInitializer((envelope) => {
+      if (envelope.baseType !== 'ExceptionData') return false;
 
-    appInsights.loadAppInsights();
-    appInsights.addTelemetryInitializer((envelope) => {
+      // Replace SDK context with only the app-managed pseudonymous identity.
       // eslint-disable-next-line no-param-reassign
-      envelope.tags = envelope.tags || [];
+      envelope.ext = {};
       // eslint-disable-next-line no-param-reassign
-      envelope.tags['ai.cloud.role'] = 'postybirb-ui';
+      envelope.tags = [
+        {
+          'ai.cloud.role': 'postybirb-ui',
+          'ai.cloud.roleInstance': 'postybirb-ui',
+          'ai.application.ver': window.electron?.app_version || 'unknown',
+          'ai.location.ip': '0.0.0.0',
+          'ai.user.id': installationId,
+        },
+      ];
       // eslint-disable-next-line no-param-reassign
-      envelope.tags['ai.application.ver'] =
-        window.electron?.app_version || 'unknown';
+      envelope.data = {};
+      if (envelope.baseData) {
+        // eslint-disable-next-line no-param-reassign
+        envelope.baseData.properties = filterTelemetryProperties(
+          envelope.baseData.properties,
+        );
+      }
       return true;
     });
-    appInsights.trackPageView();
+    insights.loadAppInsights();
+    appInsights = insights;
 
-    // Set up global error handler for React
     window.addEventListener('error', (event: ErrorEvent) => {
-      trackUIException(event.error, {
-        source: 'window.onerror',
-        message: event.message,
-        filename: event.filename,
-        lineno: String(event.lineno),
-        colno: String(event.colno),
-      });
+      trackUIException(
+        event.error instanceof Error ? event.error : new Error(event.message),
+        { source: 'window.onerror' },
+      );
     });
-
-    // Handle unhandled promise rejections
     window.addEventListener(
       'unhandledrejection',
       (event: PromiseRejectionEvent) => {
-        const error =
+        trackUIException(
           event.reason instanceof Error
             ? event.reason
-            : new Error(String(event.reason));
-        trackUIException(error, {
-          source: 'unhandledrejection',
-          reason: String(event.reason),
-        });
+            : new Error(String(event.reason)),
+          { source: 'unhandledrejection' },
+        );
       },
     );
   } catch (error) {
-    // Failed to initialize - silently fail
+    // eslint-disable-next-line no-console
+    console.warn('Failed to initialize UI Application Insights:', error);
   }
 }
 
-/**
- * Track an exception in the UI
- */
 export function trackUIException(
   error: Error,
-  properties?: { [key: string]: string },
+  properties?: Record<string, string>,
 ): void {
-  if (appInsights) {
-    appInsights.trackException({ exception: error, properties });
-  }
-}
+  if (!appInsights) return;
 
-/**
- * Track a custom event in the UI
- */
-export function trackUIEvent(
-  name: string,
-  properties?: { [key: string]: string },
-): void {
-  if (appInsights) {
-    appInsights.trackEvent({ name, properties });
+  try {
+    appInsights.trackException({
+      exception: sanitizeError(error),
+      severityLevel: 3,
+      properties: filterTelemetryProperties(properties),
+    });
+  } catch (trackingError) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to track UI exception:', trackingError);
   }
-}
-
-/**
- * Track a page view in the UI
- */
-export function trackUIPageView(name?: string, uri?: string): void {
-  if (appInsights) {
-    appInsights.trackPageView({ name, uri });
-  }
-}
-
-/**
- * Get the Application Insights instance
- */
-export function getAppInsightsUI(): ApplicationInsights | null {
-  return appInsights;
 }
