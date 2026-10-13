@@ -61,17 +61,23 @@ export abstract class PhilomenaWebsite<
       if (signedIn === 'false') {
         return { loggedIn: false };
       }
-      throw new Error('Unable to determine login state: invalid session indicator');
+      throw new Error(
+        'Unable to determine login state: invalid session indicator',
+      );
     }
 
-    if (document.querySelector('header a[href="/sessions"][data-method="delete"]')) {
+    if (
+      document.querySelector('header a[href="/sessions"][data-method="delete"]')
+    ) {
       const usernameElement = document.querySelector('[data-user-name]');
       const username =
         usernameElement?.getAttribute('data-user-name')?.trim() || 'Unknown';
       return { loggedIn: true, username };
     }
 
-    throw new Error('Unable to determine login state: missing session indicators');
+    throw new Error(
+      'Unable to determine login state: missing session indicators',
+    );
   }
 
   abstract createFileModel(): TFileSubmission;
@@ -154,9 +160,23 @@ export abstract class PhilomenaWebsite<
       },
     );
 
+    const statusCode = uploadPage.statusCode ?? 0;
+    if (statusCode < 200 || statusCode >= 300) {
+      throw new Error(`Unable to load the upload form: HTTP ${statusCode}`);
+    }
+    if (typeof uploadPage.body !== 'string') {
+      throw new Error('Unable to load the upload form: expected HTML');
+    }
+
     const root = parse(uploadPage.body);
     const form = root.querySelector('#content form');
-    const inputs = form?.querySelectorAll('input, textarea, select') || [];
+    if (!form) {
+      throw new Error(
+        'Unable to load the upload form. The site may require you to sign in again.',
+      );
+    }
+
+    const inputs = form.querySelectorAll('input, textarea, select');
 
     return inputs.reduce((acc: Record<string, string>, input) => {
       const name = input.getAttribute('name');
@@ -166,6 +186,16 @@ export abstract class PhilomenaWebsite<
       }
       return acc;
     }, {});
+  }
+
+  private getUploadErrors(body: string): string[] {
+    const document = parse(body);
+    const errors = document
+      .querySelectorAll('.help-block, .flash--warning')
+      .map((element) => element.textContent.trim())
+      .filter(Boolean);
+
+    return [...new Set(errors)];
   }
 
   /**
@@ -197,28 +227,36 @@ export abstract class PhilomenaWebsite<
     const result = await builder.send<string>(`${this.BASE_URL}/images`);
 
     const { body, responseUrl } = result;
-    if (body.includes('Image has already been uploaded')) {
+    const response = PostResponse.fromWebsite(this).withAdditionalInfo(body);
+    const errors = this.getUploadErrors(body);
+    const duplicateError = errors.find((error) =>
+      error.includes('Image has already been uploaded'),
+    );
+
+    if (duplicateError) {
       return PostResponse.fromWebsite(this)
-        .withAdditionalInfo(result.body)
-        .withException(
-          new Error(
-            'Duplicate image - the file you uploaded already exists on the site.',
-          ),
-        );
+        .withAdditionalInfo(body)
+        .withException(new Error(duplicateError));
     }
 
-    let response = PostResponse.fromWebsite(this).withAdditionalInfo(
-      result.body,
+    const rateLimitError = errors.find((error) =>
+      error.includes('You may only upload images once every 3 seconds.'),
     );
+    if (rateLimitError) {
+      return response.withMessage(rateLimitError).withRateLimit(3_000);
+    }
 
     if (responseUrl) {
       const { pathname } = new URL(responseUrl);
-      if (pathname && pathname !== '/') {
-        response = response.withSourceUrl(`${this.BASE_URL}${pathname}`);
+      if (/^\/images\/\d+$/.test(pathname)) {
+        return response.withSourceUrl(`${this.BASE_URL}${pathname}`);
       }
     }
 
-    return response;
+    const message =
+      errors.join('; ') ||
+      'Philomena did not confirm that the image was created. You may need to sign in again.';
+    return response.withException(new Error(message));
   }
 
   onValidateFileSubmission = validatorPassthru;
