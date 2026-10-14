@@ -146,6 +146,7 @@ export default class Bluesky
     return calculateImageResize(file, {
       maxWidth: 4000,
       maxHeight: 4000,
+      maxBytes: 2_000_000,
     });
   }
 
