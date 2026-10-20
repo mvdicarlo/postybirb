@@ -1,19 +1,14 @@
-import {
-  BrowserWindow,
-  ClientRequest,
-  type ClientRequestConstructorOptions,
-  net,
-} from 'electron';
+import { BrowserWindow, ClientRequest, net } from 'electron';
 import { trackDependency, trackException } from '@postybirb/logger';
 import { EventEmitter } from 'events';
 import * as http from 'http';
+import * as browserTransport from './browser-request';
+import { readBrowserWindowResponse } from './browser-request';
+import * as clientTransport from './client-request';
+import { isCloudflareChallengeResponse } from './cloudflare-challenge';
 import { Http } from './http';
-import type {
-  CloudflareChallengeOptions,
-  HttpOptions,
-  HttpResponse,
-  PostOptions,
-} from './types';
+import * as requestBody from './request-body';
+import type { HttpResponse } from './types';
 
 const CHALLENGE_HTML = '<html><title>Just a moment...</title></html>';
 const RESOLVED_HTML = '<html><body>resolved</body></html>';
@@ -27,31 +22,6 @@ jest.mock('@postybirb/logger', () => ({
   trackDependency: jest.fn(),
   trackException: jest.fn(),
 }));
-
-interface HttpInternals {
-  isCloudflareChallengeResponse(
-    headers: Record<string, string | string[]>,
-    body: string,
-  ): boolean;
-  performBrowserWindowGetRequest(
-    url: string,
-    options: HttpOptions,
-    crOptions?: ClientRequestConstructorOptions,
-  ): Promise<HttpResponse<unknown> | undefined>;
-  performBrowserWindowPostRequest(
-    url: string,
-    options: PostOptions,
-    crOptions: ClientRequestConstructorOptions,
-    challengeExpected?: boolean,
-  ): Promise<HttpResponse<unknown> | undefined>;
-  handleCloudflareChallengePage(
-    window: BrowserWindow,
-    options?: CloudflareChallengeOptions,
-    challengeExpected?: boolean,
-  ): Promise<HttpResponse<unknown> | undefined>;
-}
-
-const httpInternals = Http as unknown as HttpInternals;
 
 function createChallengeWindow(
   htmlResponses: string[],
@@ -82,7 +52,7 @@ function createChallengeWindow(
       isDestroyed: () => false,
       show,
       webContents: { executeJavaScript },
-    } as unknown as BrowserWindow,
+    },
   };
 }
 
@@ -151,6 +121,187 @@ beforeEach(() => {
 });
 
 describe('http', () => {
+  it.each(['get', 'post', 'put', 'patch'] as const)(
+    'preserves constructor options and the public %s response shape',
+    async (method) => {
+      const url = 'https://example.com/api';
+      const response = {
+        body: { title: 'Example' },
+        statusCode: 200,
+        statusMessage: 'OK',
+        responseUrl: url,
+      };
+      const client = jest
+        .spyOn(clientTransport, 'requestWithClientRequest')
+        .mockResolvedValue({ ...response, isCloudflareChallenge: false });
+      const crOptions = { method: 'HEAD', redirect: 'manual' as const };
+      const result =
+        method === 'get'
+          ? Http.get(url, {}, crOptions)
+          : Http[method](url, { type: 'json', data: {} }, crOptions);
+
+      await expect(result).resolves.toEqual(response);
+      expect(client.mock.calls[0][2]).toEqual({
+        url,
+        redirect: 'manual',
+        method: method === 'get' ? 'HEAD' : method,
+      });
+      expect(client.mock.calls[0][3]).toEqual(
+        method === 'get'
+          ? undefined
+          : { contentType: 'application/json', buffer: Buffer.from('{}') },
+      );
+    },
+  );
+
+  it.each(['get', 'post', 'put', 'patch'] as const)(
+    'rejects offline %s requests without starting or tracking a request',
+    async (method) => {
+      jest.spyOn(net, 'isOnline').mockReturnValue(false);
+      const client = jest.spyOn(clientTransport, 'requestWithClientRequest');
+      const browser = jest.spyOn(browserTransport, 'requestWithBrowserWindow');
+      const url = 'https://example.com/offline';
+      const response =
+        method === 'get'
+          ? Http.get(url, {})
+          : Http[method](url, { type: 'json', data: {} });
+
+      await expect(response).rejects.toThrow('No internet connection.');
+      expect(client).not.toHaveBeenCalled();
+      expect(browser).not.toHaveBeenCalled();
+      expect(trackDependency).not.toHaveBeenCalled();
+      expect(trackException).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['post', 'put', 'patch'] as const)(
+    'reuses the encoded %s body for a browser fallback',
+    async (method) => {
+      const url = 'https://example.com/cloudflare';
+      const options = {
+        type: 'multipart' as const,
+        data: { title: 'Example' },
+      };
+      const createBody = jest.spyOn(requestBody, 'createRequestBody');
+      const client = jest
+        .spyOn(clientTransport, 'requestWithClientRequest')
+        .mockResolvedValue({
+          body: CHALLENGE_HTML,
+          statusCode: 403,
+          statusMessage: 'Forbidden',
+          responseUrl: url,
+          isCloudflareChallenge: true,
+        });
+      const browser = jest
+        .spyOn(browserTransport, 'requestWithBrowserWindow')
+        .mockResolvedValue({
+          body: 'resolved',
+          statusCode: 200,
+          statusMessage: 'OK',
+          responseUrl: url,
+        });
+
+      await expect(Http[method](url, options)).resolves.toMatchObject({
+        body: 'resolved',
+      });
+
+      const body = client.mock.calls[0][3];
+      expect(createBody).toHaveBeenCalledTimes(1);
+      expect(createBody).toHaveReturnedWith(body);
+      expect(body?.contentType).toMatch(/^multipart\/form-data; boundary=/);
+      expect(client).toHaveBeenCalledWith(url, options, { url, method }, body);
+      expect(browser).toHaveBeenCalledWith(url, options, body, true);
+      expect(trackDependency).toHaveBeenCalledTimes(1);
+      expect(trackDependency).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: `${method.toUpperCase()} /cloudflare`,
+          success: true,
+          resultCode: 200,
+        }),
+      );
+    },
+  );
+
+  it.each(['post', 'put', 'patch'] as const)(
+    'sends raw %s uploads directly through the browser transport',
+    async (method) => {
+      const url = 'https://example.com/upload';
+      const options = {
+        type: 'json' as const,
+        data: { title: 'Example' },
+        uploadAsRawData: true,
+      };
+      const client = jest.spyOn(clientTransport, 'requestWithClientRequest');
+      const browser = jest
+        .spyOn(browserTransport, 'requestWithBrowserWindow')
+        .mockResolvedValue({
+          body: 'uploaded',
+          statusCode: 200,
+          statusMessage: 'OK',
+          responseUrl: url,
+        });
+
+      await expect(Http[method](url, options)).resolves.toMatchObject({
+        body: 'uploaded',
+      });
+
+      expect(client).not.toHaveBeenCalled();
+      expect(browser).toHaveBeenCalledWith(url, options, {
+        contentType: 'application/json',
+        buffer: Buffer.from('{"title":"Example"}'),
+      });
+      expect(trackDependency).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: `${method.toUpperCase()} /upload`,
+          success: true,
+          resultCode: 200,
+        }),
+      );
+    },
+  );
+
+  it('rejects and tracks an unresolved raw browser upload', async () => {
+    jest
+      .spyOn(browserTransport, 'requestWithBrowserWindow')
+      .mockResolvedValue(undefined);
+
+    await expect(
+      Http.post('https://example.com/upload', {
+        type: 'binary',
+        data: Buffer.from('upload'),
+        uploadAsRawData: true,
+      }),
+    ).rejects.toThrow(
+      'Cloudflare challenge detected. Enable the interactive Cloudflare challenge window in settings to continue.',
+    );
+    expect(trackDependency).toHaveBeenCalledWith(
+      expect.objectContaining({ success: false, resultCode: 0 }),
+    );
+    expect(trackException).toHaveBeenCalledTimes(1);
+  });
+
+  it('tracks body encoding failures without starting either transport', async () => {
+    const data: Record<string, unknown> = {};
+    data.self = data;
+    const client = jest.spyOn(clientTransport, 'requestWithClientRequest');
+    const browser = jest.spyOn(browserTransport, 'requestWithBrowserWindow');
+
+    await expect(
+      Http.post('https://example.com/upload', {
+        type: 'json',
+        data,
+      }),
+    ).rejects.toThrow(TypeError);
+
+    expect(client).not.toHaveBeenCalled();
+    expect(browser).not.toHaveBeenCalled();
+    expect(trackException).toHaveBeenCalledWith(expect.any(TypeError), {
+      source: 'http-dependency',
+      method: 'POST',
+      statusCode: '0',
+    });
+  });
+
   it.each(['GET', 'POST'] as const)(
     'reports %s endpoint paths without query strings or fragments',
     async (method) => {
@@ -189,7 +340,9 @@ describe('http', () => {
         end: jest.fn(),
         abort: jest.fn(),
       });
-      jest.spyOn(net, 'request').mockReturnValue(request as unknown as ClientRequest);
+      jest
+        .spyOn(net, 'request')
+        .mockReturnValue(request as unknown as ClientRequest);
     });
 
     afterEach(() => {
@@ -197,33 +350,41 @@ describe('http', () => {
       jest.useRealTimers();
     });
 
-    it.each(['post', 'put', 'patch'] as const)('bounds %s requests', async (method) => {
-      const onRejected = jest.fn();
-      const response = Http[method]('https://example.com/stalled', {
-        type: 'json', data: {},
-      }).catch(onRejected);
+    it.each(['post', 'put', 'patch'] as const)(
+      'bounds %s requests',
+      async (method) => {
+        const onRejected = jest.fn();
+        const response = Http[method]('https://example.com/stalled', {
+          type: 'json',
+          data: {},
+        }).catch(onRejected);
 
-      await jest.advanceTimersByTimeAsync(14 * 60 * 1000);
-      expect(request.abort).not.toHaveBeenCalled();
-      await jest.advanceTimersByTimeAsync(60 * 1000);
-      expect(request.abort).toHaveBeenCalledTimes(1);
-      await response;
-      expect(onRejected).toHaveBeenCalledWith(expect.objectContaining({ name: 'TimeoutError' }));
-      expect(trackDependency).toHaveBeenCalledWith(
-        expect.objectContaining({
-          name: `${method.toUpperCase()} /stalled`,
-          dependencyType: 'HTTP',
-          duration: 15 * 60 * 1000,
-          success: false,
-          resultCode: 0,
-        }),
-      );
-      expect(jest.getTimerCount()).toBe(0);
-    });
+        await jest.advanceTimersByTimeAsync(14 * 60 * 1000);
+        expect(request.abort).not.toHaveBeenCalled();
+        await jest.advanceTimersByTimeAsync(60 * 1000);
+        expect(request.abort).toHaveBeenCalledTimes(1);
+        await response;
+        expect(onRejected).toHaveBeenCalledWith(
+          expect.objectContaining({ name: 'TimeoutError' }),
+        );
+        expect(trackDependency).toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: `${method.toUpperCase()} /stalled`,
+            dependencyType: 'HTTP',
+            duration: 15 * 60 * 1000,
+            success: false,
+            resultCode: 0,
+          }),
+        );
+        expect(jest.getTimerCount()).toBe(0);
+      },
+    );
 
     it('aborts and rejects a GET that never responds after one minute', async () => {
       const response = Http.get('https://example.com/stalled', {});
-      const rejected = expect(response).rejects.toMatchObject({ name: 'TimeoutError' });
+      const rejected = expect(response).rejects.toMatchObject({
+        name: 'TimeoutError',
+      });
       await jest.advanceTimersByTimeAsync(60 * 1000);
 
       expect(request.abort).toHaveBeenCalledTimes(1);
@@ -241,8 +402,13 @@ describe('http', () => {
 
     it('times out a response body that never finishes', async () => {
       const response = Http.get('https://example.com', {});
-      const rejected = expect(response).rejects.toMatchObject({ name: 'TimeoutError' });
-      const incoming = Object.assign(new EventEmitter(), { headers: {}, statusCode: 200 });
+      const rejected = expect(response).rejects.toMatchObject({
+        name: 'TimeoutError',
+      });
+      const incoming = Object.assign(new EventEmitter(), {
+        headers: {},
+        statusCode: 200,
+      });
       request.emit('response', incoming);
       await jest.advanceTimersByTimeAsync(30 * 1000);
       incoming.emit('data', Buffer.from('partial'));
@@ -266,9 +432,16 @@ describe('http', () => {
     });
 
     it('preserves the timeout when abort emits a connection reset', async () => {
-      request.abort.mockImplementation(() => request.emit('error', new Error('ECONNRESET')));
-      const response = Http.post('https://example.com', { type: 'json', data: {} });
-      const rejected = expect(response).rejects.toMatchObject({ name: 'TimeoutError' });
+      request.abort.mockImplementation(() =>
+        request.emit('error', new Error('ECONNRESET')),
+      );
+      const response = Http.post('https://example.com', {
+        type: 'json',
+        data: {},
+      });
+      const rejected = expect(response).rejects.toMatchObject({
+        name: 'TimeoutError',
+      });
       await jest.advanceTimersByTimeAsync(15 * 60 * 1000);
 
       await rejected;
@@ -278,7 +451,10 @@ describe('http', () => {
 
     it('cleans up successful requests without later aborting them', async () => {
       const response = Http.get('https://example.com', {});
-      const incoming = Object.assign(new EventEmitter(), { headers: {}, statusCode: 200 });
+      const incoming = Object.assign(new EventEmitter(), {
+        headers: {},
+        statusCode: 200,
+      });
       request.emit('response', incoming);
       incoming.emit('data', Buffer.from('done'));
       incoming.emit('end');
@@ -291,15 +467,18 @@ describe('http', () => {
 
     it('cleans up the timed browser wrapper when hidden resolution is unsuccessful', async () => {
       const challenge = createChallengeWindow([CHALLENGE_HTML], CHALLENGE_HTML);
-      jest.spyOn(BrowserWindow.prototype, 'webContents', 'get').mockReturnValue({
-        executeJavaScript: challenge.executeJavaScript,
-      } as unknown as Electron.WebContents);
+      jest
+        .spyOn(BrowserWindow.prototype, 'webContents', 'get')
+        .mockReturnValue({
+          executeJavaScript: challenge.executeJavaScript,
+        } as unknown as Electron.WebContents);
       const destroy = jest.spyOn(BrowserWindow.prototype, 'destroy');
       const response = Http.get('https://example.com/cloudflare', {
         cloudflareChallenge: { openBrowserWindow: false },
       });
       const incoming = Object.assign(new EventEmitter(), {
-        headers: { 'cf-mitigated': 'challenge' }, statusCode: 403,
+        headers: { 'cf-mitigated': 'challenge' },
+        statusCode: 403,
       });
       request.emit('response', incoming);
       incoming.emit('data', Buffer.from(CHALLENGE_HTML));
@@ -308,21 +487,27 @@ describe('http', () => {
       await jest.advanceTimersByTimeAsync(3000);
 
       await expect(response).resolves.toMatchObject({
-        body: CHALLENGE_HTML, statusCode: 403,
+        body: CHALLENGE_HTML,
+        statusCode: 403,
       });
       expect(destroy).toHaveBeenCalledTimes(1);
       expect(jest.getTimerCount()).toBe(0);
     });
 
     it('times out browser challenge loading after five minutes', async () => {
-      jest.spyOn(BrowserWindow.prototype, 'loadURL').mockImplementation(() => new Promise(() => undefined));
+      jest
+        .spyOn(BrowserWindow.prototype, 'loadURL')
+        .mockImplementation(() => new Promise(() => undefined));
       const destroy = jest.spyOn(BrowserWindow.prototype, 'destroy');
       const response = Http.get('https://example.com', {
         cloudflareChallenge: { openBrowserWindow: true },
       });
-      const rejected = expect(response).rejects.toMatchObject({ name: 'TimeoutError' });
+      const rejected = expect(response).rejects.toMatchObject({
+        name: 'TimeoutError',
+      });
       const incoming = Object.assign(new EventEmitter(), {
-        headers: { 'cf-mitigated': 'challenge' }, statusCode: 403,
+        headers: { 'cf-mitigated': 'challenge' },
+        statusCode: 403,
       });
       request.emit('response', incoming);
       incoming.emit('end');
@@ -334,14 +519,22 @@ describe('http', () => {
     });
 
     it('bounds browser response processing as well as loading', async () => {
-      jest.spyOn(BrowserWindow.prototype, 'webContents', 'get').mockReturnValue({
-        executeJavaScript: jest.fn().mockImplementation(() => new Promise(() => undefined)),
-      } as unknown as Electron.WebContents);
+      jest
+        .spyOn(BrowserWindow.prototype, 'webContents', 'get')
+        .mockReturnValue({
+          executeJavaScript: jest
+            .fn()
+            .mockImplementation(() => new Promise(() => undefined)),
+        } as unknown as Electron.WebContents);
       const destroy = jest.spyOn(BrowserWindow.prototype, 'destroy');
       const response = Http.post('https://example.com', {
-        type: 'binary', data: Buffer.from('upload'), uploadAsRawData: true,
+        type: 'binary',
+        data: Buffer.from('upload'),
+        uploadAsRawData: true,
       });
-      const rejected = expect(response).rejects.toMatchObject({ name: 'TimeoutError' });
+      const rejected = expect(response).rejects.toMatchObject({
+        name: 'TimeoutError',
+      });
       await jest.advanceTimersByTimeAsync(15 * 60 * 1000);
 
       await rejected;
@@ -350,12 +543,18 @@ describe('http', () => {
     });
 
     it('destroys a browser upload that never finishes loading', async () => {
-      jest.spyOn(BrowserWindow.prototype, 'loadURL').mockImplementation(() => new Promise(() => undefined));
+      jest
+        .spyOn(BrowserWindow.prototype, 'loadURL')
+        .mockImplementation(() => new Promise(() => undefined));
       const destroy = jest.spyOn(BrowserWindow.prototype, 'destroy');
       const response = Http.post('https://example.com', {
-        type: 'binary', data: Buffer.from('upload'), uploadAsRawData: true,
+        type: 'binary',
+        data: Buffer.from('upload'),
+        uploadAsRawData: true,
       });
-      const rejected = expect(response).rejects.toMatchObject({ name: 'TimeoutError' });
+      const rejected = expect(response).rejects.toMatchObject({
+        name: 'TimeoutError',
+      });
       await jest.advanceTimersByTimeAsync(15 * 60 * 1000);
 
       await rejected;
@@ -399,23 +598,22 @@ describe('http', () => {
   it.each(['get', 'post'] as const)(
     'does not retry a %s containing background detection scripts in a browser',
     async (method) => {
-      const browserGet = jest
-        .spyOn(httpInternals, 'performBrowserWindowGetRequest')
-        .mockResolvedValue(undefined);
-      const browserPost = jest
-        .spyOn(httpInternals, 'performBrowserWindowPostRequest')
+      const browser = jest
+        .spyOn(browserTransport, 'requestWithBrowserWindow')
         .mockResolvedValue(undefined);
       const url = 'http://localhost:3000/background-detection';
-      const response = method === 'get'
-        ? await Http.get<string>(url, { partition: 'test' })
-        : await Http.post<string>(url, {
-          partition: 'test', type: 'json', data: {},
-        });
+      const response =
+        method === 'get'
+          ? await Http.get<string>(url, { partition: 'test' })
+          : await Http.post<string>(url, {
+              partition: 'test',
+              type: 'json',
+              data: {},
+            });
 
       expect(response.body).toBe(BACKGROUND_DETECTION_HTML);
       expect(response.statusCode).toBe(200);
-      expect(browserGet).not.toHaveBeenCalled();
-      expect(browserPost).not.toHaveBeenCalled();
+      expect(browser).not.toHaveBeenCalled();
     },
   );
 
@@ -423,7 +621,7 @@ describe('http', () => {
     { 'cf-mitigated': 'challenge' },
     { 'CF-Mitigated': [' challenge '] },
   ])('detects a challenge header without HTML markers: %j', (headers) => {
-    expect(httpInternals.isCloudflareChallengeResponse(headers, '')).toBe(true);
+    expect(isCloudflareChallengeResponse(headers, '')).toBe(true);
   });
 
   it.each([
@@ -431,7 +629,7 @@ describe('http', () => {
     '<html><body><div class="challenge-error-title">Error</div></body></html>',
     '<html><body><script>window._cf_chl_opt = {};</script></body></html>',
   ])('retains challenge-specific HTML detection: %s', (html) => {
-    expect(httpInternals.isCloudflareChallengeResponse({}, html)).toBe(true);
+    expect(isCloudflareChallengeResponse({}, html)).toBe(true);
   });
 
   it('attempts an invisible browser resolution for a GET when interaction is disabled', async () => {
@@ -442,7 +640,7 @@ describe('http', () => {
       responseUrl: 'http://localhost:3000/resolved',
     };
     const browserRequest = jest
-      .spyOn(httpInternals, 'performBrowserWindowGetRequest')
+      .spyOn(browserTransport, 'requestWithBrowserWindow')
       .mockResolvedValue(browserResponse);
 
     const response = await Http.get<string>(
@@ -466,7 +664,7 @@ describe('http', () => {
 
   it('returns the original GET challenge when invisible resolution fails and interaction is disabled', async () => {
     jest
-      .spyOn(httpInternals, 'performBrowserWindowGetRequest')
+      .spyOn(browserTransport, 'requestWithBrowserWindow')
       .mockResolvedValue(undefined);
 
     const response = await Http.get<string>(
@@ -495,7 +693,7 @@ describe('http', () => {
       responseUrl: 'http://localhost:3000/resolved',
     };
     const browserRequest = jest
-      .spyOn(httpInternals, 'performBrowserWindowPostRequest')
+      .spyOn(browserTransport, 'requestWithBrowserWindow')
       .mockResolvedValue(browserResponse);
 
     const response = await Http.post<string>(
@@ -522,7 +720,7 @@ describe('http', () => {
   it('records a failed browser fallback rather than the initial response as a success', async () => {
     const error = new Error('Cloudflare browser resolution failed');
     jest
-      .spyOn(httpInternals, 'performBrowserWindowGetRequest')
+      .spyOn(browserTransport, 'requestWithBrowserWindow')
       .mockRejectedValue(error);
 
     await expect(
@@ -547,7 +745,7 @@ describe('http', () => {
 
   it('records an unresolved HTTP 200 challenge as a failed dependency', async () => {
     jest
-      .spyOn(httpInternals, 'performBrowserWindowGetRequest')
+      .spyOn(browserTransport, 'requestWithBrowserWindow')
       .mockResolvedValue(undefined);
     const response = await Http.get('http://localhost:3000/cloudflare-200', {
       partition: 'test',
@@ -575,23 +773,25 @@ describe('Cloudflare browser resolution', () => {
 
   it('returns a normal page with background detection without waiting', async () => {
     const { show, window } = createChallengeWindow(
-      [], BACKGROUND_DETECTION_HTML,
+      [],
+      BACKGROUND_DETECTION_HTML,
     );
 
-    await expect(httpInternals.handleCloudflareChallengePage(
-      window, { openBrowserWindow: true },
-    )).resolves.toMatchObject({ body: BACKGROUND_DETECTION_HTML });
+    await expect(
+      readBrowserWindowResponse(window, { openBrowserWindow: true }),
+    ).resolves.toMatchObject({ body: BACKGROUND_DETECTION_HTML });
     expect(jest.getTimerCount()).toBe(0);
     expect(show).not.toHaveBeenCalled();
   });
 
   it('resolves a challenge to a page that retains background detection', async () => {
     const { focus, show, window } = createChallengeWindow(
-      [CHALLENGE_HTML], BACKGROUND_DETECTION_HTML,
+      [CHALLENGE_HTML],
+      BACKGROUND_DETECTION_HTML,
     );
-    const responsePromise = httpInternals.handleCloudflareChallengePage(
-      window, { openBrowserWindow: true },
-    );
+    const responsePromise = readBrowserWindowResponse(window, {
+      openBrowserWindow: true,
+    });
 
     await jest.advanceTimersByTimeAsync(1000);
 
@@ -609,10 +809,9 @@ describe('Cloudflare browser resolution', () => {
       RESOLVED_HTML,
       RESOLVED_HTML,
     ]);
-    const responsePromise = httpInternals.handleCloudflareChallengePage(
-      window,
-      { openBrowserWindow: false },
-    );
+    const responsePromise = readBrowserWindowResponse(window, {
+      openBrowserWindow: false,
+    });
     const resultPromise = responsePromise.then(
       (response) => ({ response }),
       (error) => ({ error }),
@@ -632,10 +831,9 @@ describe('Cloudflare browser resolution', () => {
       RESOLVED_HTML,
       RESOLVED_HTML,
     ]);
-    const responsePromise = httpInternals.handleCloudflareChallengePage(
-      window,
-      { openBrowserWindow: true },
-    );
+    const responsePromise = readBrowserWindowResponse(window, {
+      openBrowserWindow: true,
+    });
 
     await jest.advanceTimersByTimeAsync(1000);
 
@@ -651,10 +849,9 @@ describe('Cloudflare browser resolution', () => {
       [CHALLENGE_HTML],
       CHALLENGE_HTML,
     );
-    const responsePromise = httpInternals.handleCloudflareChallengePage(
-      window,
-      { openBrowserWindow: false },
-    );
+    const responsePromise = readBrowserWindowResponse(window, {
+      openBrowserWindow: false,
+    });
     const resultPromise = responsePromise.then(
       (response) => ({ response }),
       (error) => ({ error }),
@@ -676,10 +873,10 @@ describe('Cloudflare browser resolution', () => {
       RESOLVED_HTML,
       RESOLVED_HTML,
     ]);
-    const responsePromise = httpInternals.handleCloudflareChallengePage(
-      window,
-      { openBrowserWindow: true, timeoutMs: 1000 },
-    );
+    const responsePromise = readBrowserWindowResponse(window, {
+      openBrowserWindow: true,
+      timeoutMs: 1000,
+    });
 
     await jest.advanceTimersByTimeAsync(2999);
     expect(show).not.toHaveBeenCalled();
@@ -699,10 +896,10 @@ describe('Cloudflare browser resolution', () => {
       [CHALLENGE_HTML],
       CHALLENGE_HTML,
     );
-    const responsePromise = httpInternals.handleCloudflareChallengePage(
-      window,
-      { openBrowserWindow: true, timeoutMs: 1000 },
-    );
+    const responsePromise = readBrowserWindowResponse(window, {
+      openBrowserWindow: true,
+      timeoutMs: 1000,
+    });
     const resultPromise = responsePromise.then(
       (response) => ({ response }),
       (error) => ({ error }),

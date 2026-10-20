@@ -23,6 +23,7 @@
       "@postybirb/fs": ["libs/fs/src/index.ts"],
       "@postybirb/http": ["libs/http/src/index.ts"],
       "@postybirb/http/types": ["libs/http/src/types.ts"],
+      "@postybirb/http/utils": ["libs/http/src/utils.ts"],
       "@postybirb/logger": ["libs/logger/src/index.ts"],
       "@postybirb/logger/telemetry-privacy": [
         "libs/logger/src/lib/telemetry-privacy.ts"
