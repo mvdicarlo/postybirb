@@ -21,7 +21,7 @@ export class DeviantArtFileSubmission extends BaseWebsiteOptions {
   declare rating: SubmissionRating;
 
   @TitleField({
-    maxLength: 50,
+    maxLength: 100,
   })
   declare title: string;
 
