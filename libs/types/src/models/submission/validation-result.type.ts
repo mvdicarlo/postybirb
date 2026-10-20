@@ -205,6 +205,8 @@ export interface ValidationMessages {
 
   'validation.file.bluesky.rating-matches-default': object;
 
+  'validation.file.bluesky.invalid-quote-url': { error: string };
+
   'validation.description.bluesky.invalid-mentions': { mentions: string[] };
 
   'validation.file.e621.tags.network-error': object;

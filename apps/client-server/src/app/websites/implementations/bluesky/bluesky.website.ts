@@ -3,6 +3,8 @@ import {
   $Typed,
   AppBskyActorGetProfile,
   AppBskyEmbedImages,
+  AppBskyEmbedRecord,
+  AppBskyEmbedRecordWithMedia,
   AppBskyEmbedVideo,
   AppBskyFeedThreadgate,
   AppBskyVideoGetJobStatus,
@@ -12,6 +14,7 @@ import {
   AtUri,
   BlobRef,
   ComAtprotoLabelDefs,
+  ComAtprotoRepoStrongRef,
 } from '@atproto/api';
 import { ReplyRef } from '@atproto/api/dist/client/types/app/bsky/feed/post';
 import { isMention } from '@atproto/api/dist/client/types/app/bsky/richtext/facet';
@@ -188,7 +191,7 @@ export default class Bluesky
   private async createPost(
     postData: PostData<BlueskyFileSubmission>,
     agent: LoggedInAgent,
-    embed:
+    mediaEmbed:
       | undefined
       | $Typed<AppBskyEmbedImages.Main>
       | $Typed<AppBskyEmbedVideo.Main>,
@@ -200,6 +203,37 @@ export default class Bluesky
         values: [{ val: postData.options.labelRating }],
         $type: 'com.atproto.label.defs#selfLabels',
       };
+    }
+
+    let embed:
+      | undefined
+      | $Typed<AppBskyEmbedImages.Main>
+      | $Typed<AppBskyEmbedVideo.Main>
+      | $Typed<AppBskyEmbedRecord.Main>
+      | $Typed<AppBskyEmbedRecordWithMedia.Main>;
+
+    if (postData.options.quotePostUrl) {
+      const quotePost = await this.getPostCidAndUri(
+        agent,
+        postData.options.quotePostUrl,
+      );
+
+      const record: $Typed<AppBskyEmbedRecord.Main> = {
+        $type: 'app.bsky.embed.record',
+        record: quotePost,
+      };
+
+      if (mediaEmbed) {
+        embed = {
+          $type: 'app.bsky.embed.recordWithMedia',
+          record,
+          media: mediaEmbed,
+        };
+      } else {
+        embed = record;
+      }
+    } else {
+      embed = mediaEmbed;
     }
 
     const rt = await BlueskyConverter.getRichText(postData.options.description);
@@ -261,6 +295,7 @@ export default class Bluesky
     this.validateRating(postData, validator);
     await this.validateDescription(postData, validator);
     this.validateReplyToUrl(postData, validator);
+    await this.validateQuotePostUrl(postData, validator);
 
     const { images, videos, other, gifs } = this.countFileTypes(
       postData.submission.files,
@@ -295,6 +330,7 @@ export default class Bluesky
     await this.validateDescription(postData, validator);
     this.validateReplyToUrl(postData, validator);
     this.validateRating(postData, validator);
+    await this.validateQuotePostUrl(postData, validator);
 
     return validator.result;
   }
@@ -374,6 +410,28 @@ export default class Bluesky
     }
   }
 
+  private async validateQuotePostUrl(
+    postData: PostData<BlueskyMessageSubmission | BlueskyFileSubmission>,
+    validator: SubmissionValidator<
+      BlueskyMessageSubmission | BlueskyFileSubmission
+    >,
+  ): Promise<void> {
+    const url = postData.options.quotePostUrl;
+    if (url?.trim()) {
+      try {
+        await this.getPostCidAndUri(this.getLoggedInAgent(), url);
+      } catch (e) {
+        validator.error(
+          'validation.file.bluesky.invalid-quote-url',
+          {
+            error: e && e instanceof Error ? e.message : String(e),
+          },
+          'quotePostUrl',
+        );
+      }
+    }
+  }
+
   private async getReplyRef(
     agent: LoggedInAgent,
     url?: string,
@@ -390,6 +448,21 @@ export default class Bluesky
     return {
       root: { uri: root.uri, cid: root.cid },
       parent: { uri: parent.uri, cid: parent.cid },
+    };
+  }
+
+  private async getPostCidAndUri(
+    agent: LoggedInAgent,
+    url: string,
+  ): Promise<ComAtprotoRepoStrongRef.Main> {
+    const postId = this.getPostIdFromUrl(url);
+    if (!postId) throw new Error(`Invalid quote post url '${url}'`);
+
+    // cf. https://atproto.com/blog/create-post#quote-posts
+    const parent = await agent.getPost(postId);
+    return {
+      cid: parent.cid,
+      uri: parent.uri,
     };
   }
 
@@ -619,8 +692,13 @@ export default class Bluesky
     const encodedJobId = encodeURIComponent(jobId);
     const url = `https://video.bsky.app/xrpc/app.bsky.video.getJobStatus?jobId=${encodedJobId}`;
     const controller = new AbortController();
-    const timeoutError = new Error('Bluesky video processing timed out after 15 minutes');
-    const timeout = setTimeout(() => controller.abort(timeoutError), 15 * 60 * 1000);
+    const timeoutError = new Error(
+      'Bluesky video processing timed out after 15 minutes',
+    );
+    const timeout = setTimeout(
+      () => controller.abort(timeoutError),
+      15 * 60 * 1000,
+    );
     try {
       let jobStatus: JobStatus;
       do {
@@ -630,7 +708,8 @@ export default class Bluesky
           method: 'GET',
           signal: controller.signal,
           headers: {
-            'atproto-accept-labelers': 'did:plc:ar7c4by46qjdydhdevvrndac;redact',
+            'atproto-accept-labelers':
+              'did:plc:ar7c4by46qjdydhdevvrndac;redact',
           },
         };
         const res =

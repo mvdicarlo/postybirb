@@ -303,6 +303,11 @@ export const TranslationMessages: TranslationsMap = {
     <Trans>Invalid post URL to reply to.</Trans>
   ),
 
+  'validation.file.bluesky.invalid-quote-url': ({ error }) => (
+    // eslint-disable-next-line lingui/no-unlocalized-strings
+    <Trans>Invalid quote post URL: {error.replace("Invalid quote post url", "")}</Trans>
+  ),
+
   'validation.file.bluesky.rating-matches-default': () => (
     <Trans>
       Make sure that the default rating matches Bluesky Label Rating.
