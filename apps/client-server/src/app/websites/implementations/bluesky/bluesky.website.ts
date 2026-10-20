@@ -410,6 +410,7 @@ export default class Bluesky
     }
   }
 
+  //
   private async validateQuotePostUrl(
     postData: PostData<BlueskyMessageSubmission | BlueskyFileSubmission>,
     validator: SubmissionValidator<
