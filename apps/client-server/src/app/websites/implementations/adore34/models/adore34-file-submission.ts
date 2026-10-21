@@ -5,8 +5,7 @@ export class Adore34FileSubmission extends Adore34MessageSubmission {
   @BooleanField({
     label: 'thumbnailAsPreview',
     section: 'website',
-    order: 7,
-    span: 12,
+    span: 6,
   })
   useThumbnailAsPreview = false;
 }

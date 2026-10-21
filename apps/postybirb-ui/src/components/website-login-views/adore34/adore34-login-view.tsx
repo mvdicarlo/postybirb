@@ -55,11 +55,9 @@ export default function Adore34LoginView({
           >
             <Text size="sm">
               <Trans>
-                Sign in to{' '}
-                <ExternalLink href="https://adore34.com">Adore34</ExternalLink>{' '}
-                as a creator. In Creator Settings, open Integrations under
-                Security, enable PostyBirb, and copy the personal API key. Do
-                not use a browser session token.
+                Go to <ExternalLink inline href="https://adore34.com/en/creator-settings/integrations">Adore34</ExternalLink>{' '}
+                under your creator account. In Creator Settings, open Integrations under
+                Security, enable PostyBirb, and copy the personal API key.
               </Trans>
             </Text>
           </Alert>

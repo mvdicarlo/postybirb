@@ -9,29 +9,23 @@ import { useFormFieldsContext } from '../form-fields-context';
 import { useDefaultOption } from '../hooks/use-default-option';
 import { useValidations } from '../hooks/use-validations';
 import { FieldLabel } from './field-label';
+import { FormFieldProps } from './form-field.type';
 
-interface RadioFieldProps {
-  fieldName: string;
-  field: RadioFieldType | RatingFieldType;
-}
+type RadioFieldProps = FormFieldProps<RadioFieldType | RatingFieldType>;
 
-interface RatingFieldControlProps {
-  fieldName: string;
-  field: RatingFieldType;
+type RatingFieldControlProps = FormFieldProps<RatingFieldType> & {
   defaultValue: string | undefined;
-}
+};
 
-interface InnerRadioFieldProps {
-  fieldName: string;
-  field: RadioFieldType;
-}
+type InnerRadioFieldProps = FormFieldProps<RadioFieldType>;
 
 function RatingFieldControl({
   fieldName,
   field,
+  disabled,
   defaultValue,
 }: RatingFieldControlProps) {
-  const { getValue, setValue, option, submission } = useFormFieldsContext();
+  const { getValue, setValue, option } = useFormFieldsContext();
   const { t } = useLingui();
 
   const baseOptions = field.options;
@@ -53,7 +47,7 @@ function RatingFieldControl({
       value={value}
       orientation={field.layout}
       size="xs"
-      disabled={submission.isArchived}
+      disabled={disabled}
       data={options.map((o) => ({
         label: `${o.label}${
           defaultValue !== undefined &&
@@ -69,8 +63,8 @@ function RatingFieldControl({
   );
 }
 
-function InnerRadioField({ fieldName, field }: InnerRadioFieldProps) {
-  const { getValue, setValue, submission } = useFormFieldsContext();
+function InnerRadioField({ fieldName, field, disabled }: InnerRadioFieldProps) {
+  const { getValue, setValue } = useFormFieldsContext();
   const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
 
   return (
@@ -78,7 +72,7 @@ function InnerRadioField({ fieldName, field }: InnerRadioFieldProps) {
       value={value}
       size="xs"
       fullWidth
-      disabled={submission.isArchived}
+      disabled={disabled}
       data={field.options.map((o) => ({
         label: `${o.label}${
           field.defaultValue !== undefined &&
@@ -94,7 +88,7 @@ function InnerRadioField({ fieldName, field }: InnerRadioFieldProps) {
   );
 }
 
-export function RadioField({ fieldName, field }: RadioFieldProps) {
+export function RadioField({ fieldName, field, disabled }: RadioFieldProps) {
   const defaultValue = useDefaultOption<string>(fieldName);
   const validations = useValidations(fieldName);
 
@@ -109,12 +103,14 @@ export function RadioField({ fieldName, field }: RadioFieldProps) {
           <RatingFieldControl
             fieldName={fieldName}
             field={field as RatingFieldType}
+            disabled={disabled}
             defaultValue={defaultValue}
           />
         ) : (
           <InnerRadioField
             fieldName={fieldName}
             field={field as RadioFieldType}
+            disabled={disabled}
           />
         )}
       </Box>

@@ -125,6 +125,9 @@ export interface FieldType<
   /** Allows derivation of a field options from arbitrary data, e.g. options or other fields */
   customDerive?(this: this, fields: FormBuilderMetadata, options: T): void;
 
+  /** Disables the field unless every condition matches, without changing visibility. */
+  enableWhen?: Array<[field: string, allowedOptions: unknown[]]>;
+
   /**
    * Shows in the UI when all properties are satisfied. Each property can have multiple alloved options
    * Evaluates in field.tsx

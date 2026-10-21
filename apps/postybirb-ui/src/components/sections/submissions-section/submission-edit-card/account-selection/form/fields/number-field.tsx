@@ -14,8 +14,9 @@ import { FormFieldProps } from './form-field.type';
 export function NumberField({
   fieldName,
   field,
+  disabled,
 }: FormFieldProps<NumberFieldType>) {
-  const { getValue, setValue, submission } = useFormFieldsContext();
+  const { getValue, setValue } = useFormFieldsContext();
   const defaultValue = useDefaultOption<number>(fieldName);
   const validations = useValidations(fieldName);
 
@@ -34,7 +35,7 @@ export function NumberField({
         w="100%"
         min={field.min}
         max={field.max}
-        disabled={submission.isArchived}
+        disabled={disabled}
         rightSection={<FieldCopyButton value={value !== undefined ? String(value) : ''} />}
         onChange={(val) => setValue(fieldName, val === '' ? undefined : val)}
       />

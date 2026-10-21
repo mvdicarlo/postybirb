@@ -37,7 +37,6 @@ export class Adore34MessageSubmission extends BaseWebsiteOptions {
       { value: 'tiers', label: 'Specific tiers' },
     ],
     section: 'website',
-    order: 0,
     span: 6,
   })
   visibility: 'all' | 'subscribers' | 'tiers' = 'subscribers';
@@ -53,17 +52,29 @@ export class Adore34MessageSubmission extends BaseWebsiteOptions {
       this.required = options.visibility === 'tiers';
       this.minSelected = this.required ? 1 : 0;
     },
-    showWhen: [['visibility', ['tiers']]],
+    enableWhen: [['visibility', ['tiers']]],
     section: 'website',
-    order: 1,
     span: 6,
   })
   tiers: string[] = [];
 
   @BooleanField({
+    label: 'allowComments',
+    section: 'website',
+    span: 6,
+  })
+  commentsEnabled = true;
+
+  @BooleanField({
+    label: 'notify',
+    section: 'website',
+    span: 6,
+  })
+  notifyFansOnPublish = true;
+
+  @BooleanField({
     label: 'allowPurchases',
     section: 'website',
-    order: 2,
     span: 6,
   })
   isPurchasable = false;
@@ -72,33 +83,15 @@ export class Adore34MessageSubmission extends BaseWebsiteOptions {
     label: 'priceCredits',
     min: 3,
     max: 300,
-    showWhen: [['isPurchasable', [true]]],
+    enableWhen: [['isPurchasable', [true]]],
     section: 'website',
-    order: 3,
     span: 6,
   })
   price = 3;
 
   @BooleanField({
-    label: 'allowComments',
-    section: 'website',
-    order: 4,
-    span: 6,
-  })
-  commentsEnabled = true;
-
-  @BooleanField({
-    label: 'notify',
-    section: 'website',
-    order: 5,
-    span: 6,
-  })
-  notifyFansOnPublish = true;
-
-  @BooleanField({
     label: 'inspiredBySaga',
     section: 'website',
-    order: 6,
     span: 6,
   })
   inspiredBySaga = false;
