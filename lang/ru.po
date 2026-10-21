@@ -391,6 +391,10 @@ msgid "Allow free download"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
+msgid "Allow individual purchases"
+msgstr ""
+
+#: libs/translations/src/lib/field-translations.ts
 msgid "Allow modifications of your work"
 msgstr ""
 
@@ -737,6 +741,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
 msgid "Check that handle and password are valid or try using email instead of handle."
+msgstr ""
+
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "Check that your Adore34 PostyBirb API key is active and has files:upload, posts:write, and tiers:read permissions."
 msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
@@ -2170,6 +2178,10 @@ msgstr "Вставить теги в конце"
 msgid "Insert title at start"
 msgstr "Вставить заголовок в начале"
 
+#: libs/translations/src/lib/field-translations.ts
+msgid "Inspired by Saga"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 msgid "Instagram Authentication"
 msgstr ""
@@ -2780,6 +2792,10 @@ msgstr ""
 msgid "Per-Account Dimensions"
 msgstr ""
 
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "Personal API key"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Phone Number"
 msgstr ""
@@ -2951,6 +2967,10 @@ msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
 msgid "Previous attempts ({evicted})"
+msgstr ""
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Price (credits)"
 msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
@@ -3641,6 +3661,10 @@ msgstr ""
 msgid "Shows your latest notifications — successful posts, errors, and warnings. Helps you stay on top of what's happening."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "Sign in to <0>Adore34</0> as a creator. In Creator Settings, open Integrations under Security, enable PostyBirb, and copy the personal API key. Do not use a browser session token."
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Silent"
 msgstr ""
@@ -4101,6 +4125,10 @@ msgstr ""
 msgid "The header shows the submission title and action buttons. Use the template button to apply saved settings, the send button to post, and the trash button to delete."
 msgstr ""
 
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "The key starts with adore_ak_ and is only shown once by Adore34."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 msgid "The last post attempt was cancelled before it finished."
 msgstr ""
@@ -4463,6 +4491,10 @@ msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Use thumbnail as cover art"
+msgstr ""
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Use thumbnails as preview images"
 msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts

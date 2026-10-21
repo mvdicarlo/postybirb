@@ -393,6 +393,10 @@ msgid "Allow free download"
 msgstr "Allow free download"
 
 #: libs/translations/src/lib/field-translations.ts
+msgid "Allow individual purchases"
+msgstr "Allow individual purchases"
+
+#: libs/translations/src/lib/field-translations.ts
 msgid "Allow modifications of your work"
 msgstr "Allow modifications of your work"
 
@@ -744,6 +748,10 @@ msgstr "Check login status"
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
 msgid "Check that handle and password are valid or try using email instead of handle."
 msgstr "Check that handle and password are valid or try using email instead of handle."
+
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "Check that your Adore34 PostyBirb API key is active and has files:upload, posts:write, and tiers:read permissions."
+msgstr "Check that your Adore34 PostyBirb API key is active and has files:upload, posts:write, and tiers:read permissions."
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Check your telegram messages"
@@ -2176,6 +2184,10 @@ msgstr "Insert tags at end"
 msgid "Insert title at start"
 msgstr "Insert title at start"
 
+#: libs/translations/src/lib/field-translations.ts
+msgid "Inspired by Saga"
+msgstr "Inspired by Saga"
+
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 msgid "Instagram Authentication"
 msgstr "Instagram Authentication"
@@ -2786,6 +2798,10 @@ msgstr "Pending"
 msgid "Per-Account Dimensions"
 msgstr "Per-Account Dimensions"
 
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "Personal API key"
+msgstr "Personal API key"
+
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Phone Number"
 msgstr "Phone Number"
@@ -2958,6 +2974,10 @@ msgstr "Previous"
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-history/account-unit-group.tsx
 msgid "Previous attempts ({evicted})"
 msgstr "Previous attempts ({evicted})"
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Price (credits)"
+msgstr "Price (credits)"
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
 msgid "Primary"
@@ -3647,6 +3667,10 @@ msgstr "Shows how many of your accounts are logged in. If any accounts need atte
 msgid "Shows your latest notifications — successful posts, errors, and warnings. Helps you stay on top of what's happening."
 msgstr "Shows your latest notifications — successful posts, errors, and warnings. Helps you stay on top of what's happening."
 
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "Sign in to <0>Adore34</0> as a creator. In Creator Settings, open Integrations under Security, enable PostyBirb, and copy the personal API key. Do not use a browser session token."
+msgstr "Sign in to <0>Adore34</0> as a creator. In Creator Settings, open Integrations under Security, enable PostyBirb, and copy the personal API key. Do not use a browser session token."
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Silent"
 msgstr "Silent"
@@ -4107,6 +4131,10 @@ msgstr "The form encountered an error and couldn't be displayed properly."
 msgid "The header shows the submission title and action buttons. Use the template button to apply saved settings, the send button to post, and the trash button to delete."
 msgstr "The header shows the submission title and action buttons. Use the template button to apply saved settings, the send button to post, and the trash button to delete."
 
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "The key starts with adore_ak_ and is only shown once by Adore34."
+msgstr "The key starts with adore_ak_ and is only shown once by Adore34."
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 msgid "The last post attempt was cancelled before it finished."
 msgstr "The last post attempt was cancelled before it finished."
@@ -4470,6 +4498,10 @@ msgstr "Use this template as the default for this account"
 #: libs/translations/src/lib/field-translations.ts
 msgid "Use thumbnail as cover art"
 msgstr "Use thumbnail as cover art"
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Use thumbnails as preview images"
+msgstr "Use thumbnails as preview images"
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Use title"

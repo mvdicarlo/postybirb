@@ -3,6 +3,7 @@
  * Maps website login component names to their React components.
  */
 
+import { Adore34LoginView } from './adore34';
 import { BlueskyLoginView } from './bluesky';
 import { CustomLoginView } from './custom';
 import { DiscordLoginView } from './discord';
@@ -35,6 +36,7 @@ export type { LoginViewComponent, LoginViewProps } from './types';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
+  Adore34: Adore34LoginView,
   Bluesky: BlueskyLoginView,
   Custom: CustomLoginView,
   Discord: DiscordLoginView,

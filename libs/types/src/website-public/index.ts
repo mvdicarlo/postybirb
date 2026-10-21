@@ -1,3 +1,4 @@
+export * from './adore34-account-data';
 export * from './bluesky-account-data';
 export * from './custom-account-data';
 export * from './discord-account-data';

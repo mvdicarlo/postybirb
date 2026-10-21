@@ -78,6 +78,7 @@ const SUPPORTED_MIME: string[] = [
   'text/xml',
   'text/yaml',
   'application/json',
+  'application/epub+zip',
   'application/ld+json',
   'application/msword',
   'application/pdf',
