@@ -67,6 +67,7 @@ export const FieldLabelTranslations = {
   privacy: msg`Privacy`,
   profanity: msg`Profanity`,
   publicViewers: msg`Public viewers`,
+  quotePostUrl: msg`Quote post URL`,
   racism: msg`Racism`,
   rating: msg`Rating`,
   reference: msg`Reference`,
