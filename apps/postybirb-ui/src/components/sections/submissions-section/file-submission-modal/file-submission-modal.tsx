@@ -125,10 +125,9 @@ export function FileSubmissionModal({
       setTags([]);
       setDescription(DefaultDescription());
       setRating(SubmissionRating.GENERAL);
-      setSelectedTemplateId(undefined);
       setProgress(0);
     }
-  }, [opened, setSelectedTemplateId]);
+  }, [opened]);
 
   // Default options state
   const [tags, setTags] = useState<Tag[]>([]);
@@ -251,7 +250,6 @@ export function FileSubmissionModal({
         setTags([]);
         setDescription(DefaultDescription());
         setRating(SubmissionRating.GENERAL);
-        setSelectedTemplateId(undefined);
         onClose();
       }, 500);
     } catch (error) {
@@ -267,7 +265,6 @@ export function FileSubmissionModal({
     rating,
     selectedTemplateId,
     optionsMode,
-    setSelectedTemplateId,
     onUpload,
     onClose,
   ]);
