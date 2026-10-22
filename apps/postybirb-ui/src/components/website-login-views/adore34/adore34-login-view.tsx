@@ -25,6 +25,7 @@ export default function Adore34LoginView({
       <form
         onSubmit={(event) => {
           event.preventDefault();
+          if (isSubmitting || !apiKey.trim()) return;
           setSubmitting(true);
           websitesApi
             .performOAuthStep<Adore34OAuthRoutes>(account.id, 'login', {

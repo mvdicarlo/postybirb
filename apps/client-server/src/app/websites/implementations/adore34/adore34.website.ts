@@ -20,6 +20,7 @@ import {
   PostingFile,
   ThumbnailOptions,
 } from '../../../posting/models/posting-file';
+import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
@@ -134,6 +135,7 @@ const apiKeyPattern = /^adore_ak_\S+$/;
     ),
   ),
 })
+@DisableAds()
 export default class Adore34
   extends Website<Adore34AccountData>
   implements
@@ -581,7 +583,7 @@ export default class Adore34
       }
       cancellationToken.throwIfAborted();
       const response = await this.platform.http.post<{
-        data: { _id: string };
+        data: { _id: string; postUrl?: string };
       }>(`${this.BASE_URL}/posts/creators`, {
         partition: this.accountId,
         headers: this.getAuthHeaders(apiKey),
@@ -622,6 +624,7 @@ export default class Adore34
       posted = true;
       return result
         .withMessage('Post created successfully on Adore34')
+        .withSourceUrl(response.body.data.postUrl)
         .withAdditionalInfo(response.body.data);
     } catch (error) {
       this.logger.withError(error).error('Failed to post to Adore34');
