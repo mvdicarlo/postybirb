@@ -1,10 +1,12 @@
+import {
+  CreateCustomShortcutDto,
+  UpdateCustomShortcutDto,
+} from '@postybirb/types';
 import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { CustomShortcutRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { CustomShortcutsService } from './custom-shortcuts.service';
-import { CreateCustomShortcutDto } from './dtos/create-custom-shortcut.dto';
-import { UpdateCustomShortcutDto } from './dtos/update-custom-shortcut.dto';
 
 @ApiTags('custom-shortcut')
 @Controller('custom-shortcut')

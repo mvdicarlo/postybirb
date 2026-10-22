@@ -1,17 +1,21 @@
+import {
+  CreateAccountDto,
+  CreateSubmissionDto,
+  CreateWebsiteOptionsDto,
+  DefaultDescriptionValue,
+  DefaultTagValue,
+  SubmissionRating,
+  SubmissionType,
+  TipTapNode,
+} from '@postybirb/types';
 import { ConflictException } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, PostRepository } from '@postybirb/database';
-import {
-    DefaultDescriptionValue,
-    DefaultTagValue,
-    SubmissionRating,
-    SubmissionType,
-    TipTapNode,
-} from '@postybirb/types';
+
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
-import { CreateAccountDto } from '../account/dtos/create-account.dto';
+
 import { FileConverterService } from '../file-converter/file-converter.service';
 import { FileService } from '../file/file.service';
 import { CreateFileService } from '../file/services/create-file.service';
@@ -22,7 +26,7 @@ import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { PostParsersModule } from '../post-parsers/post-parsers.module';
 import { PostingActivityModule } from '../posting/posting-activity.module';
 import { PostingActivityService } from '../posting/posting-activity.service';
-import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
+
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
@@ -31,7 +35,7 @@ import { ValidationService } from '../validation/validation.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { WebsitesModule } from '../websites/websites.module';
-import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
+
 import { WebsiteOptionsService } from './website-options.service';
 
 describe('WebsiteOptionsService', () => {
@@ -301,19 +305,16 @@ describe('WebsiteOptionsService', () => {
     description.description.content = [
       {
         type: 'paragraph',
-        content: [
-          { type: 'customShortcut', attrs: { id: 'active-shortcut' } },
-        ],
+        content: [{ type: 'customShortcut', attrs: { id: 'active-shortcut' } }],
       },
     ];
     await service.update(option.id, {
       data: { ...option.data, description },
     });
     await acceptSubmission(submission.id);
-    const deleteShortcut = Reflect.get(
-      service,
-      'onCustomShortcutDelete',
-    ) as (id: string) => Promise<void>;
+    const deleteShortcut = Reflect.get(service, 'onCustomShortcutDelete') as (
+      id: string,
+    ) => Promise<void>;
 
     await expect(
       deleteShortcut.call(service, 'active-shortcut'),

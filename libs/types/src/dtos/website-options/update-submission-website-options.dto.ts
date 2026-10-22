@@ -1,7 +1,12 @@
-import { EntityId } from '../../models';
-import { ICreateWebsiteOptionsDto } from './create-website-options.dto';
+import { z } from 'zod';
+import { createZodDto } from '../zod-dto';
+import { CreateWebsiteOptionsSchema } from './create-website-options.dto';
 
-export type IUpdateSubmissionWebsiteOptionsDto = {
-  remove?: EntityId[];
-  add?: ICreateWebsiteOptionsDto[];
-};
+export const UpdateSubmissionWebsiteOptionsSchema = z.object({
+  remove: z.array(z.string()).optional(),
+  add: z.array(CreateWebsiteOptionsSchema).optional(),
+});
+
+export class UpdateSubmissionWebsiteOptionsDto extends createZodDto(
+  UpdateSubmissionWebsiteOptionsSchema,
+) {}

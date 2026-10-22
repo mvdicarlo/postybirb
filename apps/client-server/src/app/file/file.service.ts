@@ -1,20 +1,26 @@
+import {
+  EntityId,
+  FileSubmission,
+  ReorderSubmissionFilesDto,
+  SubmissionFileMetadata,
+  SubmissionId,
+  UpdateAltFileDto,
+} from '@postybirb/types';
 /* eslint-disable no-param-reassign */
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
+import {
+  FileBufferRepository,
+  SubmissionFile,
+  SubmissionFileRepository,
+} from '@postybirb/database';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
-import {
-    EntityId,
-    FileSubmission,
-    SubmissionFileMetadata,
-    SubmissionId,
-} from '@postybirb/types';
+
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { readFile } from 'fs/promises';
 import { cpus } from 'os';
-import { ReorderSubmissionFilesDto } from '../submission/dtos/reorder-submission-files.dto';
-import { UpdateAltFileDto } from '../submission/dtos/update-alt-file.dto';
+
 import { MulterFileInfo, TaskOrigin } from './models/multer-file-info';
 import { CreateTask, Task, UpdateTask } from './models/task';
 import { TaskType } from './models/task-type.enum';
@@ -147,9 +153,7 @@ export class FileService {
     return this.fileRepository.findByIdOrThrow(id);
   }
 
-  public async findSubmissionIdForBuffer(
-    id: EntityId,
-  ): Promise<SubmissionId> {
+  public async findSubmissionIdForBuffer(id: EntityId): Promise<SubmissionId> {
     const buffer = await this.fileBufferRepository.findByIdOrThrow(id);
     const submissionFile = await this.findFile(buffer.submissionFileId);
     return submissionFile.submissionId;

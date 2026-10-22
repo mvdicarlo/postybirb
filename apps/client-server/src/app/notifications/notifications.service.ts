@@ -1,13 +1,17 @@
+import {
+  CreateNotificationDto,
+  EntityId,
+  UpdateNotificationDto,
+} from '@postybirb/types';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Notification, NotificationRepository } from '@postybirb/database';
 import { PlatformService } from '@postybirb/platform';
-import { EntityId } from '@postybirb/types';
+
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { SettingsService } from '../settings/settings.service';
-import { CreateNotificationDto } from './dtos/create-notification.dto';
-import { UpdateNotificationDto } from './dtos/update-notification.dto';
+
 import { NOTIFICATION_EVENT_PREFIX } from './notification.events';
 
 /**

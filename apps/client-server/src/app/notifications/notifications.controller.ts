@@ -1,4 +1,9 @@
 import {
+  CreateNotificationDto,
+  EntityId,
+  UpdateNotificationDto,
+} from '@postybirb/types';
+import {
   Body,
   Controller,
   Delete,
@@ -14,9 +19,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { EntityId } from '@postybirb/types';
-import { CreateNotificationDto } from './dtos/create-notification.dto';
-import { UpdateNotificationDto } from './dtos/update-notification.dto';
+
 import { NotificationsService } from './notifications.service';
 
 /**

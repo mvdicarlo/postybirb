@@ -1,13 +1,12 @@
 import {
-  AccountId,
-  IApplyMultiSubmissionDto,
-  ICreateSubmissionDefaultOptions,
-  ICreateSubmissionDto,
-  IFileMetadata,
+  ApplyTemplateOptionsDto,
+  ApplyMultiSubmissionDto,
+  CreateSubmissionDefaultOptions,
+  CreateSubmissionDto,
+  FileMetadata,
   ISubmissionDto,
-  IUpdateSubmissionDto,
-  IUpdateSubmissionTemplateNameDto,
-  IWebsiteFormFields,
+  UpdateSubmissionDto,
+  UpdateSubmissionTemplateNameDto,
   SubmissionId,
   SubmissionType,
 } from '@postybirb/types';
@@ -22,26 +21,9 @@ export interface CreateFileSubmissionOptions {
   /** Files to upload */
   files: File[];
   /** Per-file metadata (titles) */
-  fileMetadata?: IFileMetadata[];
+  fileMetadata?: FileMetadata[];
   /** Default options (tags, description, rating) */
-  defaultOptions?: ICreateSubmissionDefaultOptions;
-}
-
-/**
- * DTO for applying selected template options to submissions.
- */
-export interface ApplyTemplateOptionsDto {
-  /** Submission IDs to apply template options to */
-  targetSubmissionIds: SubmissionId[];
-  /** Template options to apply */
-  options: Array<{
-    accountId: AccountId;
-    data: IWebsiteFormFields;
-  }>;
-  /** Whether to replace title with template title */
-  overrideTitle: boolean;
-  /** Whether to replace description with template description */
-  overrideDescription: boolean;
+  defaultOptions?: CreateSubmissionDefaultOptions;
 }
 
 /**
@@ -55,8 +37,8 @@ export interface ApplyTemplateOptionsResult {
 
 class SubmissionsApi extends BaseApi<
   ISubmissionDto,
-  ICreateSubmissionDto,
-  IUpdateSubmissionDto
+  CreateSubmissionDto,
+  UpdateSubmissionDto
 > {
   constructor() {
     super('submissions');
@@ -73,18 +55,23 @@ class SubmissionsApi extends BaseApi<
     return this.client.post(`duplicate/${id}`);
   }
 
-  updateTemplateName(id: SubmissionId, dto: IUpdateSubmissionTemplateNameDto) {
+  updateTemplateName(id: SubmissionId, dto: UpdateSubmissionTemplateNameDto) {
     return this.client.patch(`template/${id}`, dto);
   }
 
   /**
    * Create file submission(s) with optional metadata and default options.
    */
-  createFileSubmission(options: CreateFileSubmissionOptions): ReturnType<typeof this.client.post>;
+  createFileSubmission(
+    options: CreateFileSubmissionOptions,
+  ): ReturnType<typeof this.client.post>;
   /**
    * @deprecated Use the options object overload instead.
    */
-  createFileSubmission(type: SubmissionType, files: File[]): ReturnType<typeof this.client.post>;
+  createFileSubmission(
+    type: SubmissionType,
+    files: File[],
+  ): ReturnType<typeof this.client.post>;
   createFileSubmission(
     typeOrOptions: SubmissionType | CreateFileSubmissionOptions,
     filesArg?: File[],
@@ -116,11 +103,15 @@ class SubmissionsApi extends BaseApi<
     return this.client.post('', formData);
   }
 
-  reorder(id: SubmissionId, targetId: SubmissionId, position: 'before' | 'after') {
+  reorder(
+    id: SubmissionId,
+    targetId: SubmissionId,
+    position: 'before' | 'after',
+  ) {
     return this.client.patch('reorder', { id, targetId, position });
   }
 
-  applyToMultipleSubmissions(dto: IApplyMultiSubmissionDto) {
+  applyToMultipleSubmissions(dto: ApplyMultiSubmissionDto) {
     return this.client.patch('apply/multi', dto);
   }
 

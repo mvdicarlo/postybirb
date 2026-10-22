@@ -1,14 +1,14 @@
 import {
-    ICreateCustomShortcutDto,
-    ICustomShortcutDto,
-    IUpdateCustomShortcutDto,
+  CreateCustomShortcutDto,
+  ICustomShortcutDto,
+  UpdateCustomShortcutDto,
 } from '@postybirb/types';
 import { BaseApi } from './base.api';
 
 class CustomShortcutsApi extends BaseApi<
   ICustomShortcutDto,
-  ICreateCustomShortcutDto,
-  IUpdateCustomShortcutDto
+  CreateCustomShortcutDto,
+  UpdateCustomShortcutDto
 > {
   constructor() {
     super('custom-shortcut');

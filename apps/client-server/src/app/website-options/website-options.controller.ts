@@ -1,18 +1,23 @@
+import {
+  CreateWebsiteOptionsDto,
+  EntityId,
+  PreviewDescriptionDto,
+  SubmissionId,
+  UpdateSubmissionWebsiteOptionsDto,
+  UpdateWebsiteOptionsDto,
+  ValidateWebsiteOptionsDto,
+} from '@postybirb/types';
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import {
-    ApiBadRequestResponse,
-    ApiNotFoundResponse,
-    ApiOkResponse,
-    ApiTags,
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { EntityId, SubmissionId } from '@postybirb/types';
+
 import { WebsiteOptionsRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
-import { PreviewDescriptionDto } from './dtos/preview-description.dto';
-import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
-import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
-import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
+
 import { WebsiteOptionsService } from './website-options.service';
 
 /**

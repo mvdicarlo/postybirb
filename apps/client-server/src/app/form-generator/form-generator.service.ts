@@ -1,22 +1,23 @@
 import {
-    BadRequestException,
-    Injectable,
-    NotFoundException,
+  AccountId,
+  FormGenerationRequestDto,
+  IWebsiteFormFields,
+  NullAccount,
+  SubmissionType,
+} from '@postybirb/types';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { FormBuilderMetadata, formBuilder } from '@postybirb/form-builder';
-import {
-    AccountId,
-    IWebsiteFormFields,
-    NullAccount,
-    SubmissionType,
-} from '@postybirb/types';
+
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { isFileWebsite } from '../websites/models/website-modifiers/file-website';
 import { isMessageWebsite } from '../websites/models/website-modifiers/message-website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { FormGenerationRequestDto } from './dtos/form-generation-request.dto';
 
 @Injectable()
 export class FormGeneratorService {
@@ -35,7 +36,9 @@ export class FormGeneratorService {
   async generateForm(
     request: FormGenerationRequestDto,
   ): Promise<FormBuilderMetadata> {
-    const account = await this.accountService.findByIdOrThrow(request.accountId);
+    const account = await this.accountService.findByIdOrThrow(
+      request.accountId,
+    );
 
     // Get instance for creation
     const instance = await this.websiteRegistryService.findInstance(account);
@@ -99,7 +102,10 @@ export class FormGeneratorService {
     type: SubmissionType,
   ): Promise<FormBuilderMetadata> {
     const userSpecifiedDefaults =
-      await this.accountTemplateDefaultsService.resolveDefaults(accountId, type);
+      await this.accountTemplateDefaultsService.resolveDefaults(
+        accountId,
+        type,
+      );
 
     if (userSpecifiedDefaults) {
       Object.entries(userSpecifiedDefaults).forEach(([key, value]) => {

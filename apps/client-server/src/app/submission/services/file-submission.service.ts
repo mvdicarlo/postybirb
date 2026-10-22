@@ -1,26 +1,28 @@
 import {
+  CreateSubmissionDto,
+  EntityId,
+  FileSubmission,
+  ISubmission,
+  ReorderSubmissionFilesDto,
+  SubmissionFileMetadata,
+  SubmissionId,
+  SubmissionType,
+  UpdateAltFileDto,
+  isFileSubmission,
+} from '@postybirb/types';
+import {
   BadRequestException,
   forwardRef,
   Inject,
   Injectable,
 } from '@nestjs/common';
 import { SubmissionRepository } from '@postybirb/database';
-import {
-  EntityId,
-  FileSubmission,
-  isFileSubmission,
-  ISubmission,
-  SubmissionFileMetadata,
-  SubmissionId,
-  SubmissionType,
-} from '@postybirb/types';
+
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { PostingActivityService } from '../../posting/posting-activity.service';
-import { CreateSubmissionDto } from '../dtos/create-submission.dto';
-import { ReorderSubmissionFilesDto } from '../dtos/reorder-submission-files.dto';
-import { UpdateAltFileDto } from '../dtos/update-alt-file.dto';
+
 import { SubmissionEventPublisher } from '../submission-event.publisher';
 import { ISubmissionService } from './submission-service.interface';
 import { SubmissionService } from './submission.service';
@@ -95,9 +97,7 @@ export class FileSubmissionService
    */
   async appendFile(id: EntityId | FileSubmission, file: MulterFileInfo) {
     const submission = (
-      typeof id === 'string'
-        ? await this.repository.findByIdOrThrow(id)
-        : id
+      typeof id === 'string' ? await this.repository.findByIdOrThrow(id) : id
     ) as FileSubmission;
 
     await this.postingActivity.assertSubmissionsMutable(submission.id);

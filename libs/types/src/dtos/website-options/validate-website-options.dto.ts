@@ -1,6 +1,8 @@
-import { EntityId, SubmissionId } from '../../models';
+import { createZodDto } from '../zod-dto';
+import { PreviewDescriptionSchema } from './preview-description.dto';
 
-export interface IValidateWebsiteOptionsDto {
-  submissionId: SubmissionId;
-  websiteOptionId: EntityId;
-}
+export const ValidateWebsiteOptionsSchema = PreviewDescriptionSchema;
+
+export class ValidateWebsiteOptionsDto extends createZodDto(
+  ValidateWebsiteOptionsSchema,
+) {}

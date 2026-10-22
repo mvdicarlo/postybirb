@@ -1,7 +1,12 @@
-import { IDirectoryWatcher, SubmissionId } from '../../models';
+import { z } from 'zod';
+import { createZodDto } from '../zod-dto';
+import { CreateDirectoryWatcherSchema } from './create-directory-watcher.dto';
 
-export type IUpdateDirectoryWatcherDto = Partial<
-  Pick<IDirectoryWatcher, 'importAction' | 'path'>
-> & {
-  templateId?: SubmissionId | null;
-};
+export const UpdateDirectoryWatcherSchema =
+  CreateDirectoryWatcherSchema.partial().extend({
+    templateId: z.string().nullish(),
+  });
+
+export class UpdateDirectoryWatcherDto extends createZodDto(
+  UpdateDirectoryWatcherSchema,
+) {}

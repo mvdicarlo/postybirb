@@ -1,11 +1,15 @@
+import {
+  CreateTagGroupDto,
+  EntityId,
+  UpdateTagGroupDto,
+} from '@postybirb/types';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TagGroup, TagGroupRepository } from '@postybirb/database';
-import { EntityId } from '@postybirb/types';
+
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
-import { UpdateTagGroupDto } from './dtos/update-tag-group.dto';
+
 import { TAG_GROUP_EVENT_PREFIX } from './tag-group.events';
 
 @Injectable()

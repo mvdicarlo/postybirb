@@ -1,4 +1,15 @@
 import {
+  ApplyMultiSubmissionDto,
+  ApplyTemplateOptionsDto,
+  CreateSubmissionDto,
+  ISubmissionDto,
+  ReorderSubmissionDto,
+  SubmissionId,
+  SubmissionType,
+  UpdateSubmissionDto,
+  UpdateSubmissionTemplateNameDto,
+} from '@postybirb/types';
+import {
   Body,
   Controller,
   Get,
@@ -16,17 +27,12 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { ISubmissionDto, SubmissionId, SubmissionType } from '@postybirb/types';
+
 import { parse } from 'path';
 import { SubmissionRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { MulterFileInfo } from '../file/models/multer-file-info';
-import { ApplyMultiSubmissionDto } from './dtos/apply-multi-submission.dto';
-import { ApplyTemplateOptionsDto } from './dtos/apply-template-options.dto';
-import { CreateSubmissionDto } from './dtos/create-submission.dto';
-import { ReorderSubmissionDto } from './dtos/reorder-submission.dto';
-import { UpdateSubmissionTemplateNameDto } from './dtos/update-submission-template-name.dto';
-import { UpdateSubmissionDto } from './dtos/update-submission.dto';
+
 import { SubmissionService } from './services/submission.service';
 
 /**

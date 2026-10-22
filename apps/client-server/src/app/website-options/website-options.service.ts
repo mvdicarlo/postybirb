@@ -1,15 +1,6 @@
 import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-} from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import { Account, CustomShortcutRepository, Insert, Submission, SubmissionRepository, WebsiteOptions, WebsiteOptionsRepository } from '@postybirb/database';
-import {
   AccountId,
+  CreateWebsiteOptionsDto,
   Description,
   DescriptionType,
   DescriptionValue,
@@ -20,12 +11,35 @@ import {
   ISubmissionMetadata,
   IWebsiteFormFields,
   NULL_ACCOUNT_ID,
+  PreviewDescriptionDto,
   SubmissionId,
   SubmissionMetadataType,
   SubmissionType,
   TipTapNode,
+  UpdateSubmissionWebsiteOptionsDto,
+  UpdateWebsiteOptionsDto,
+  ValidateWebsiteOptionsDto,
   ValidationResult,
 } from '@postybirb/types';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import {
+  Account,
+  CustomShortcutRepository,
+  Insert,
+  Submission,
+  SubmissionRepository,
+  WebsiteOptions,
+  WebsiteOptionsRepository,
+} from '@postybirb/database';
+
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
 import {
@@ -47,11 +61,6 @@ import {
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import { CreateWebsiteOptionsDto } from './dtos/create-website-options.dto';
-import { PreviewDescriptionDto } from './dtos/preview-description.dto';
-import { UpdateSubmissionWebsiteOptionsDto } from './dtos/update-submission-website-options.dto';
-import { UpdateWebsiteOptionsDto } from './dtos/update-website-options.dto';
-import { ValidateWebsiteOptionsDto } from './dtos/validate-website-options.dto';
 
 @Injectable()
 export class WebsiteOptionsService
@@ -253,7 +262,9 @@ export class WebsiteOptionsService
    */
   async create(createDto: CreateWebsiteOptionsDto) {
     await this.postingActivity.assertSubmissionsMutable(createDto.submissionId);
-    const account = await this.accountService.findByIdOrThrow(createDto.accountId);
+    const account = await this.accountService.findByIdOrThrow(
+      createDto.accountId,
+    );
 
     let submission: ISubmission<SubmissionMetadataType>;
     try {
@@ -409,7 +420,8 @@ export class WebsiteOptionsService
     validate: ValidateWebsiteOptionsDto,
   ): Promise<ValidationResult> {
     const { websiteOptionId, submissionId } = validate;
-    const submission = await this.submissionService.findByIdOrThrow(submissionId);
+    const submission =
+      await this.submissionService.findByIdOrThrow(submissionId);
     const websiteOption = submission.options.find(
       (option) => option.id === websiteOptionId,
     );
@@ -449,7 +461,8 @@ export class WebsiteOptionsService
     dto: PreviewDescriptionDto,
   ): Promise<IDescriptionPreviewResult> {
     const { websiteOptionId, submissionId } = dto;
-    const submission = await this.submissionService.findByIdOrThrow(submissionId);
+    const submission =
+      await this.submissionService.findByIdOrThrow(submissionId);
     const websiteOption = submission.options.find(
       (option) => option.id === websiteOptionId,
     );
@@ -501,7 +514,8 @@ export class WebsiteOptionsService
     updateDto: UpdateSubmissionWebsiteOptionsDto,
   ) {
     await this.postingActivity.assertSubmissionsMutable(submissionId);
-    const submission = await this.submissionService.findByIdOrThrow(submissionId);
+    const submission =
+      await this.submissionService.findByIdOrThrow(submissionId);
     let optionsChanged = false;
 
     const { remove, add } = updateDto;

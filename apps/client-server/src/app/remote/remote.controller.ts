@@ -1,5 +1,6 @@
+import { UpdateCookiesRemoteDto } from '@postybirb/types';
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { UpdateCookiesRemoteDto } from './models/update-cookies-remote.dto';
+
 import { RemoteService } from './remote.service';
 
 @Controller('remote')

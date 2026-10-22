@@ -1,5 +1,6 @@
+import { LegacyImportDto } from '@postybirb/types';
 import { Body, Controller, Post } from '@nestjs/common';
-import { LegacyImportDto } from './dtos/legacy-import.dto';
+
 import { LegacyDatabaseImporterService } from './legacy-database-importer.service';
 
 @Controller('legacy-database-importer')

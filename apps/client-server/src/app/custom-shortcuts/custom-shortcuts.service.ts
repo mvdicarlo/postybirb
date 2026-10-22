@@ -1,11 +1,13 @@
+import {
+  CreateCustomShortcutDto,
+  UpdateCustomShortcutDto,
+} from '@postybirb/types';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CustomShortcut, CustomShortcutRepository } from '@postybirb/database';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { CUSTOM_SHORTCUT_EVENT_PREFIX } from './custom-shortcut.events';
-import { CreateCustomShortcutDto } from './dtos/create-custom-shortcut.dto';
-import { UpdateCustomShortcutDto } from './dtos/update-custom-shortcut.dto';
 
 @Injectable()
 export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepository> {
@@ -20,9 +22,7 @@ export class CustomShortcutsService extends PostyBirbService<CustomShortcutRepos
     this.logger
       .withMetadata(createCustomShortcutDto)
       .info('Creating custom shortcut');
-    await this.throwIfExists(
-      eq(this.table.name, createCustomShortcutDto.name),
-    );
+    await this.throwIfExists(eq(this.table.name, createCustomShortcutDto.name));
     const entity = await this.repository.insert(createCustomShortcutDto);
     this.publishCreated(entity.toDTO());
     return entity;

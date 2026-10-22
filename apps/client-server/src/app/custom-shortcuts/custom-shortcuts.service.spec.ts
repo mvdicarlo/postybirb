@@ -1,8 +1,13 @@
+import {
+  CreateCustomShortcutDto,
+  DefaultDescription,
+  UpdateCustomShortcutDto,
+} from '@postybirb/types';
 import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, EntityNotFoundError } from '@postybirb/database';
-import { DefaultDescription } from '@postybirb/types';
+
 import {
   EntityCreatedEvent,
   EntityRemovedEvent,
@@ -11,8 +16,6 @@ import {
 } from '../common/events/entity-crud.events';
 import { CUSTOM_SHORTCUT_EVENT_PREFIX } from './custom-shortcut.events';
 import { CustomShortcutsService } from './custom-shortcuts.service';
-import { CreateCustomShortcutDto } from './dtos/create-custom-shortcut.dto';
-import { UpdateCustomShortcutDto } from './dtos/update-custom-shortcut.dto';
 
 describe('CustomShortcutsService', () => {
   let service: CustomShortcutsService;
@@ -55,10 +58,9 @@ describe('CustomShortcutsService', () => {
 
     expect(list).toHaveLength(1);
     expect(list[0].name).toBe(dto.name);
-    expect(emit).toHaveBeenCalledWith(
-      eventNames.created,
-      [new EntityCreatedEvent(record.toDTO())],
-    );
+    expect(emit).toHaveBeenCalledWith(eventNames.created, [
+      new EntityCreatedEvent(record.toDTO()),
+    ]);
   });
 
   it('should fail to create duplicate named shortcuts', async () => {
@@ -80,10 +82,9 @@ describe('CustomShortcutsService', () => {
     updateDto.shortcut = DefaultDescription();
     const updated = await service.update(record.id, updateDto);
 
-    expect(emit).toHaveBeenCalledWith(
-      eventNames.updated,
-      [new EntityUpdatedEvent(updated.toDTO())],
-    );
+    expect(emit).toHaveBeenCalledWith(eventNames.updated, [
+      new EntityUpdatedEvent(updated.toDTO()),
+    ]);
   });
 
   it('should not emit when updating a missing entity', async () => {
@@ -91,9 +92,9 @@ describe('CustomShortcutsService', () => {
     updateDto.name = 'missing';
     updateDto.shortcut = DefaultDescription();
 
-    await expect(
-      service.update('missing', updateDto),
-    ).rejects.toBeInstanceOf(EntityNotFoundError);
+    await expect(service.update('missing', updateDto)).rejects.toBeInstanceOf(
+      EntityNotFoundError,
+    );
     expect(emit).not.toHaveBeenCalled();
   });
 
@@ -103,9 +104,8 @@ describe('CustomShortcutsService', () => {
 
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(0);
-    expect(emit).toHaveBeenCalledWith(
-      eventNames.removed,
-      [new EntityRemovedEvent(record.id)],
-    );
+    expect(emit).toHaveBeenCalledWith(eventNames.removed, [
+      new EntityRemovedEvent(record.id),
+    ]);
   });
 });

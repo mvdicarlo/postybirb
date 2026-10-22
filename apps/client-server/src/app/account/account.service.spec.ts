@@ -1,23 +1,25 @@
+import {
+  CreateAccountDto,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionType,
+} from '@postybirb/types';
 import { ConflictException } from '@nestjs/common';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    Account,
-    clearDatabase,
-    PostRepository,
-    SubmissionRepository,
-    WebsiteOptionsRepository,
+  Account,
+  clearDatabase,
+  PostRepository,
+  SubmissionRepository,
+  WebsiteOptionsRepository,
 } from '@postybirb/database';
+
 import {
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    NULL_ACCOUNT_ID,
-    ScheduleType,
-    SubmissionType,
-} from '@postybirb/types';
-import {
-    EntityRemovedEvent,
-    EntityUpdatedEvent,
+  EntityRemovedEvent,
+  EntityUpdatedEvent,
 } from '../common/events/entity-crud.events';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';
 import { PostingActivityModule } from '../posting/posting-activity.module';
@@ -25,12 +27,8 @@ import { PostingActivityService } from '../posting/posting-activity.service';
 import { waitUntil } from '../utils/wait.util';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
-import {
-    ACCOUNT_REMOVED,
-    ACCOUNT_STATE_CHANGED,
-} from './account.events';
+import { ACCOUNT_REMOVED, ACCOUNT_STATE_CHANGED } from './account.events';
 import { AccountService } from './account.service';
-import { CreateAccountDto } from './dtos/create-account.dto';
 
 describe('AccountsService', () => {
   let service: AccountService;
@@ -144,30 +142,32 @@ describe('AccountsService', () => {
     expect(groups[0].website).toEqual(dto.website);
     expect(groups[0].groups).toEqual(dto.groups);
     const recordDto = instance!.toAccountDto();
-    expect(recordDto).toEqual(expect.objectContaining({
-      groups: dto.groups,
-      name: dto.name,
-      website: dto.website,
-      id: record.id,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
-      defaultFileTemplateId: null,
-      defaultMessageTemplateId: null,
-      state: {
-        status: 'loggedIn',
-        isLoggedIn: true,
-        pending: false,
-        username: 'TestUser',
-        lastUpdated: expect.any(String),
-      },
-      data: {
-        test: 'test-mode',
-      },
-      instanceCapabilities: expect.objectContaining({
-        supports: ['MESSAGE', 'FILE'],
-        websiteDisplayName: 'Test',
+    expect(recordDto).toEqual(
+      expect.objectContaining({
+        groups: dto.groups,
+        name: dto.name,
+        website: dto.website,
+        id: record.id,
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+        defaultFileTemplateId: null,
+        defaultMessageTemplateId: null,
+        state: {
+          status: 'loggedIn',
+          isLoggedIn: true,
+          pending: false,
+          username: 'TestUser',
+          lastUpdated: expect.any(String),
+        },
+        data: {
+          test: 'test-mode',
+        },
+        instanceCapabilities: expect.objectContaining({
+          supports: ['MESSAGE', 'FILE'],
+          websiteDisplayName: 'Test',
+        }),
       }),
-    }));
+    );
   }, 10000);
 
   it('should roll back a create when website initialization fails', async () => {
@@ -196,8 +196,7 @@ describe('AccountsService', () => {
     const account = await service.create(createAccount);
     expect(account).toBeDefined();
     await waitUntil(
-      () =>
-        emit.mock.calls.some(([event]) => event === ACCOUNT_STATE_CHANGED),
+      () => emit.mock.calls.some(([event]) => event === ACCOUNT_STATE_CHANGED),
       10,
     );
     expect(emit).toHaveBeenCalledWith(ACCOUNT_STATE_CHANGED, [
@@ -216,8 +215,7 @@ describe('AccountsService', () => {
     });
     expect(updated.name).toEqual('Updated');
     await waitUntil(
-      () =>
-        emit.mock.calls.some(([event]) => event === ACCOUNT_STATE_CHANGED),
+      () => emit.mock.calls.some(([event]) => event === ACCOUNT_STATE_CHANGED),
       10,
     );
     expect(emit).toHaveBeenCalledWith(ACCOUNT_STATE_CHANGED, [
@@ -254,9 +252,9 @@ describe('AccountsService', () => {
     expect(original.isDisposed).toBe(true);
     expect(recreated).toBeDefined();
     expect(recreated).not.toBe(original);
-    expect(
-      emit.mock.calls.some(([event]) => event === ACCOUNT_REMOVED),
-    ).toBe(false);
+    expect(emit.mock.calls.some(([event]) => event === ACCOUNT_REMOVED)).toBe(
+      false,
+    );
   });
 
   it('rejects account deletion when it would remove accepted submission options', async () => {

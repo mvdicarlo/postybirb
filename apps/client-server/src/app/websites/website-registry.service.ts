@@ -1,4 +1,12 @@
 import {
+  DynamicObject,
+  IAccount,
+  IAccountDto,
+  IWebsiteDefinitionDto,
+  OAuthRoutes,
+  OAuthWebsiteRequestDto,
+} from '@postybirb/types';
+import {
   BadRequestException,
   Inject,
   Injectable,
@@ -6,16 +14,14 @@ import {
   OnModuleDestroy,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Account, AccountRepository, WebsiteDataRepository } from '@postybirb/database';
+import {
+  Account,
+  AccountRepository,
+  WebsiteDataRepository,
+} from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
-import {
-  DynamicObject,
-  IAccount,
-  IAccountDto,
-  IWebsiteDefinitionDto,
-  OAuthRoutes,
-} from '@postybirb/types';
+
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
 import { publishAccountStateChanged } from '../account/account.events';
@@ -24,7 +30,7 @@ import {
   cloneWebsiteFileOptions,
   validateWebsiteDecoratorProps,
 } from './decorators/website-decorator-props';
-import { OAuthWebsiteRequestDto } from './dtos/oauth-website-request.dto';
+
 import DefaultWebsite from './implementations/default/default.website';
 import { FileWebsiteKey } from './models/website-modifiers/file-website';
 import { MessageWebsiteKey } from './models/website-modifiers/message-website';
@@ -257,7 +263,9 @@ export class WebsiteRegistryService implements OnModuleDestroy {
         } catch (error) {
           this.logger
             .withError(error)
-            .error(`Failed to await Website initialization for '${account.id}'`);
+            .error(
+              `Failed to await Website initialization for '${account.id}'`,
+            );
         }
       }
       if (instance) {
@@ -279,7 +287,9 @@ export class WebsiteRegistryService implements OnModuleDestroy {
     } catch (error) {
       this.logger
         .withError(error)
-        .error(`Failed to clean up Website instance for Account '${accountId}'`);
+        .error(
+          `Failed to clean up Website instance for Account '${accountId}'`,
+        );
     }
   }
 
@@ -362,7 +372,9 @@ export class WebsiteRegistryService implements OnModuleDestroy {
   ) {
     this.logger.info(`OAuth website route for '${oauthRequestDto.id}'`);
 
-    const account = await this.accountRepository.findByIdOrThrow(oauthRequestDto.id);
+    const account = await this.accountRepository.findByIdOrThrow(
+      oauthRequestDto.id,
+    );
     const instance = this.findInstance(account);
 
     if (!instance) throw new NotFoundException('Website instance not found.');

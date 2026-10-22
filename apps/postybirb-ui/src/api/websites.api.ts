@@ -1,5 +1,5 @@
 import {
-  IOAuthWebsiteRequestDto,
+  OAuthWebsiteRequestDto,
   IWebsiteDefinitionDto,
   OAuthRoutes,
   WebsiteId,
@@ -22,7 +22,7 @@ class WebsitesApi {
       route: route as string,
       id,
       data,
-    } satisfies IOAuthWebsiteRequestDto<T[R]['request']>);
+    } satisfies OAuthWebsiteRequestDto<T[R]['request']>);
 
     return response.body as T[R]['response'];
   }
