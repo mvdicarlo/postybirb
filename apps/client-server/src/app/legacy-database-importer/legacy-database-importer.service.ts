@@ -1,3 +1,4 @@
+import { LegacyImportDto } from '@postybirb/types';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DatabaseEntity } from '@postybirb/database';
@@ -17,7 +18,6 @@ import { LegacyTagConverterConverter } from './converters/legacy-tag-converter.c
 import { LegacyTagGroupConverter } from './converters/legacy-tag-group.converter';
 import { LegacyUserAccountConverter } from './converters/legacy-user-account.converter';
 import { LegacyWebsiteDataConverter } from './converters/legacy-website-data.converter';
-import { LegacyImportDto } from './dtos/legacy-import.dto';
 
 @Injectable()
 export class LegacyDatabaseImporterService {

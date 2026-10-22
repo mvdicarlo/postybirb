@@ -1,6 +1,7 @@
 import type {
   EntityId,
-  IUpdateSettingsDto,
+  UpdateSettingsDto,
+  UpdateStartupSettingsDto,
   SettingsDto,
 } from '@postybirb/types';
 import type { StartupOptions } from '@postybirb/utils/common';
@@ -18,12 +19,12 @@ class SettingsApi {
     return this.client.get<StartupOptions>('startup');
   }
 
-  update(id: EntityId, dto: IUpdateSettingsDto) {
+  update(id: EntityId, dto: UpdateSettingsDto) {
     return this.client.patch(id, dto);
   }
 
   updateSystemStartupSettings(
-    startAppOnSystemStartup: Partial<StartupOptions>,
+    startAppOnSystemStartup: UpdateStartupSettingsDto,
   ) {
     return this.client.patch<StartupOptions>(
       `startup/system-startup`,

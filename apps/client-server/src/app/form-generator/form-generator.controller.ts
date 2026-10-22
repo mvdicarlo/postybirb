@@ -1,7 +1,7 @@
+import { FormGenerationRequestDto, NULL_ACCOUNT_ID } from '@postybirb/types';
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { NULL_ACCOUNT_ID } from '@postybirb/types';
-import { FormGenerationRequestDto } from './dtos/form-generation-request.dto';
+
 import { FormGeneratorService } from './form-generator.service';
 
 @ApiTags('form-generator')

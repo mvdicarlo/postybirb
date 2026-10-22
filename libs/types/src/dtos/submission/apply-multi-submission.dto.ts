@@ -1,30 +1,16 @@
-import { SubmissionId } from '../../models';
+import { z } from 'zod';
+import { createZodDto } from '../zod-dto';
 
-/**
- * The DTO for applying a submission's data to multiple submissions.
- *
- * @interface IApplyMultiSubmissionDto
- */
-export type IApplyMultiSubmissionDto = {
-  /**
-   * The origin submission id.
-   * @type {SubmissionId}
-   */
-  submissionToApply: SubmissionId;
+export const ApplyMultiSubmissionSchema = z.object({
+  submissionToApply: z.string().min(1),
+  submissionIds: z.array(z.string()),
+  merge: z
+    .boolean()
+    .describe(
+      'Overwrite overlapping options while preserving unique options when true; replace all options when false',
+    ),
+});
 
-  /**
-   * The submission ids to apply the origin submission to.
-   *
-   * @type {SubmissionId[]}
-   */
-  submissionIds: SubmissionId[];
-
-  /**
-   * Whether to merge the origin submission data with the target submissions.
-   *
-   * A value of `true` will result in the overwrite of overlapping website options, but the preservation of unique options.
-   * A value of `false` will result in the overwrite of all website options, and delete the non-included options.
-   * @type {boolean}
-   */
-  merge: boolean;
-};
+export class ApplyMultiSubmissionDto extends createZodDto(
+  ApplyMultiSubmissionSchema,
+) {}

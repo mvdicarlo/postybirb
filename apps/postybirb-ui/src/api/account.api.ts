@@ -1,16 +1,17 @@
 import {
   AccountId,
+  DynamicObject,
   IAccountDto,
-  ICreateAccountDto,
-  ISetWebsiteDataRequestDto,
-  IUpdateAccountDto,
+  CreateAccountDto,
+  SetWebsiteDataRequestDto,
+  UpdateAccountDto,
 } from '@postybirb/types';
 import { BaseApi } from './base.api';
 
 class AccountApi extends BaseApi<
   IAccountDto,
-  ICreateAccountDto,
-  IUpdateAccountDto
+  CreateAccountDto,
+  UpdateAccountDto
 > {
   constructor() {
     super('account');
@@ -20,7 +21,9 @@ class AccountApi extends BaseApi<
     return this.client.post<undefined>(`clear/${id}`);
   }
 
-  setWebsiteData<T>(request: ISetWebsiteDataRequestDto<T>) {
+  setWebsiteData<T extends DynamicObject>(
+    request: SetWebsiteDataRequestDto<T>,
+  ) {
     return this.client.post<undefined>('account-data', request);
   }
 

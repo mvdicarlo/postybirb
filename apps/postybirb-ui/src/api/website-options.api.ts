@@ -1,26 +1,26 @@
 import {
-    ICreateWebsiteOptionsDto,
-    IDescriptionPreviewResult,
-    IPreviewDescriptionDto,
-    IUpdateSubmissionWebsiteOptionsDto,
-    IUpdateWebsiteOptionsDto,
-    IValidateWebsiteOptionsDto,
-    SubmissionId,
-    ValidationResult,
-    WebsiteOptionsDto,
+  CreateWebsiteOptionsDto,
+  IDescriptionPreviewResult,
+  PreviewDescriptionDto,
+  UpdateSubmissionWebsiteOptionsDto,
+  UpdateWebsiteOptionsDto,
+  ValidateWebsiteOptionsDto,
+  SubmissionId,
+  ValidationResult,
+  WebsiteOptionsDto,
 } from '@postybirb/types';
 import { BaseApi } from './base.api';
 
 class WebsiteOptionsApi extends BaseApi<
   WebsiteOptionsDto,
-  ICreateWebsiteOptionsDto,
-  IUpdateWebsiteOptionsDto
+  CreateWebsiteOptionsDto,
+  UpdateWebsiteOptionsDto
 > {
   constructor() {
     super('website-option');
   }
 
-  validate(dto: IValidateWebsiteOptionsDto) {
+  validate(dto: ValidateWebsiteOptionsDto) {
     return this.client.post<ValidationResult>('validate', dto);
   }
 
@@ -28,7 +28,7 @@ class WebsiteOptionsApi extends BaseApi<
     return this.client.get<ValidationResult[]>(`validate/${submissionId}`);
   }
 
-  previewDescription(dto: IPreviewDescriptionDto) {
+  previewDescription(dto: PreviewDescriptionDto) {
     return this.client.post<IDescriptionPreviewResult>(
       'preview-description',
       dto,
@@ -37,14 +37,14 @@ class WebsiteOptionsApi extends BaseApi<
 
   updateSubmissionOptions(
     id: SubmissionId,
-    dto: IUpdateSubmissionWebsiteOptionsDto,
+    dto: UpdateSubmissionWebsiteOptionsDto,
   ) {
     return this.client.patch<WebsiteOptionsDto>(`submission/${id}`, dto);
   }
 
   modifySubmission(
     submissionId: SubmissionId,
-    dto: IUpdateSubmissionWebsiteOptionsDto,
+    dto: UpdateSubmissionWebsiteOptionsDto,
   ) {
     return this.client.patch<WebsiteOptionsDto>(
       `submission/${submissionId}`,

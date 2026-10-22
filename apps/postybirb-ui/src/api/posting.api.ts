@@ -1,21 +1,16 @@
 import {
-    AccountId,
-    IPost,
-    IUnitOfWork,
-    SubmissionFileId,
-    SubmissionId,
-    UnitOfWorkId,
+  GetIncompleteWorkDto,
+  IPost,
+  IUnitOfWork,
+  SubmissionId,
+  UnitOfWorkId,
 } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
-export type UnitOfWorkEvictions = Record<AccountId, SubmissionFileId[]>;
-export type PostingTargets = Record<AccountId, SubmissionFileId[]>;
+export type UnitOfWorkEvictions = GetIncompleteWorkDto['evictions'];
+export type PostingTargets = NonNullable<GetIncompleteWorkDto['targets']>;
 
-export interface PostingRequest {
-  submissionId: SubmissionId;
-  evictions: UnitOfWorkEvictions;
-  targets?: PostingTargets;
-}
+export type PostingRequest = GetIncompleteWorkDto;
 
 export interface IncompleteWork {
   remainingWork: IUnitOfWork[];
@@ -38,11 +33,19 @@ class PostingApi {
     this.client = new HttpClient('posting');
   }
 
-  post(submissionId: SubmissionId, evictions: UnitOfWorkEvictions = {}, targets?: PostingTargets) {
+  post(
+    submissionId: SubmissionId,
+    evictions: UnitOfWorkEvictions = {},
+    targets?: PostingTargets,
+  ) {
     return this.client.post<IPost>('', { submissionId, evictions, targets });
   }
 
-  dryRun(submissionId: SubmissionId, evictions: UnitOfWorkEvictions = {}, targets?: PostingTargets) {
+  dryRun(
+    submissionId: SubmissionId,
+    evictions: UnitOfWorkEvictions = {},
+    targets?: PostingTargets,
+  ) {
     return this.client.post<PostingDryRun>('dry-run', {
       submissionId,
       evictions,

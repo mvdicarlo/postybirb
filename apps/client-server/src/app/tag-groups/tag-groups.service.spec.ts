@@ -1,14 +1,15 @@
+import { CreateTagGroupDto } from '@postybirb/types';
 import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
-    EntityCreatedEvent,
-    EntityRemovedEvent,
-    EntityUpdatedEvent,
-    getEntityCrudEventNames,
+  EntityCreatedEvent,
+  EntityRemovedEvent,
+  EntityUpdatedEvent,
+  getEntityCrudEventNames,
 } from '../common/events/entity-crud.events';
-import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
+
 import { TAG_GROUP_EVENT_PREFIX } from './tag-group.events';
 import { TagGroupsService } from './tag-groups.service';
 
@@ -61,10 +62,9 @@ describe('TagGroupsService', () => {
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     });
-    expect(emit).toHaveBeenCalledWith(
-      eventNames.created,
-      [new EntityCreatedEvent(record.toDTO())],
-    );
+    expect(emit).toHaveBeenCalledWith(eventNames.created, [
+      new EntityCreatedEvent(record.toDTO()),
+    ]);
   });
 
   it('should fail to create duplicate named groups', async () => {
@@ -102,10 +102,9 @@ describe('TagGroupsService', () => {
     const updatedRec = await service.findByIdOrThrow(record.id);
     expect(updatedRec.name).toBe(updateDto.name);
     expect(updatedRec.tags).toEqual(updateDto.tags);
-    expect(emit).toHaveBeenLastCalledWith(
-      eventNames.updated,
-      [new EntityUpdatedEvent(updated.toDTO())],
-    );
+    expect(emit).toHaveBeenLastCalledWith(eventNames.updated, [
+      new EntityUpdatedEvent(updated.toDTO()),
+    ]);
   });
 
   it('should not emit when updating a missing entity', async () => {
@@ -123,10 +122,9 @@ describe('TagGroupsService', () => {
 
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(0);
-    expect(emit).toHaveBeenLastCalledWith(
-      eventNames.removed,
-      [new EntityRemovedEvent(record.id)],
-    );
+    expect(emit).toHaveBeenLastCalledWith(eventNames.removed, [
+      new EntityRemovedEvent(record.id),
+    ]);
   });
 
   it('should not emit when removing a missing entity', async () => {

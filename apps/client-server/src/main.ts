@@ -3,7 +3,6 @@ import {
   INestApplication,
   Logger,
   PlainLiteralObject,
-  ValidationPipe,
 } from '@nestjs/common';
 import { ClassTransformOptions } from '@nestjs/common/interfaces/external/class-transform-options.interface';
 import { NestFactory, Reflector } from '@nestjs/core';
@@ -13,6 +12,8 @@ import compression from 'compression';
 import { DatabaseEntity } from '@postybirb/database';
 import { AppModule } from './app/app.module';
 import { EntityNotFoundExceptionFilter } from './app/common/filters/entity-not-found.filter';
+import { addZodSchemas } from './app/common/validation/zod-openapi';
+import { ZodValidationPipe } from './app/common/validation/zod-validation.pipe';
 import { SSL } from './app/security-and-authentication/ssl';
 import { WebSocketAdapter } from './app/web-socket/web-socket-adapter';
 
@@ -63,15 +64,8 @@ async function bootstrap(options: BootstrapOptions = {}) {
   app.useWebSocketAdapter(new WebSocketAdapter(app));
   app.setGlobalPrefix(globalPrefix);
   app.useGlobalInterceptors(new CustomClassSerializer(app.get(Reflector)));
-  app.useGlobalFilters(
-    new EntityNotFoundExceptionFilter(app.getHttpAdapter()),
-  );
-  app.useGlobalPipes(
-    new ValidationPipe({
-      forbidUnknownValues: true,
-      transform: true,
-    }),
-  );
+  app.useGlobalFilters(new EntityNotFoundExceptionFilter(app.getHttpAdapter()));
+  app.useGlobalPipes(new ZodValidationPipe());
   app.use(compression());
 
   // Swagger
@@ -101,7 +95,7 @@ async function bootstrap(options: BootstrapOptions = {}) {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   document.security = [{ 'x-remote-password': [] }];
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api', app, addZodSchemas(document));
 
   const { port } = PostyBirbEnvConfig;
 
@@ -113,4 +107,3 @@ async function bootstrap(options: BootstrapOptions = {}) {
 }
 
 export { bootstrap as bootstrapClientServer };
-

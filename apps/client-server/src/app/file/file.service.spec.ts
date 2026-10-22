@@ -1,8 +1,18 @@
+import {
+  CreateSubmissionDto,
+  FileSubmission,
+  SubmissionType,
+} from '@postybirb/types';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, FileBufferRepository, SubmissionFile, SubmissionFileRepository } from '@postybirb/database';
+import {
+  clearDatabase,
+  FileBufferRepository,
+  SubmissionFile,
+  SubmissionFileRepository,
+} from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
-import { FileSubmission, SubmissionType } from '@postybirb/types';
+
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
@@ -18,7 +28,7 @@ import { TitleParser } from '../post-parsers/parsers/title-parser';
 import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { PostingActivityModule } from '../posting/posting-activity.module';
 import { SettingsService } from '../settings/settings.service';
-import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
+
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { MessageSubmissionService } from '../submission/services/message-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';

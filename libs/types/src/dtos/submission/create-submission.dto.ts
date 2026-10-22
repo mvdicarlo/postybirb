@@ -1,34 +1,48 @@
-import { SubmissionRating, SubmissionType } from '../../enums';
-import { DescriptionValue } from '../../models/submission/description-value.type';
-import { SubmissionId } from '../../models/submission/submission.interface';
-import { Tag } from '../../models/tag/tag.type';
+import { z } from 'zod';
+import { createZodDto } from '../zod-dto';
+import { SubmissionRating } from '../../enums/submission-rating.enum';
+import { SubmissionType } from '../../enums/submission-type.enum';
+import { DescriptionValueSchema } from '../../schemas/description.schema';
+import {
+  MultipartBooleanSchema,
+  multipartJson,
+} from '../../schemas/multipart.schema';
 
-/**
- * Default options to apply to all created submissions.
- */
-export interface ICreateSubmissionDefaultOptions {
-  tags?: Tag[];
-  description?: DescriptionValue;
-  rating?: SubmissionRating;
-}
+export const CreateSubmissionDefaultOptionsSchema = z.object({
+  tags: z.array(z.string()).optional(),
+  description: DescriptionValueSchema.optional(),
+  rating: z.enum(SubmissionRating).optional(),
+});
 
-/**
- * Metadata for individual files during batch upload.
- */
-export interface IFileMetadata {
-  /** Original filename to match against */
-  filename: string;
-  /** Custom title for this file's submission */
-  title: string;
-}
+export type CreateSubmissionDefaultOptions = z.infer<
+  typeof CreateSubmissionDefaultOptionsSchema
+>;
 
-export interface ICreateSubmissionDto {
-  name: string;
-  type: SubmissionType;
-  isTemplate?: boolean;
-  dependsOn?: SubmissionId[];
-  /** Default options (tags, description, rating) to apply to all created submissions */
-  defaultOptions?: ICreateSubmissionDefaultOptions;
-  /** Per-file metadata for batch uploads (title overrides per file) */
-  fileMetadata?: IFileMetadata[];
-}
+export const FileMetadataSchema = z.object({
+  filename: z.string(),
+  title: z.string(),
+});
+
+export type FileMetadata = z.infer<typeof FileMetadataSchema>;
+
+export const CreateSubmissionSchema = z
+  .object({
+    name: z.string().default(''),
+    type: z.enum(SubmissionType).optional(),
+    isTemplate: MultipartBooleanSchema,
+    isMultiSubmission: MultipartBooleanSchema,
+    dependsOn: multipartJson(z.array(z.uuidv4())),
+    defaultOptions: multipartJson(CreateSubmissionDefaultOptionsSchema),
+    fileMetadata: multipartJson(z.array(FileMetadataSchema)),
+  })
+  .superRefine((value, ctx) => {
+    if (value.isTemplate && !value.name.trim()) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['name'],
+        message: 'A template name is required',
+      });
+    }
+  });
+
+export class CreateSubmissionDto extends createZodDto(CreateSubmissionSchema) {}

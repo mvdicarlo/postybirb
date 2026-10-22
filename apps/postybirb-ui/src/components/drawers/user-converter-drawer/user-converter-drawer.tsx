@@ -7,20 +7,23 @@ import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
 import { ActionIcon, Group, Tooltip } from '@mantine/core';
 import type {
-    ICreateUserConverterDto,
-    IUpdateUserConverterDto,
+  CreateUserConverterDto,
+  UpdateUserConverterDto,
 } from '@postybirb/types';
 import { IconHelp } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import userConvertersApi from '../../../api/user-converters.api';
 import { useUserConverters } from '../../../stores/entity/user-converter-store';
 import type { UserConverterRecord } from '../../../stores/records';
-import { useActiveDrawer, useDrawerActions } from '../../../stores/ui/drawer-store';
+import {
+  useActiveDrawer,
+  useDrawerActions,
+} from '../../../stores/ui/drawer-store';
 import { useTourActions } from '../../../stores/ui/tour-store';
 import { USER_CONVERTERS_TOUR_ID } from '../../onboarding-tour/tours/user-converters-tour';
 import {
-    ConverterDrawer,
-    type ConverterDrawerConfig,
+  ConverterDrawer,
+  type ConverterDrawerConfig,
 } from '../converter-drawer';
 
 // Drawer identifier
@@ -49,14 +52,18 @@ function UserConverterDrawerContent({ onClose }: { onClose: () => void }) {
   const config = useMemo(
     (): ConverterDrawerConfig<
       UserConverterRecord,
-      ICreateUserConverterDto,
-      IUpdateUserConverterDto
+      CreateUserConverterDto,
+      UpdateUserConverterDto
     > => ({
       title: (
         <Group gap="xs">
           <Trans>Username Aliases</Trans>
           <Tooltip label={<Trans>Username Aliases Tour</Trans>}>
-            <ActionIcon variant="subtle" size="xs" onClick={() => startTour(USER_CONVERTERS_TOUR_ID)}>
+            <ActionIcon
+              variant="subtle"
+              size="xs"
+              onClick={() => startTour(USER_CONVERTERS_TOUR_ID)}
+            >
               <IconHelp size={16} />
             </ActionIcon>
           </Tooltip>
@@ -65,23 +72,23 @@ function UserConverterDrawerContent({ onClose }: { onClose: () => void }) {
       primaryField: 'username',
       getPrimaryValue: (record: UserConverterRecord) => record.username,
       api: {
-        create: (dto: ICreateUserConverterDto) => userConvertersApi.create(dto),
-        update: (id: string, dto: IUpdateUserConverterDto) =>
+        create: (dto: CreateUserConverterDto) => userConvertersApi.create(dto),
+        update: (id: string, dto: UpdateUserConverterDto) =>
           userConvertersApi.update(id, dto),
         remove: (ids: string[]) => userConvertersApi.remove(ids),
       },
       createUpdateDto: (
         username: string,
-        convertTo: Record<string, string>
-      ): IUpdateUserConverterDto => ({ username, convertTo }),
+        convertTo: Record<string, string>,
+      ): UpdateUserConverterDto => ({ username, convertTo }),
       createCreateDto: (
         username: string,
-        convertTo: Record<string, string>
-      ): ICreateUserConverterDto => ({ username, convertTo }),
+        convertTo: Record<string, string>,
+      ): CreateUserConverterDto => ({ username, convertTo }),
       entityName: t`username alias`,
       duplicateError: t`A username alias with this username already exists`,
     }),
-    [startTour]
+    [startTour],
   );
 
   return (

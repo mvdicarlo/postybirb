@@ -1,19 +1,20 @@
 import {
-    BadRequestException,
-    Injectable,
-    OnModuleInit,
-} from '@nestjs/common';
+  EntityId,
+  SettingsConstants,
+  UpdateSettingsDto,
+} from '@postybirb/types';
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Settings, SettingsRepository } from '@postybirb/database';
-import { EntityId, SettingsConstants } from '@postybirb/types';
+
 import {
-    isLinux,
-    StartupOptions,
-    StartupOptionsManager,
+  isLinux,
+  StartupOptions,
+  StartupOptionsManager,
 } from '@postybirb/utils/common';
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
-import { UpdateSettingsDto } from './dtos/update-settings.dto';
+
 import { SETTINGS_EVENT_PREFIX } from './settings.events';
 
 @Injectable()

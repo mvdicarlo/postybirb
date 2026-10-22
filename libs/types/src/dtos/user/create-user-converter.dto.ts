@@ -1,3 +1,11 @@
-import { IUserConverter } from '../../models';
+import { z } from 'zod';
+import { createZodDto } from '../zod-dto';
 
-export type ICreateUserConverterDto = Pick<IUserConverter, 'username' | 'convertTo'>;
+export const CreateUserConverterSchema = z.object({
+  username: z.string(),
+  convertTo: z.record(z.string(), z.string()),
+});
+
+export class CreateUserConverterDto extends createZodDto(
+  CreateUserConverterSchema,
+) {}

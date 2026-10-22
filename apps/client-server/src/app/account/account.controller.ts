@@ -1,4 +1,11 @@
 import {
+  AccountId,
+  CreateAccountDto,
+  EntityId,
+  SetWebsiteDataRequestDto,
+  UpdateAccountDto,
+} from '@postybirb/types';
+import {
   Body,
   Controller,
   Delete,
@@ -14,11 +21,8 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AccountId, EntityId } from '@postybirb/types';
+
 import { AccountService } from './account.service';
-import { CreateAccountDto } from './dtos/create-account.dto';
-import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
-import { UpdateAccountDto } from './dtos/update-account.dto';
 
 /**
  * CRUD operations on Account data.

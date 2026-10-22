@@ -1,24 +1,29 @@
+import {
+  CreateDirectoryWatcherDto,
+  CreateSubmissionDto,
+  DirectoryWatcherImportAction,
+  SubmissionType,
+  UpdateDirectoryWatcherDto,
+} from '@postybirb/types';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
-import { DirectoryWatcherImportAction, SubmissionType } from '@postybirb/types';
+
 import { mkdir, readdir, rename, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import {
-    EntityCreatedEvent,
-    EntityUpdatedEvent,
-    getEntityCrudEventNames,
+  EntityCreatedEvent,
+  EntityUpdatedEvent,
+  getEntityCrudEventNames,
 } from '../common/events/entity-crud.events';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { TestPlatformModule } from '../platform/testing/test-platform.module';
-import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
+
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
 import { DIRECTORY_WATCHER_EVENT_PREFIX } from './directory-watcher.events';
 import { DirectoryWatchersService } from './directory-watchers.service';
-import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
-import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
 
 // Mock fs/promises
 jest.mock('fs/promises', () => ({

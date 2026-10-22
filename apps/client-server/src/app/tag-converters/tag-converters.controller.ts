@@ -1,3 +1,8 @@
+import {
+  CreateTagConverterDto,
+  EntityId,
+  UpdateTagConverterDto,
+} from '@postybirb/types';
 import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -5,11 +10,10 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { EntityId } from '@postybirb/types';
+
 import { TagConverterRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
-import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
+
 import { TagConvertersService } from './tag-converters.service';
 
 /**

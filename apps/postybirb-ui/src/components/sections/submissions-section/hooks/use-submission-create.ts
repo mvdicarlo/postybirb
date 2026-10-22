@@ -4,7 +4,7 @@
 
 import {
   Description,
-  IFileMetadata,
+  FileMetadata,
   SubmissionId,
   SubmissionRating,
   SubmissionType,
@@ -19,7 +19,7 @@ import { showErrorNotification } from '../../../../utils/notifications';
  */
 export interface FileSubmissionUploadParams {
   files: File[];
-  fileMetadata: IFileMetadata[];
+  fileMetadata: FileMetadata[];
   defaultOptions: {
     tags?: Tag[];
     description?: Description;

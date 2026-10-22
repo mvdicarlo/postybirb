@@ -1,12 +1,17 @@
+import {
+  CreateTagConverterDto,
+  DynamicObject,
+  EntityId,
+  UpdateTagConverterDto,
+} from '@postybirb/types';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { TagConverter, TagConverterRepository } from '@postybirb/database';
-import { DynamicObject, EntityId } from '@postybirb/types';
+
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Website } from '../websites/website';
-import { CreateTagConverterDto } from './dtos/create-tag-converter.dto';
-import { UpdateTagConverterDto } from './dtos/update-tag-converter.dto';
+
 import { TAG_CONVERTER_EVENT_PREFIX } from './tag-converter.events';
 
 @Injectable()

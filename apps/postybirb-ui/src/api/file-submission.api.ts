@@ -1,9 +1,9 @@
 import {
-    EntityId,
-    IReorderSubmissionFilesDto,
-    ISubmissionDto,
-    SubmissionFileMetadata,
-    SubmissionId,
+  EntityId,
+  ReorderSubmissionFilesDto,
+  ISubmissionDto,
+  SubmissionFileMetadata,
+  SubmissionId,
 } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
 
@@ -49,7 +49,7 @@ class FileSubmissionsApi {
     return this.client.patch(`metadata/${id}`, update);
   }
 
-  reorder(update: IReorderSubmissionFilesDto) {
+  reorder(update: ReorderSubmissionFilesDto) {
     return this.client.patch(`reorder`, update);
   }
 }

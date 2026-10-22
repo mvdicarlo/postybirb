@@ -1,3 +1,4 @@
+import { UpdateCookiesRemoteDto } from '@postybirb/types';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Logger } from '@postybirb/logger';
 import {
@@ -6,7 +7,6 @@ import {
   PlatformService,
 } from '@postybirb/platform';
 import { RemoteConfigManager } from '@postybirb/utils/common';
-import { UpdateCookiesRemoteDto } from './models/update-cookies-remote.dto';
 
 @Injectable()
 export class RemoteService {

@@ -1,3 +1,8 @@
+import {
+  CreateUserConverterDto,
+  EntityId,
+  UpdateUserConverterDto,
+} from '@postybirb/types';
 import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -5,11 +10,10 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { EntityId } from '@postybirb/types';
+
 import { UserConverterRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
-import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
+
 import { UserConvertersService } from './user-converters.service';
 
 /**

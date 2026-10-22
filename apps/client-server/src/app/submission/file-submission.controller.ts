@@ -1,4 +1,11 @@
 import {
+  EntityId,
+  ReorderSubmissionFilesDto,
+  SubmissionFileMetadata,
+  SubmissionId,
+  UpdateAltFileDto,
+} from '@postybirb/types';
+import {
   BadRequestException,
   Body,
   Controller,
@@ -18,14 +25,9 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import {
-  EntityId,
-  SubmissionFileMetadata,
-  SubmissionId,
-} from '@postybirb/types';
+
 import { MulterFileInfo } from '../file/models/multer-file-info';
-import { ReorderSubmissionFilesDto } from './dtos/reorder-submission-files.dto';
-import { UpdateAltFileDto } from './dtos/update-alt-file.dto';
+
 import { FileSubmissionService } from './services/file-submission.service';
 import { SubmissionService } from './services/submission.service';
 
@@ -45,7 +47,9 @@ export class FileSubmissionController {
   ) {}
 
   private findOne(id: SubmissionId) {
-    return this.submissionService.findByIdOrThrow(id).then((record) => record.toDTO());
+    return this.submissionService
+      .findByIdOrThrow(id)
+      .then((record) => record.toDTO());
   }
 
   @Post('add/:target/:id')

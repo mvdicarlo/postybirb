@@ -1,3 +1,6 @@
-import { ITagGroup } from '../../models';
+import { createZodDto } from '../zod-dto';
+import { CreateTagGroupSchema } from './create-tag-group.dto';
 
-export type IUpdateTagGroupDto = Pick<ITagGroup, 'name' | 'tags'>;
+export const UpdateTagGroupSchema = CreateTagGroupSchema;
+
+export class UpdateTagGroupDto extends createZodDto(UpdateTagGroupSchema) {}

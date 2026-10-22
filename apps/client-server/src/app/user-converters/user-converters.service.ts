@@ -1,12 +1,17 @@
+import {
+  CreateUserConverterDto,
+  DynamicObject,
+  EntityId,
+  UpdateUserConverterDto,
+} from '@postybirb/types';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserConverter, UserConverterRepository } from '@postybirb/database';
-import { DynamicObject, EntityId } from '@postybirb/types';
+
 import { eq } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { Website } from '../websites/website';
-import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
-import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
+
 import { USER_CONVERTER_EVENT_PREFIX } from './user-converter.events';
 
 @Injectable()

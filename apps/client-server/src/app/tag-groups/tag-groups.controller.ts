@@ -1,3 +1,8 @@
+import {
+  CreateTagGroupDto,
+  EntityId,
+  UpdateTagGroupDto,
+} from '@postybirb/types';
 import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -5,11 +10,10 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { EntityId } from '@postybirb/types';
+
 import { TagGroupRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
-import { CreateTagGroupDto } from './dtos/create-tag-group.dto';
-import { UpdateTagGroupDto } from './dtos/update-tag-group.dto';
+
 import { TagGroupsService } from './tag-groups.service';
 
 /**
