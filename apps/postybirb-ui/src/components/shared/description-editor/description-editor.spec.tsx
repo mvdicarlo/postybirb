@@ -155,6 +155,37 @@ describe('DescriptionEditor external updates', () => {
     ).editor;
   }
 
+  it.each([false, true])(
+    'updates read-only state without recreating the editor or emitting edits (%s)',
+    (readOnly) => {
+      const props: DescriptionEditorProps = {
+        id: 'option',
+        value: description('Original'),
+        onChange: jest.fn(),
+      };
+      renderEditor({ ...props, readOnly });
+      const editor = getEditor();
+      const content = editor.getJSON();
+      expect(editor.isEditable).toBe(!readOnly);
+      expect(editor.view.dom.getAttribute('contenteditable')).toBe(
+        String(!readOnly),
+      );
+
+      renderEditor({ ...props, readOnly: !readOnly });
+      expect(getEditor()).toBe(editor);
+      expect(editor.isEditable).toBe(readOnly);
+      expect(editor.view.dom.getAttribute('contenteditable')).toBe(
+        String(readOnly),
+      );
+
+      renderEditor({ ...props, readOnly });
+      expect(getEditor()).toBe(editor);
+      expect(editor.isEditable).toBe(!readOnly);
+      expect(editor.getJSON()).toEqual(content);
+      expect(props.onChange).not.toHaveBeenCalled();
+    },
+  );
+
   it('applies a template to the same editor without emitting an edit', () => {
     const onChange = jest.fn();
     renderEditor({ id: 'option', value: description('Original'), onChange });

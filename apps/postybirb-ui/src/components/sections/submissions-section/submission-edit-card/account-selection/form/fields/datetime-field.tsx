@@ -15,9 +15,10 @@ import { FormFieldProps } from './form-field.type';
 function DateTimePickerField({
   fieldName,
   field,
+  disabled,
   defaultValue,
 }: FormFieldProps<DateTimeFieldType> & { defaultValue: string | undefined }) {
-  const { getValue, setValue, submission } = useFormFieldsContext();
+  const { getValue, setValue } = useFormFieldsContext();
 
   const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
   const dateValue = value ? dayjs(value).toDate() : null;
@@ -28,7 +29,7 @@ function DateTimePickerField({
   return (
     <DateTimePickerWithLocalization
       rightSection={<IconCalendar />}
-      disabled={submission.isArchived}
+      disabled={disabled}
       valueFormat={field.format}
       value={dateValue}
       onChange={(date) => {
@@ -48,6 +49,7 @@ function DateTimePickerField({
 export function DateTimeField({
   fieldName,
   field,
+  disabled,
 }: FormFieldProps<DateTimeFieldType>) {
   const defaultValue = useDefaultOption<string>(fieldName);
   const validations = useValidations(fieldName);
@@ -61,6 +63,7 @@ export function DateTimeField({
       <DateTimePickerField
         fieldName={fieldName}
         field={field}
+        disabled={disabled}
         defaultValue={defaultValue}
       />
     </FieldLabel>

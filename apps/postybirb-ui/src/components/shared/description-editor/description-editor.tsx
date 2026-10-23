@@ -540,6 +540,10 @@ export function DescriptionEditor({
   // Keep ref in sync with editor for callbacks
   editorRef.current = editor;
 
+  useEffect(() => {
+    editor?.setEditable(!readOnly, false);
+  }, [editor, readOnly]);
+
   // When value passed externally updates, update the editor too
   const lastValueRef = useRef({ editor, value });
   useEffect(() => {
