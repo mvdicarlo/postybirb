@@ -139,10 +139,9 @@ const apiKeyPattern = /^adore_ak_\S+$/;
 export default class Adore34
   extends Website<Adore34AccountData>
   implements
-    FileWebsite<Adore34FileSubmission>,
-    MessageWebsite<Adore34MessageSubmission>,
-    OAuthWebsite<Adore34OAuthRoutes>
-{
+  FileWebsite<Adore34FileSubmission>,
+  MessageWebsite<Adore34MessageSubmission>,
+  OAuthWebsite<Adore34OAuthRoutes> {
   protected BASE_URL = 'https://api.adore34.com';
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<Adore34AccountData> =
@@ -583,7 +582,7 @@ export default class Adore34
       }
       cancellationToken.throwIfAborted();
       const response = await this.platform.http.post<{
-        data: { _id: string; postUrl?: string };
+        _id: string; postUrl?: string;
       }>(`${this.BASE_URL}/posts/creators`, {
         partition: this.accountId,
         headers: this.getAuthHeaders(apiKey),
@@ -610,7 +609,7 @@ export default class Adore34
         },
       });
       this.checkResponse(response, 'creating post');
-      const { _id: createdPostId } = response.body?.data ?? {};
+      const { _id: createdPostId } = response.body ?? {};
       if (
         typeof createdPostId !== 'string' ||
         !objectIdPattern.test(createdPostId)
@@ -624,8 +623,8 @@ export default class Adore34
       posted = true;
       return result
         .withMessage('Post created successfully on Adore34')
-        .withSourceUrl(response.body.data.postUrl)
-        .withAdditionalInfo(response.body.data);
+        .withSourceUrl(response.body.postUrl)
+        .withAdditionalInfo(response.body);
     } catch (error) {
       this.logger.withError(error).error('Failed to post to Adore34');
       return error instanceof PostResponse
