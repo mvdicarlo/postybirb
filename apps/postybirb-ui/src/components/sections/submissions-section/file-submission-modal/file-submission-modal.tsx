@@ -27,7 +27,7 @@ import { FileWithPath } from '@mantine/dropzone';
 import {
   DefaultDescription,
   Description,
-  IFileMetadata,
+  FileMetadata,
   SubmissionId,
   SubmissionRating,
   SubmissionType,
@@ -55,7 +55,7 @@ export interface FileSubmissionModalProps {
   /** Callback when files are uploaded */
   onUpload: (params: {
     files: File[];
-    fileMetadata: IFileMetadata[];
+    fileMetadata: FileMetadata[];
     defaultOptions: {
       tags?: Tag[];
       description?: Description;
@@ -98,14 +98,11 @@ export function FileSubmissionModal({
   }, [opened, initialFiles]);
 
   // Template state
-  const [
-    selectedTemplateId,
-    setStoredTemplateId,
-    removeStoredTemplateId,
-  ] = useLocalStorage<SubmissionId | undefined>(
-    DEFAULT_TEMPLATE_ID_KEY,
-    undefined,
-  );
+  const [selectedTemplateId, setStoredTemplateId, removeStoredTemplateId] =
+    useLocalStorage<SubmissionId | undefined>(
+      DEFAULT_TEMPLATE_ID_KEY,
+      undefined,
+    );
   const setSelectedTemplateId = useCallback(
     (templateId: SubmissionId | undefined) => {
       if (templateId === undefined) {
@@ -128,10 +125,9 @@ export function FileSubmissionModal({
       setTags([]);
       setDescription(DefaultDescription());
       setRating(SubmissionRating.GENERAL);
-      setSelectedTemplateId(undefined);
       setProgress(0);
     }
-  }, [opened, setSelectedTemplateId]);
+  }, [opened]);
 
   // Default options state
   const [tags, setTags] = useState<Tag[]>([]);
@@ -226,7 +222,7 @@ export function FileSubmissionModal({
       }, 300);
 
       const files = fileItems.map((item) => item.file as File);
-      const fileMetadata: IFileMetadata[] = fileItems.map((item) => ({
+      const fileMetadata: FileMetadata[] = fileItems.map((item) => ({
         filename: item.file.name,
         title: item.title,
       }));
@@ -239,8 +235,7 @@ export function FileSubmissionModal({
           description: description.content?.length ? description : undefined,
           rating: rating !== SubmissionRating.GENERAL ? rating : undefined,
         },
-        templateId:
-          optionsMode === 'template' ? selectedTemplateId : undefined,
+        templateId: optionsMode === 'template' ? selectedTemplateId : undefined,
       });
 
       clearInterval(interval);
@@ -255,7 +250,6 @@ export function FileSubmissionModal({
         setTags([]);
         setDescription(DefaultDescription());
         setRating(SubmissionRating.GENERAL);
-        setSelectedTemplateId(undefined);
         onClose();
       }, 500);
     } catch (error) {
@@ -271,7 +265,6 @@ export function FileSubmissionModal({
     rating,
     selectedTemplateId,
     optionsMode,
-    setSelectedTemplateId,
     onUpload,
     onClose,
   ]);

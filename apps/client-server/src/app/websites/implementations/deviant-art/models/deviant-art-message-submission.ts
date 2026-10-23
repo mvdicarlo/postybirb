@@ -4,7 +4,7 @@ import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
 export class DeviantArtMessageSubmission extends BaseWebsiteOptions {
   @TitleField({
-    maxLength: 50,
+    maxLength: 100,
   })
   declare title: string;
 

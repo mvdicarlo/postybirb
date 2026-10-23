@@ -1,3 +1,7 @@
+import {
+  CreateUserConverterDto,
+  UpdateUserConverterDto,
+} from '@postybirb/types';
 import { BadRequestException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -8,8 +12,7 @@ import {
   EntityUpdatedEvent,
   getEntityCrudEventNames,
 } from '../common/events/entity-crud.events';
-import { CreateUserConverterDto } from './dtos/create-user-converter.dto';
-import { UpdateUserConverterDto } from './dtos/update-user-converter.dto';
+
 import { USER_CONVERTER_EVENT_PREFIX } from './user-converter.events';
 import { UserConvertersService } from './user-converters.service';
 
@@ -67,10 +70,9 @@ describe('UserConvertersService', () => {
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
     });
-    expect(emit).toHaveBeenCalledWith(
-      eventNames.created,
-      [new EntityCreatedEvent(record.toDTO())],
-    );
+    expect(emit).toHaveBeenCalledWith(eventNames.created, [
+      new EntityCreatedEvent(record.toDTO()),
+    ]);
   });
 
   it('should fail to create duplicate user converters', async () => {
@@ -113,10 +115,9 @@ describe('UserConvertersService', () => {
     const updatedRec = await service.findByIdOrThrow(record.id);
     expect(updatedRec.username).toBe(updateDto.username);
     expect(updatedRec.convertTo).toEqual(updateDto.convertTo);
-    expect(emit).toHaveBeenLastCalledWith(
-      eventNames.updated,
-      [new EntityUpdatedEvent(updated.toDTO())],
-    );
+    expect(emit).toHaveBeenLastCalledWith(eventNames.updated, [
+      new EntityUpdatedEvent(updated.toDTO()),
+    ]);
   });
 
   it('should not emit when updating a missing entity', async () => {
@@ -138,10 +139,9 @@ describe('UserConvertersService', () => {
 
     await service.remove(record.id);
     expect(await service.findAll()).toHaveLength(0);
-    expect(emit).toHaveBeenLastCalledWith(
-      eventNames.removed,
-      [new EntityRemovedEvent(record.id)],
-    );
+    expect(emit).toHaveBeenLastCalledWith(eventNames.removed, [
+      new EntityRemovedEvent(record.id),
+    ]);
   });
 
   it('should not emit when removing a missing entity', async () => {

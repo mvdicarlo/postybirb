@@ -386,9 +386,12 @@ export default class FurAffinity
 
     PostResponse.validateBody(this, page);
 
-    const key = parse(page.body)
-      .querySelector('#journal-form input[name="key"]')
-      ?.getAttribute('value');
+    const parsed = parse(page.body);
+    const keyElement =
+      parsed.querySelector('#journal-form input[name="key"]') ??
+      parsed.querySelector('#MsgForm input[name="key"]');
+      
+    const key = keyElement?.getAttribute('value');
     if (!key) {
       return PostResponse.fromWebsite(this)
         .withException(

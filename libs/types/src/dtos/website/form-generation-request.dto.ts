@@ -1,8 +1,13 @@
-import { SubmissionType } from '../../enums';
-import { AccountId } from '../../models';
+import { z } from 'zod';
+import { createZodDto } from '../zod-dto';
+import { SubmissionType } from '../../enums/submission-type.enum';
 
-export interface IFormGenerationRequestDto {
-  accountId: AccountId;
-  type: SubmissionType;
-  isMultiSubmission?: boolean;
-}
+export const FormGenerationRequestSchema = z.object({
+  accountId: z.string(),
+  type: z.enum(SubmissionType),
+  isMultiSubmission: z.boolean().optional(),
+});
+
+export class FormGenerationRequestDto extends createZodDto(
+  FormGenerationRequestSchema,
+) {}

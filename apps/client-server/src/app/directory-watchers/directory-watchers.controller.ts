@@ -1,17 +1,20 @@
+import {
+  CheckPathDto,
+  CreateDirectoryWatcherDto,
+  EntityId,
+  UpdateDirectoryWatcherDto,
+} from '@postybirb/types';
 import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import {
-    ApiBadRequestResponse,
-    ApiNotFoundResponse,
-    ApiOkResponse,
-    ApiTags,
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { EntityId } from '@postybirb/types';
+
 import { DirectoryWatcherRepository } from '@postybirb/database';
 import { PostyBirbController } from '../common/controller/postybirb-controller';
 import { DirectoryWatchersService } from './directory-watchers.service';
-import { CheckPathDto } from './dtos/check-path.dto';
-import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
-import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
 
 /**
  * CRUD operations on DirectoryWatchers.

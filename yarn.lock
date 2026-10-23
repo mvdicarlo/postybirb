@@ -6217,16 +6217,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nestjs/schedule@npm:^4":
-  version: 4.1.2
-  resolution: "@nestjs/schedule@npm:4.1.2"
+"@nestjs/schedule@npm:^6.1.1":
+  version: 6.1.3
+  resolution: "@nestjs/schedule@npm:6.1.3"
   dependencies:
-    cron: "npm:3.2.1"
-    uuid: "npm:11.0.3"
+    cron: "npm:4.4.0"
   peerDependencies:
-    "@nestjs/common": ^8.0.0 || ^9.0.0 || ^10.0.0
-    "@nestjs/core": ^8.0.0 || ^9.0.0 || ^10.0.0
-  checksum: 10c0/90124e454fb4d170eb806c2afea67a2f4466d2e9b01b8c5516f4d8bd0592fc949f53263e3441a3c494cf624d3f4aa233d798964e0e2f580b9347d5ec81d49b53
+    "@nestjs/common": ^10.0.0 || ^11.0.0
+    "@nestjs/core": ^10.0.0 || ^11.0.0
+  checksum: 10c0/de6da8d0246f486f7fdefaf6991fea18718f7a2d2eb698cf40094bfaa21e028107e37a27352af4571370c14cd757ca7402b5398af544438cc046d28575dee827
   languageName: node
   linkType: hard
 
@@ -9364,13 +9363,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/luxon@npm:~3.4.0":
-  version: 3.4.2
-  resolution: "@types/luxon@npm:3.4.2"
-  checksum: 10c0/d835467de3daf7e17ba78b50bb5a14efd94272439ca067990d71332a54b311544459c69623eddd243b511b28d70194c9591a9ee8cf9c038962c965f991affd7e
-  languageName: node
-  linkType: hard
-
 "@types/luxon@npm:~3.7.0":
   version: 3.7.1
   resolution: "@types/luxon@npm:3.7.1"
@@ -9656,13 +9648,6 @@ __metadata:
   version: 10.0.0
   resolution: "@types/uuid@npm:10.0.0"
   checksum: 10c0/9a1404bf287164481cb9b97f6bb638f78f955be57c40c6513b7655160beb29df6f84c915aaf4089a1559c216557dc4d2f79b48d978742d3ae10b937420ddac60
-  languageName: node
-  linkType: hard
-
-"@types/validator@npm:^13.15.3":
-  version: 13.15.10
-  resolution: "@types/validator@npm:13.15.10"
-  checksum: 10c0/3e2e65fcd37dd6961ca3fd0535293d0c42f5911dc3ca44b96f458835e6db2392b678ccbb0c9815d8c0a14e653439e6c62c7b8758a6cd1d6e390551c9e56618ac
   languageName: node
   linkType: hard
 
@@ -11997,17 +11982,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-validator@npm:^0.14.1":
-  version: 0.14.3
-  resolution: "class-validator@npm:0.14.3"
-  dependencies:
-    "@types/validator": "npm:^13.15.3"
-    libphonenumber-js: "npm:^1.11.1"
-    validator: "npm:^13.15.20"
-  checksum: 10c0/6d451c359aecb04479b95034b10cca02015d3b6f34480574c618c070e12f3676cb4cdfa76bfa61353356a483ff01326e9ce3f07ef584be6c31806190117f7fa4
-  languageName: node
-  linkType: hard
-
 "clean-stack@npm:^2.0.0":
   version: 2.2.0
   resolution: "clean-stack@npm:2.2.0"
@@ -12697,13 +12671,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cron@npm:3.2.1":
-  version: 3.2.1
-  resolution: "cron@npm:3.2.1"
+"cron@npm:4.4.0":
+  version: 4.4.0
+  resolution: "cron@npm:4.4.0"
   dependencies:
-    "@types/luxon": "npm:~3.4.0"
-    luxon: "npm:~3.5.0"
-  checksum: 10c0/26e2ea54c4e15abbc70d391b6366b7e9c72281637cdf0c077726b03a65901c013b2817854ef942f02c452b40b6d482f879d0eeb2a8f7b0c6cc53694e740bf1fa
+    "@types/luxon": "npm:~3.7.0"
+    luxon: "npm:~3.7.0"
+  checksum: 10c0/e3762fda4a9a2404ac2e54e1104a3c6c695747e14b2321bbc5531aa1192c75a319075695fcaf68b6927e0ffd877b5454f314c680f6586db1a78b2c25b76b8a32
   languageName: node
   linkType: hard
 
@@ -18702,13 +18676,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"libphonenumber-js@npm:^1.11.1":
-  version: 1.12.30
-  resolution: "libphonenumber-js@npm:1.12.30"
-  checksum: 10c0/1fccae67dd8dd958e569dcbb962d375e17acc5d6287bc8c0d71820120ada8e4dc6f9d3611a729787e5567641bf576491f758b48975fc24f02eabb1aeadb552b4
-  languageName: node
-  linkType: hard
-
 "license-webpack-plugin@npm:^4.0.2":
   version: 4.0.2
   resolution: "license-webpack-plugin@npm:4.0.2"
@@ -19110,13 +19077,6 @@ __metadata:
   version: 3.7.2
   resolution: "luxon@npm:3.7.2"
   checksum: 10c0/ed8f0f637826c08c343a29dd478b00628be93bba6f068417b1d8896b61cb61c6deacbe1df1e057dbd9298334044afa150f9aaabbeb3181418ac8520acfdc2ae2
-  languageName: node
-  linkType: hard
-
-"luxon@npm:~3.5.0":
-  version: 3.5.0
-  resolution: "luxon@npm:3.5.0"
-  checksum: 10c0/335789bba95077db831ef99894edadeb23023b3eb2137a1b56acd0d290082b691cf793143d69e30bc069ec95f0b49f36419f48e951c68014f19ffe12045e3494
   languageName: node
   linkType: hard
 
@@ -21503,7 +21463,7 @@ __metadata:
     "@nestjs/event-emitter": "npm:^3.1.0"
     "@nestjs/platform-express": "npm:^10.4.16"
     "@nestjs/platform-socket.io": "npm:^10.4.16"
-    "@nestjs/schedule": "npm:^4"
+    "@nestjs/schedule": "npm:^6.1.1"
     "@nestjs/schematics": "npm:11.0.0"
     "@nestjs/serve-static": "npm:^4"
     "@nestjs/swagger": "npm:7.4.2"
@@ -21594,7 +21554,6 @@ __metadata:
     axios: "npm:^1.16.1"
     better-sqlite3: "npm:^12.11.1"
     class-transformer: "npm:^0.5.1"
-    class-validator: "npm:^0.14.1"
     clsx: "npm:^2.1.1"
     compression: "npm:^1.7.4"
     croner: "npm:^8.1.2"
@@ -21695,6 +21654,7 @@ __metadata:
     winston: "npm:^3.14.2"
     winston-daily-rotate-file: "npm:^5.0.0"
     winston-transport: "npm:^4.9.0"
+    zod: "npm:^4.6.7"
     zustand: "npm:^5.0.9"
   languageName: unknown
   linkType: soft
@@ -25872,15 +25832,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:11.0.3":
-  version: 11.0.3
-  resolution: "uuid@npm:11.0.3"
-  bin:
-    uuid: dist/esm/bin/uuid
-  checksum: 10c0/cee762fc76d949a2ff9205770334699e0043d52bb766472593a25f150077c9deed821230251ea3d6ab3943a5ea137d2826678797f1d5f6754c7ce5ce27e9f7a6
-  languageName: node
-  linkType: hard
-
 "uuid@npm:^11.1.0, uuid@npm:^11.1.1":
   version: 11.1.1
   resolution: "uuid@npm:11.1.1"
@@ -25924,13 +25875,6 @@ __metadata:
   version: 5.0.1
   resolution: "validate-npm-package-name@npm:5.0.1"
   checksum: 10c0/903e738f7387404bb72f7ac34e45d7010c877abd2803dc2d614612527927a40a6d024420033132e667b1bade94544b8a1f65c9431a4eb30d0ce0d80093cd1f74
-  languageName: node
-  linkType: hard
-
-"validator@npm:^13.15.20":
-  version: 13.15.23
-  resolution: "validator@npm:13.15.23"
-  checksum: 10c0/22a05ec6a98d48d2b6fb34d43ce854af61d15842362d142e64cfca0325d4d0c2d1051d9f9d3a0f741e58ea888f73a35baf7a2a810f5aed0f89183bd5040f0177
   languageName: node
   linkType: hard
 
@@ -26545,6 +26489,13 @@ __metadata:
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
+  languageName: node
+  linkType: hard
+
+"zod@npm:^4.6.7":
+  version: 4.6.7
+  resolution: "zod@npm:4.6.7"
+  checksum: 10c0/4ce2eb14034317b7254e347ca37b5ad591cf8333147030cf05b9b5d31692d45073f7f2747aa50cf8c6b29012194d2b22978cecc89969cf34a0d18e89d0ee7d7b
   languageName: node
   linkType: hard
 

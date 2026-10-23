@@ -1,3 +1,20 @@
+import {
+  ApplyMultiSubmissionDto,
+  ApplyTemplateOptionsDto,
+  CreateSubmissionDto,
+  FileSubmission,
+  FileSubmissionMetadata,
+  ISubmissionDto,
+  ISubmissionMetadata,
+  MessageSubmission,
+  NULL_ACCOUNT_ID,
+  ScheduleType,
+  SubmissionId,
+  SubmissionMetadataType,
+  SubmissionType,
+  UpdateSubmissionDto,
+  UpdateSubmissionTemplateNameDto,
+} from '@postybirb/types';
 /* eslint-disable no-param-reassign */
 import {
   BadRequestException,
@@ -18,18 +35,7 @@ import {
   WebsiteOptionsSchema,
   withTransactionContext,
 } from '@postybirb/database';
-import {
-  FileSubmission,
-  FileSubmissionMetadata,
-  ISubmissionDto,
-  ISubmissionMetadata,
-  MessageSubmission,
-  NULL_ACCOUNT_ID,
-  ScheduleType,
-  SubmissionId,
-  SubmissionMetadataType,
-  SubmissionType,
-} from '@postybirb/types';
+
 import { toError } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
 import { eq } from 'drizzle-orm';
@@ -38,11 +44,7 @@ import { PostyBirbService } from '../../common/service/postybirb-service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
 import { PostingActivityService } from '../../posting/posting-activity.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
-import { ApplyMultiSubmissionDto } from '../dtos/apply-multi-submission.dto';
-import { ApplyTemplateOptionsDto } from '../dtos/apply-template-options.dto';
-import { CreateSubmissionDto } from '../dtos/create-submission.dto';
-import { UpdateSubmissionTemplateNameDto } from '../dtos/update-submission-template-name.dto';
-import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
+
 import { SubmissionEventPublisher } from '../submission-event.publisher';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';

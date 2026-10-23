@@ -1,7 +1,7 @@
+import { GetIncompleteWorkDto, UnitOfWorkId } from '@postybirb/types';
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import type { UnitOfWorkId } from '@postybirb/types';
-import { GetIncompleteWorkDto } from './dtos/get-incomplete-work.dto';
+
 import { PostingService } from './posting.service';
 
 @ApiTags('posting')
@@ -12,7 +12,11 @@ export class PostingController {
   @Post()
   @ApiOkResponse({ description: 'Creates or resumes posting work.' })
   post(@Body() request: GetIncompleteWorkDto) {
-    return this.service.post(request.submissionId, request.evictions, request.targets);
+    return this.service.post(
+      request.submissionId,
+      request.evictions,
+      request.targets,
+    );
   }
 
   @Post('dry-run')
@@ -20,11 +24,17 @@ export class PostingController {
     description: 'Work that would run if the post were started now.',
   })
   dryRun(@Body() request: GetIncompleteWorkDto) {
-    return this.service.dryRun(request.submissionId, request.evictions, request.targets);
+    return this.service.dryRun(
+      request.submissionId,
+      request.evictions,
+      request.targets,
+    );
   }
 
   @Post('incomplete-work')
-  @ApiOkResponse({ description: 'Remaining, removed, and evicted posting work.' })
+  @ApiOkResponse({
+    description: 'Remaining, removed, and evicted posting work.',
+  })
   getIncompleteWork(@Body() request: GetIncompleteWorkDto) {
     return this.service.getIncompleteWork(
       request.submissionId,
@@ -60,7 +70,10 @@ export class PostingController {
   }
 
   @Post('/cancel/:postId')
-  cancelPost(@Body() request: { reason?: string }, @Param('postId') postId: string) {
+  cancelPost(
+    @Body() request: { reason?: string },
+    @Param('postId') postId: string,
+  ) {
     return this.service.cancelPost(postId, request.reason);
   }
 }

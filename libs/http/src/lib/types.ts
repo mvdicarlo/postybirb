@@ -12,6 +12,11 @@ export interface HttpRequestOptions {
   skipUrlEncodedIndexing?: boolean;
 }
 
+export interface HttpRequestBody {
+  contentType: string;
+  buffer: Buffer;
+}
+
 export interface CloudflareChallengeOptions {
   /**
   * Shows the hidden challenge BrowserWindow so the user can intervene when

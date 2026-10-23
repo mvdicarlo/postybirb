@@ -1,12 +1,18 @@
+import {
+  CreateDirectoryWatcherDto,
+  DirectoryWatcherImportAction,
+  EntityId,
+  SubmissionType,
+  UpdateDirectoryWatcherDto,
+} from '@postybirb/types';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { DirectoryWatcher, DirectoryWatcherRepository } from '@postybirb/database';
 import {
-    DirectoryWatcherImportAction,
-    EntityId,
-    SubmissionType,
-} from '@postybirb/types';
+  DirectoryWatcher,
+  DirectoryWatcherRepository,
+} from '@postybirb/database';
+
 import { IsTestEnvironment, toError } from '@postybirb/utils/common';
 import { mkdir, readdir, rename, writeFile } from 'fs/promises';
 import { getType } from 'mime';
@@ -16,8 +22,6 @@ import { MulterFileInfo } from '../file/models/multer-file-info';
 import { NotificationsService } from '../notifications/notifications.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { DIRECTORY_WATCHER_EVENT_PREFIX } from './directory-watcher.events';
-import { CreateDirectoryWatcherDto } from './dtos/create-directory-watcher.dto';
-import { UpdateDirectoryWatcherDto } from './dtos/update-directory-watcher.dto';
 
 /**
  * Directory structure for file processing:

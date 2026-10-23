@@ -1,11 +1,12 @@
+import { UpdateSettingsDto } from '@postybirb/types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase } from '@postybirb/database';
 import {
-    EntityUpdatedEvent,
-    getEntityCrudEventNames,
+  EntityUpdatedEvent,
+  getEntityCrudEventNames,
 } from '../common/events/entity-crud.events';
-import { UpdateSettingsDto } from './dtos/update-settings.dto';
+
 import { SETTINGS_EVENT_PREFIX } from './settings.events';
 import { SettingsService } from './settings.service';
 
@@ -63,9 +64,8 @@ describe('SettingsService', () => {
     const updated = await service.update(record.id, updateDto);
     const updatedRec = await service.findByIdOrThrow(record.id);
     expect(updatedRec.settings).toEqual(updateDto.settings);
-    expect(emit).toHaveBeenCalledWith(
-      eventNames.updated,
-      [new EntityUpdatedEvent(updated.toDTO())],
-    );
+    expect(emit).toHaveBeenCalledWith(eventNames.updated, [
+      new EntityUpdatedEvent(updated.toDTO()),
+    ]);
   });
 });

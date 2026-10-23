@@ -29,7 +29,7 @@ function RatingFieldControl({
   const { t } = useLingui();
 
   const baseOptions = field.options;
-  
+
   const options =
     field.formField === 'rating' && !option.isDefault
       ? [{ label: t`Default`, value: '' }, ...baseOptions]
@@ -48,16 +48,36 @@ function RatingFieldControl({
       orientation={field.layout}
       size="xs"
       disabled={disabled}
-      data={options.map((o) => ({
-        label: `${o.label}${
+      data={options.map((o) => {
+        const isInheritedRating =
+          value === '' &&
           defaultValue !== undefined &&
           o.value &&
-          o.value.toString() === defaultValue
-            ? ' *'
-            : ''
-        }`,
-        value: o.value ? o.value.toString() : '',
-      }))}
+          o.value.toString() === defaultValue;
+
+        return {
+          label: (
+            <Box
+              component="span"
+              c={
+                isInheritedRating
+                  ? 'var(--mantine-primary-color-filled)'
+                  : undefined
+              }
+              bg={
+                isInheritedRating
+                  ? 'var(--mantine-primary-color-light)'
+                  : undefined
+              }
+              px={4}
+              style={{ borderRadius: 'var(--mantine-radius-xs)' }}
+            >
+              {o.label}
+            </Box>
+          ),
+          value: o.value ? o.value.toString() : '',
+        };
+      })}
       onChange={(e) => setValue(fieldName, e || undefined)}
     />
   );

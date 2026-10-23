@@ -1,3 +1,10 @@
-import { ICustomShortcut } from '../../models';
+import { z } from 'zod';
+import { createZodDto } from '../zod-dto';
 
-export type ICreateCustomShortcutDto = Pick<ICustomShortcut, 'name'>;
+export const CreateCustomShortcutSchema = z.object({
+  name: z.string(),
+});
+
+export class CreateCustomShortcutDto extends createZodDto(
+  CreateCustomShortcutSchema,
+) {}

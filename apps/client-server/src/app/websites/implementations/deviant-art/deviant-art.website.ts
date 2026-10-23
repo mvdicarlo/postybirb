@@ -294,7 +294,7 @@ export default class DeviantArt
         subject_tags: '_empty',
         tags: postData.options.tags,
         tierids: '_empty',
-        title: this.stripInvalidCharacters(postData.options.title),
+        title: postData.options.title,
         csrf_token: await this.getCSRF(),
       })
       .setConditional('pcp_price_points', postData.options.allowFreeDownload, 0)
@@ -375,7 +375,7 @@ export default class DeviantArt
       editorRaw: DeviantArtDescriptionConverter.getDocument(
         postData.options.description,
       ),
-      title: this.stripInvalidCharacters(postData.options.title),
+      title: postData.options.title,
     });
 
     const create = await builder.send<{
@@ -426,17 +426,4 @@ export default class DeviantArt
   }
 
   onValidateMessageSubmission = validatorPassthru;
-
-  private stripInvalidCharacters(title: string) {
-    const validRegex = /^[A-Za-z0-9\s_$!?:.,'+\-=~`@#%^*[\]()/{}\\|]$/;
-    if (!title) return '';
-    let sanitized = '';
-    for (let i = 0; i < title.length; i++) {
-      const char = title[i];
-      if (validRegex.test(char)) {
-        sanitized += char;
-      }
-    }
-    return sanitized;
-  }
 }

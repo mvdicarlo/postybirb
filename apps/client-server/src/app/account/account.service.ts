@@ -1,29 +1,26 @@
 import {
-  BadRequestException,
-  Injectable,
-  OnModuleInit,
-} from '@nestjs/common';
+  AccountId,
+  CreateAccountDto,
+  IAccountDto,
+  NULL_ACCOUNT_ID,
+  NullAccount,
+  SetWebsiteDataRequestDto,
+  UpdateAccountDto,
+} from '@postybirb/types';
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   Account,
   AccountRepository,
   WebsiteOptionsRepository,
 } from '@postybirb/database';
-import {
-  AccountId,
-  IAccountDto,
-  NULL_ACCOUNT_ID,
-  NullAccount,
-} from '@postybirb/types';
+
 import { ne } from 'drizzle-orm';
 import { PostyBirbService } from '../common/service/postybirb-service';
 import { PostingActivityService } from '../posting/posting-activity.service';
 import { publishSubmissionProjectionChanged } from '../submission/submission.events';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { publishAccountRemoved } from './account.events';
-import { CreateAccountDto } from './dtos/create-account.dto';
-import { SetWebsiteDataRequestDto } from './dtos/set-website-data-request.dto';
-import { UpdateAccountDto } from './dtos/update-account.dto';
 
 /**
  * Service responsible for returning Account data.

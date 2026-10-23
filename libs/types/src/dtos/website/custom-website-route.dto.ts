@@ -1,7 +1,12 @@
-import { WebsiteId } from '../../models';
+import { z } from 'zod';
+import { createZodDto } from '../zod-dto';
 
-export interface ICustomWebsiteRouteDto {
-  id: WebsiteId;
-  route: string;
-  data: unknown;
-}
+export const CustomWebsiteRouteSchema = z.object({
+  id: z.string(),
+  route: z.string(),
+  data: z.unknown(),
+});
+
+export class CustomWebsiteRouteDto extends createZodDto(
+  CustomWebsiteRouteSchema,
+) {}

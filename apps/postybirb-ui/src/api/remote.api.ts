@@ -1,5 +1,5 @@
 /* eslint-disable lingui/no-unlocalized-strings */
-import { AccountId, UpdateCookiesRemote } from '@postybirb/types';
+import { AccountId, UpdateCookiesRemoteDto } from '@postybirb/types';
 import { getRemoteConfig, HttpClient } from '../transports/http-client';
 
 class RemoteApi {
@@ -22,7 +22,7 @@ class RemoteApi {
             currentUrl,
           ),
         },
-      } satisfies UpdateCookiesRemote);
+      } satisfies UpdateCookiesRemoteDto);
     }
 
     return Promise.resolve();

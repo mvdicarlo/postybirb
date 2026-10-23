@@ -1,8 +1,7 @@
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, getDatabase, Post, PostEventSchema, PostRecordSchema, PostRepository } from '@postybirb/database';
-import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
+  CreateAccountDto,
+  CreateSubmissionDto,
+  CreateWebsiteOptionsDto,
   PostEventType,
   PostRecordResumeMode,
   PostRecordState,
@@ -10,19 +9,31 @@ import {
   SubmissionType,
   UnitOfWorkState,
 } from '@postybirb/types';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { Test, TestingModule } from '@nestjs/testing';
+import {
+  clearDatabase,
+  getDatabase,
+  Post,
+  PostEventSchema,
+  PostRecordSchema,
+  PostRepository,
+} from '@postybirb/database';
+import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
+
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
-import { CreateAccountDto } from '../account/dtos/create-account.dto';
+
 import { MulterFileInfo } from '../file/models/multer-file-info';
 import { TestPlatformModule } from '../platform/testing/test-platform.module';
 import { SettingsService } from '../settings/settings.service';
-import { CreateSubmissionDto } from '../submission/dtos/create-submission.dto';
+
 import { FileSubmissionService } from '../submission/services/file-submission.service';
 import { SubmissionService } from '../submission/services/submission.service';
 import { SubmissionModule } from '../submission/submission.module';
-import { CreateWebsiteOptionsDto } from '../website-options/dtos/create-website-options.dto';
+
 import { WebsiteOptionsModule } from '../website-options/website-options.module';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
 import TestWebsite from '../websites/implementations/test/test.website';
@@ -135,73 +146,114 @@ describe('Posting flow integration', () => {
     return submission;
   }
 
-  it.each(Object.values(PostRecordState).filter(
-    (state) => state !== PostRecordState.DONE && state !== PostRecordState.FAILED,
-  ))('resumes partial legacy %s work only after manual re-queue', async (state) => {
-    const submission = await createMessageSubmission('Partial legacy message');
-    const initialWork = await postingService.getIncompleteWork(submission.id);
-    const succeededAccountId = initialWork.remainingWork[0].accountId;
-    const unfinishedAccount = await accountService.create({
-      name: 'Unfinished legacy account', website: 'test', groups: [],
-    } as CreateAccountDto);
-    await websiteOptionsService.create({
-      accountId: unfinishedAccount.id,
-      submissionId: submission.id,
-      data: { title: 'Partial legacy message', rating: SubmissionRating.GENERAL },
-    } as CreateWebsiteOptionsDto);
-    const db = getDatabase();
-    await db.insert(PostRecordSchema).values({
-      id: 'partial-legacy', submissionId: submission.id,
-      resumeMode: PostRecordResumeMode.CONTINUE, state,
-    });
-    await db.insert(PostEventSchema).values([
-      {
-        id: 'legacy-success', postRecordId: 'partial-legacy',
-        accountId: succeededAccountId, eventType: PostEventType.MESSAGE_POSTED,
-        sourceUrl: 'https://example.com/already-posted',
-      },
-      {
-        id: 'legacy-unfinished', postRecordId: 'partial-legacy',
-        accountId: unfinishedAccount.id, eventType: PostEventType.POST_ATTEMPT_STARTED,
-      },
-    ]);
+  it.each(
+    Object.values(PostRecordState).filter(
+      (state) =>
+        state !== PostRecordState.DONE && state !== PostRecordState.FAILED,
+    ),
+  )(
+    'resumes partial legacy %s work only after manual re-queue',
+    async (state) => {
+      const submission = await createMessageSubmission(
+        'Partial legacy message',
+      );
+      const initialWork = await postingService.getIncompleteWork(submission.id);
+      const succeededAccountId = initialWork.remainingWork[0].accountId;
+      const unfinishedAccount = await accountService.create({
+        name: 'Unfinished legacy account',
+        website: 'test',
+        groups: [],
+      } as CreateAccountDto);
+      await websiteOptionsService.create({
+        accountId: unfinishedAccount.id,
+        submissionId: submission.id,
+        data: {
+          title: 'Partial legacy message',
+          rating: SubmissionRating.GENERAL,
+        },
+      } as CreateWebsiteOptionsDto);
+      const db = getDatabase();
+      await db.insert(PostRecordSchema).values({
+        id: 'partial-legacy',
+        submissionId: submission.id,
+        resumeMode: PostRecordResumeMode.CONTINUE,
+        state,
+      });
+      await db.insert(PostEventSchema).values([
+        {
+          id: 'legacy-success',
+          postRecordId: 'partial-legacy',
+          accountId: succeededAccountId,
+          eventType: PostEventType.MESSAGE_POSTED,
+          sourceUrl: 'https://example.com/already-posted',
+        },
+        {
+          id: 'legacy-unfinished',
+          postRecordId: 'partial-legacy',
+          accountId: unfinishedAccount.id,
+          eventType: PostEventType.POST_ATTEMPT_STARTED,
+        },
+      ]);
 
-    await module.get(LegacyPostHistoryMigrationService).migrate();
-    const migrated = await postingService.getPost(submission.id);
-    if (!migrated) {
-      throw new Error('Expected the legacy migration to create a post');
-    }
-    expect(migrated).toMatchObject({ completed: true, cancelled: false });
-    await postingService.unpausePosts();
-    await postingService.handlePendingWork();
-    expect(postingManager.isAccepted(migrated.id)).toBe(false);
-    expect(await postingService.getPost(submission.id)).toMatchObject({ completed: true });
+      await module.get(LegacyPostHistoryMigrationService).migrate();
+      const migrated = await postingService.getPost(submission.id);
+      if (!migrated) {
+        throw new Error('Expected the legacy migration to create a post');
+      }
+      expect(migrated).toMatchObject({ completed: true, cancelled: false });
+      await postingService.unpausePosts();
+      await postingService.handlePendingWork();
+      expect(postingManager.isAccepted(migrated.id)).toBe(false);
+      expect(await postingService.getPost(submission.id)).toMatchObject({
+        completed: true,
+      });
 
-    const remaining = await postingService.getIncompleteWork(submission.id);
-    expect(remaining.remainingWork).toHaveLength(1);
-    expect(remaining.remainingWork[0].accountId).toBe(unfinishedAccount.id);
-    const send = jest.spyOn(TestWebsite.prototype, 'onPostMessageSubmission');
-    const staged = await postingService.post(submission.id);
-    await postingService.handlePendingWork();
-    const completed = await waitForCompletedPost(staged.id);
-    expect(send).toHaveBeenCalledTimes(1);
-    expect(completed.unitsOfWork).toHaveLength(2);
-    expect(completed.unitsOfWork.every((unit) => unit.state === UnitOfWorkState.SUCCEEDED)).toBe(true);
-    expect(completed.unitsOfWork.find((unit) => unit.accountId === succeededAccountId))
-      .toMatchObject({ url: 'https://example.com/already-posted', state: UnitOfWorkState.SUCCEEDED });
-  }, 10_000);
+      const remaining = await postingService.getIncompleteWork(submission.id);
+      expect(remaining.remainingWork).toHaveLength(1);
+      expect(remaining.remainingWork[0].accountId).toBe(unfinishedAccount.id);
+      const send = jest.spyOn(TestWebsite.prototype, 'onPostMessageSubmission');
+      const staged = await postingService.post(submission.id);
+      await postingService.handlePendingWork();
+      const completed = await waitForCompletedPost(staged.id);
+      expect(send).toHaveBeenCalledTimes(1);
+      expect(completed.unitsOfWork).toHaveLength(2);
+      expect(
+        completed.unitsOfWork.every(
+          (unit) => unit.state === UnitOfWorkState.SUCCEEDED,
+        ),
+      ).toBe(true);
+      expect(
+        completed.unitsOfWork.find(
+          (unit) => unit.accountId === succeededAccountId,
+        ),
+      ).toMatchObject({
+        url: 'https://example.com/already-posted',
+        state: UnitOfWorkState.SUCCEEDED,
+      });
+    },
+    10_000,
+  );
 
   it('posts and re-posts only the selected account through the controller', async () => {
     const submission = await createMessageSubmission('Targeted message');
     const initial = await postingService.getIncompleteWork(submission.id);
     const accountId = initial.remainingWork[0].accountId;
-    const other = await accountService.create({ name: 'Unselected account', website: 'test', groups: [] } as CreateAccountDto);
+    const other = await accountService.create({
+      name: 'Unselected account',
+      website: 'test',
+      groups: [],
+    } as CreateAccountDto);
     await websiteOptionsService.create({
-      accountId: other.id, submissionId: submission.id,
+      accountId: other.id,
+      submissionId: submission.id,
       data: { title: 'Targeted message', rating: SubmissionRating.GENERAL },
     } as CreateWebsiteOptionsDto);
     const controller = module.get(PostingController);
-    const request = { submissionId: submission.id, evictions: {}, targets: { [accountId]: [] } };
+    const request = {
+      submissionId: submission.id,
+      evictions: {},
+      targets: { [accountId]: [] },
+    };
     const send = jest.spyOn(TestWebsite.prototype, 'onPostMessageSubmission');
     const preview = await controller.dryRun(request);
     expect(preview.remainingWork).toHaveLength(1);
@@ -213,12 +265,16 @@ describe('Posting flow integration', () => {
     const completed = await waitForCompletedPost(repost.id);
     expect(send).toHaveBeenCalledTimes(2);
     expect(completed.unitsOfWork).toHaveLength(2);
-    expect(completed.unitsOfWork.every((unit) => unit.accountId === accountId)).toBe(true);
+    expect(
+      completed.unitsOfWork.every((unit) => unit.accountId === accountId),
+    ).toBe(true);
     expect(completed.unitsOfWork.filter((unit) => !unit.evicted)).toEqual([
       expect.objectContaining({ state: UnitOfWorkState.SUCCEEDED }),
     ]);
     const next = await postingService.getIncompleteWork(submission.id);
-    expect(next.remainingWork.map((unit) => unit.accountId)).toEqual([other.id]);
+    expect(next.remainingWork.map((unit) => unit.accountId)).toEqual([
+      other.id,
+    ]);
   }, 10_000);
 
   it('creates and posts a message submission while tracking its outcome', async () => {
@@ -278,7 +334,9 @@ describe('Posting flow integration', () => {
   }, 10_000);
 
   it('persists pause controls and holds manually staged work until resumed', async () => {
-    const submission = await createMessageSubmission('Paused integration message');
+    const submission = await createMessageSubmission(
+      'Paused integration message',
+    );
     const controller = module.get(PostingController);
     const settingsService = module.get(SettingsService);
 
@@ -290,8 +348,9 @@ describe('Posting flow integration', () => {
     });
     await postingService.handlePendingWork();
     expect(postingManager.isAccepted(post.id)).toBe(false);
-    expect((await postRepository.findByIdOrThrow(post.id)).unitsOfWork[0].state)
-      .toBe(UnitOfWorkState.PENDING);
+    expect(
+      (await postRepository.findByIdOrThrow(post.id)).unitsOfWork[0].state,
+    ).toBe(UnitOfWorkState.PENDING);
 
     await expect(controller.unpause()).resolves.toEqual({ paused: false });
     await expect(settingsService.getDefaultSettings()).resolves.toMatchObject({
@@ -303,14 +362,17 @@ describe('Posting flow integration', () => {
   }, 10_000);
 
   it('rejects retry until the cancelled worker drains, then posts the retry successfully', async () => {
-    const submission = await createMessageSubmission('Cancel and retry integration message');
+    const submission = await createMessageSubmission(
+      'Cancel and retry integration message',
+    );
     const post = await postingService.post(submission.id);
     let releaseDispatch: (() => void) | undefined;
     let signalDispatchStarted!: () => void;
     const dispatchStarted = new Promise<void>((resolve) => {
       signalDispatchStarted = resolve;
     });
-    const send = jest.spyOn(TestWebsite.prototype, 'onPostMessageSubmission')
+    const send = jest
+      .spyOn(TestWebsite.prototype, 'onPostMessageSubmission')
       .mockImplementationOnce(async (_postData, cancellationToken) => {
         await new Promise<void>((resolve) => {
           releaseDispatch = resolve;
@@ -328,8 +390,9 @@ describe('Posting flow integration', () => {
       await expect(postingService.post(submission.id)).rejects.toThrow(
         `Post '${post.id}' is currently active`,
       );
-      expect((await postRepository.findByIdOrThrow(post.id)).unitsOfWork[0].state)
-        .toBe(UnitOfWorkState.CANCELLED);
+      expect(
+        (await postRepository.findByIdOrThrow(post.id)).unitsOfWork[0].state,
+      ).toBe(UnitOfWorkState.CANCELLED);
 
       releaseDispatch?.();
       await waitForCompletedPost(post.id);
@@ -347,35 +410,55 @@ describe('Posting flow integration', () => {
 
   it('re-posts only the selected file from a completed two-file submission', async () => {
     const account = await accountService.create({
-      name: 'Targeted file account', website: 'test', groups: [],
+      name: 'Targeted file account',
+      website: 'test',
+      groups: [],
     } as CreateAccountDto);
-    const submission = await submissionService.create({
-      name: 'Targeted files', type: SubmissionType.FILE,
-    } as CreateSubmissionDto, createTestFile().file);
-    await module.get(FileSubmissionService).appendFile(submission.id, createTestFile().file);
+    const submission = await submissionService.create(
+      {
+        name: 'Targeted files',
+        type: SubmissionType.FILE,
+      } as CreateSubmissionDto,
+      createTestFile().file,
+    );
+    await module
+      .get(FileSubmissionService)
+      .appendFile(submission.id, createTestFile().file);
     const { files } = await submissionService.findByIdOrThrow(submission.id);
     expect(files).toHaveLength(2);
     await websiteOptionsService.create({
-      accountId: account.id, submissionId: submission.id,
+      accountId: account.id,
+      submissionId: submission.id,
       data: { title: 'Targeted files', rating: SubmissionRating.GENERAL },
     } as CreateWebsiteOptionsDto);
     const initial = await postingService.post(submission.id);
     await postingService.handlePendingWork();
     const previous = await waitForCompletedPost(initial.id);
-    expect(previous.unitsOfWork.every((unit) => unit.state === UnitOfWorkState.SUCCEEDED)).toBe(true);
+    expect(
+      previous.unitsOfWork.every(
+        (unit) => unit.state === UnitOfWorkState.SUCCEEDED,
+      ),
+    ).toBe(true);
 
     const send = jest.spyOn(TestWebsite.prototype, 'onPostFileSubmission');
     const targets = { [account.id]: [files[1].id] };
     const preview = await postingService.dryRun(submission.id, {}, targets);
-    expect(preview.remainingWork.map((unit) => unit.fileId)).toEqual([files[1].id]);
+    expect(preview.remainingWork.map((unit) => unit.fileId)).toEqual([
+      files[1].id,
+    ]);
     const repost = await postingService.post(submission.id, {}, targets);
     await postingService.handlePendingWork();
     const completed = await waitForCompletedPost(repost.id);
     expect(send).toHaveBeenCalledTimes(1);
     expect(send.mock.calls[0][1].map((file) => file.id)).toEqual([files[1].id]);
-    expect(completed.unitsOfWork.filter((unit) => !unit.evicted)).toHaveLength(2);
+    expect(completed.unitsOfWork.filter((unit) => !unit.evicted)).toHaveLength(
+      2,
+    );
     expect(completed.unitsOfWork.filter((unit) => unit.evicted)).toEqual([
-      expect.objectContaining({ fileId: files[1].id, state: UnitOfWorkState.SUCCEEDED }),
+      expect.objectContaining({
+        fileId: files[1].id,
+        state: UnitOfWorkState.SUCCEEDED,
+      }),
     ]);
   }, 10_000);
 

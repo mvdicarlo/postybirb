@@ -1,3 +1,8 @@
-import { ITagConverter } from '../../models';
+import { createZodDto } from '../zod-dto';
+import { CreateTagConverterSchema } from './create-tag-converter.dto';
 
-export type IUpdateTagConverterDto = Pick<ITagConverter, 'convertTo' | 'tag'>;
+export const UpdateTagConverterSchema = CreateTagConverterSchema;
+
+export class UpdateTagConverterDto extends createZodDto(
+  UpdateTagConverterSchema,
+) {}

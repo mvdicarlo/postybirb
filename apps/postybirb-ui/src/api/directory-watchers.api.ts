@@ -1,7 +1,7 @@
 import {
   DirectoryWatcherDto,
-  ICreateDirectoryWatcherDto,
-  IUpdateDirectoryWatcherDto,
+  CreateDirectoryWatcherDto,
+  UpdateDirectoryWatcherDto,
 } from '@postybirb/types';
 import { BaseApi } from './base.api';
 
@@ -16,8 +16,8 @@ export interface CheckPathResult {
 
 class DirectoryWatchersApi extends BaseApi<
   DirectoryWatcherDto,
-  ICreateDirectoryWatcherDto,
-  IUpdateDirectoryWatcherDto
+  CreateDirectoryWatcherDto,
+  UpdateDirectoryWatcherDto
 > {
   constructor() {
     super('directory-watchers');

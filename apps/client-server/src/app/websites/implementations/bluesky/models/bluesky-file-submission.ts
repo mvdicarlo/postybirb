@@ -39,11 +39,10 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
       { value: 'nudity', label: 'Adult: Nudity' },
       { value: 'porn', label: 'Adult: Porn' },
     ],
+    section: 'website',
+    span: 6,
   })
   labelRating: '' | 'sexual' | 'nudity' | 'porn';
-
-  @TextField({ label: 'replyToUrl', section: 'website', span: 6 })
-  replyToUrl?: string;
 
   // Note: in v3 it was threadgate
   @SelectField({
@@ -59,4 +58,10 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
     ],
   })
   whoCanReply?: '' | 'nobody' | 'mention' | 'following' | 'mention,following';
+
+  @TextField({ label: 'replyToUrl', section: 'website', span: 6 })
+  replyToUrl?: string;
+
+  @TextField({ label: 'quotePostUrl', section: 'website', span: 6 })
+  quotePostUrl?: string;
 }

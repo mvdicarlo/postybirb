@@ -1,9 +1,10 @@
-import { SubmissionId } from '../../models';
+import { z } from 'zod';
+import { createZodDto } from '../zod-dto';
 
-/**
- * DTO model for performing a queue/dequeue operation on a post record
- * @interface IQueuePostRecordRequestDto
- */
-export interface IQueuePostRecordRequestDto {
-  ids: SubmissionId[];
-}
+export const QueuePostRecordRequestSchema = z.object({
+  ids: z.array(z.string()),
+});
+
+export class QueuePostRecordRequestDto extends createZodDto(
+  QueuePostRecordRequestSchema,
+) {}

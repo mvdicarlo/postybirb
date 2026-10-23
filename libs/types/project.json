@@ -4,6 +4,13 @@
   "sourceRoot": "libs/types/src",
   "projectType": "library",
   "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/types"],
+      "options": {
+        "jestConfig": "libs/types/jest.config.ts"
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"]

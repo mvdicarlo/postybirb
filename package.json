@@ -80,7 +80,7 @@
     "@nestjs/event-emitter": "^3.1.0",
     "@nestjs/platform-express": "^10.4.16",
     "@nestjs/platform-socket.io": "^10.4.16",
-    "@nestjs/schedule": "^4",
+    "@nestjs/schedule": "^6.1.1",
     "@nestjs/serve-static": "^4",
     "@nestjs/swagger": "7.4.2",
     "@nestjs/websockets": "^10.4.16",
@@ -129,7 +129,6 @@
     "axios": "^1.16.1",
     "better-sqlite3": "^12.11.1",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.1",
     "clsx": "^2.1.1",
     "compression": "^1.7.4",
     "croner": "^8.1.2",
@@ -192,6 +191,7 @@
     "winston": "^3.14.2",
     "winston-daily-rotate-file": "^5.0.0",
     "winston-transport": "^4.9.0",
+    "zod": "^4.6.7",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

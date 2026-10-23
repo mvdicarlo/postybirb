@@ -1,3 +1,11 @@
-import { IWebsiteOptions } from '../../models';
+import { z } from 'zod';
+import { createZodDto } from '../zod-dto';
+import { WebsiteFormFieldsSchema } from '../../schemas/website-form-fields.schema';
 
-export type IUpdateWebsiteOptionsDto = Pick<IWebsiteOptions, 'data'>;
+export const UpdateWebsiteOptionsSchema = z.object({
+  data: WebsiteFormFieldsSchema,
+});
+
+export class UpdateWebsiteOptionsDto extends createZodDto(
+  UpdateWebsiteOptionsSchema,
+) {}

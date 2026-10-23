@@ -1,14 +1,14 @@
 import {
-  ICreateNotificationDto,
+  CreateNotificationDto,
   INotification,
-  IUpdateNotificationDto,
+  UpdateNotificationDto,
 } from '@postybirb/types';
 import { BaseApi } from './base.api';
 
 class NotificationApi extends BaseApi<
   INotification,
-  ICreateNotificationDto,
-  IUpdateNotificationDto
+  CreateNotificationDto,
+  UpdateNotificationDto
 > {
   constructor() {
     super('notifications');

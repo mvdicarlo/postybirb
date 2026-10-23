@@ -1,14 +1,5 @@
+import { LegacyImportDto } from '@postybirb/types';
 import { HttpClient } from '../transports/http-client';
-
-export interface LegacyImportDto {
-  customShortcuts: boolean;
-  tagGroups: boolean;
-  accounts: boolean;
-  tagConverters: boolean;
-  submissions: boolean;
-  templates: boolean;
-  customPath?: string;
-}
 
 export interface LegacyImportResponse {
   errors: { message: string }[];

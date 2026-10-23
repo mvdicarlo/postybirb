@@ -1,26 +1,30 @@
+import {
+  CreateAccountDto,
+  CreateSubmissionDto,
+  FileSubmissionMetadata,
+  ISubmissionMetadata,
+  IWebsiteFormFields,
+  ScheduleType,
+  SubmissionRating,
+  SubmissionType,
+  UpdateSubmissionDto,
+  WebsiteOptionsDto,
+} from '@postybirb/types';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import {
-    clearDatabase,
-    EntityNotFoundError,
-    PostRepository,
+  clearDatabase,
+  EntityNotFoundError,
+  PostRepository,
 } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
-import {
-    FileSubmissionMetadata,
-    ISubmissionMetadata,
-    IWebsiteFormFields,
-    ScheduleType,
-    SubmissionRating,
-    SubmissionType,
-    WebsiteOptionsDto,
-} from '@postybirb/types';
+
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { AccountModule } from '../../account/account.module';
 import { AccountService } from '../../account/account.service';
-import { CreateAccountDto } from '../../account/dtos/create-account.dto';
+
 import { FileConverterService } from '../../file-converter/file-converter.service';
 import { FileService } from '../../file/file.service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
@@ -38,8 +42,7 @@ import { WebsiteOptionsService } from '../../website-options/website-options.ser
 import { WebsiteImplProvider } from '../../websites/implementations/provider';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
 import { WebsitesModule } from '../../websites/websites.module';
-import { CreateSubmissionDto } from '../dtos/create-submission.dto';
-import { UpdateSubmissionDto } from '../dtos/update-submission.dto';
+
 import { SubmissionEventPublisher } from '../submission-event.publisher';
 import { FileSubmissionService } from './file-submission.service';
 import { MessageSubmissionService } from './message-submission.service';
@@ -308,9 +311,7 @@ describe('SubmissionService', () => {
           : [textFile, imageFile];
       const record = await service.create(createDto, firstFile);
 
-      await module
-        .get(FileSubmissionService)
-        .appendFile(record.id, secondFile);
+      await module.get(FileSubmissionService).appendFile(record.id, secondFile);
 
       const updated = await service.findByIdOrThrow(record.id);
       expect(updated.files.map((file) => file.fileName)).toEqual([
@@ -395,10 +396,7 @@ describe('SubmissionService', () => {
   it('should reject file changes while a submission is accepted', async () => {
     const createDto = createSubmissionDto();
     createDto.type = SubmissionType.FILE;
-    const record = await service.create(
-      createDto,
-      createMulterData(setup()),
-    );
+    const record = await service.create(createDto, createMulterData(setup()));
     const file = record.files[0];
     await acceptSubmission(record.id);
 
@@ -422,10 +420,12 @@ describe('SubmissionService', () => {
     await expect(service.update(submission.id, updateDto)).rejects.toThrow(
       BadRequestException,
     );
-    await expect(service.findByIdOrThrow(submission.id)).resolves.toMatchObject({
-      dependsOn: [],
-      options: [{ id: submission.options[0].id }],
-    });
+    await expect(service.findByIdOrThrow(submission.id)).resolves.toMatchObject(
+      {
+        dependsOn: [],
+        options: [{ id: submission.options[0].id }],
+      },
+    );
   });
 
   it('should reject a transitive dependency cycle', async () => {
@@ -453,8 +453,12 @@ describe('SubmissionService', () => {
       service.update(second.id, { dependsOn: [first.id] }),
     ]);
 
-    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
-    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
+    expect(
+      results.filter((result) => result.status === 'fulfilled'),
+    ).toHaveLength(1);
+    expect(
+      results.filter((result) => result.status === 'rejected'),
+    ).toHaveLength(1);
     const [updatedFirst, updatedSecond] = await Promise.all([
       service.findByIdOrThrow(first.id),
       service.findByIdOrThrow(second.id),
