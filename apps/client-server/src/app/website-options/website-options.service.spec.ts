@@ -11,7 +11,16 @@ import {
 import { ConflictException } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, PostRepository } from '@postybirb/database';
+import {
+  AccountSchema,
+  clearDatabase,
+  CustomShortcutSchema,
+  getDatabase,
+  PostRepository,
+  SubmissionSchema,
+  WebsiteOptionsSchema,
+} from '@postybirb/database';
+import { eq, sql } from 'drizzle-orm';
 
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -117,17 +126,144 @@ describe('WebsiteOptionsService', () => {
       );
       postRepository = new PostRepository();
       await accountService.onModuleInit();
+      await module
+        .get<WebsiteRegistryService>(WebsiteRegistryService)
+        .waitForInitialization();
     } catch (e) {
       console.error(e);
     }
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await module.close();
+    jest.restoreAllMocks();
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('does not load modern description or shortcut payloads on repeated startups', async () => {
+    const db = getDatabase();
+    const modern = await createSubmission();
+    const missingDescription = await createSubmission();
+    await db
+      .update(WebsiteOptionsSchema)
+      .set({ data: { title: 'No description' } })
+      .where(eq(WebsiteOptionsSchema.submissionId, missingDescription.id));
+    await db.insert(CustomShortcutSchema).values({
+      name: 'Modern shortcut',
+      shortcut: { type: 'doc', content: [] },
+    });
+    const optionRead = jest.spyOn(
+      WebsiteOptionsSchema.data,
+      'mapFromDriverValue',
+    );
+    const shortcutRead = jest.spyOn(
+      CustomShortcutSchema.shortcut,
+      'mapFromDriverValue',
+    );
+    const submissionRead = jest.spyOn(
+      SubmissionSchema.metadata,
+      'mapFromDriverValue',
+    );
+    const accountRead = jest.spyOn(AccountSchema.groups, 'mapFromDriverValue');
+
+    await service.onModuleInit();
+    await service.onModuleInit();
+
+    expect(modern.options[0].data.description?.description.type).toBe('doc');
+    expect(optionRead).not.toHaveBeenCalled();
+    expect(shortcutRead).not.toHaveBeenCalled();
+    expect(submissionRead).not.toHaveBeenCalled();
+    expect(accountRead).not.toHaveBeenCalled();
+  });
+
+  it('converts only legacy descriptions and discovers later legacy imports', async () => {
+    const db = getDatabase();
+    const legacy = await createSubmission();
+    await createSubmission();
+    const blocks = [
+      {
+        type: 'paragraph',
+        content: [{ type: 'text', text: 'Legacy description', styles: {} }],
+        children: [],
+      },
+    ];
+    const data = {
+      ...legacy.options[0].data,
+      title: 'Preserved title',
+      description: {
+        overrideDefault: true,
+        insertTags: true,
+        insertTitle: false,
+        description: blocks,
+      },
+    };
+    await db
+      .update(WebsiteOptionsSchema)
+      .set({ data: sql`${JSON.stringify(data)}` })
+      .where(eq(WebsiteOptionsSchema.id, legacy.options[0].id));
+    await db.insert(CustomShortcutSchema).values([
+      { name: 'Legacy shortcut', shortcut: sql`${JSON.stringify(blocks)}` },
+      { name: 'Empty legacy shortcut', shortcut: sql`${JSON.stringify([])}` },
+      { name: 'Modern shortcut', shortcut: { type: 'doc', content: [] } },
+    ]);
+    const optionRead = jest.spyOn(
+      WebsiteOptionsSchema.data,
+      'mapFromDriverValue',
+    );
+    const shortcutRead = jest.spyOn(
+      CustomShortcutSchema.shortcut,
+      'mapFromDriverValue',
+    );
+    const submissionRead = jest.spyOn(
+      SubmissionSchema.metadata,
+      'mapFromDriverValue',
+    );
+    const accountRead = jest.spyOn(AccountSchema.groups, 'mapFromDriverValue');
+
+    await service.onModuleInit();
+
+    expect(optionRead).toHaveBeenCalledTimes(1);
+    expect(shortcutRead).toHaveBeenCalledTimes(2);
+    expect(submissionRead).not.toHaveBeenCalled();
+    expect(accountRead).not.toHaveBeenCalled();
+    const converted = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Legacy description' }],
+        },
+      ],
+    };
+    const [option] = await db
+      .select({ data: WebsiteOptionsSchema.data })
+      .from(WebsiteOptionsSchema)
+      .where(eq(WebsiteOptionsSchema.id, legacy.options[0].id));
+    expect(option.data).toEqual({
+      ...data,
+      description: { ...data.description, description: converted },
+    });
+    const [shortcut] = await db
+      .select({ shortcut: CustomShortcutSchema.shortcut })
+      .from(CustomShortcutSchema)
+      .where(eq(CustomShortcutSchema.name, 'Legacy shortcut'));
+    expect(shortcut.shortcut).toEqual(converted);
+
+    optionRead.mockClear();
+    shortcutRead.mockClear();
+    await service.onModuleInit();
+    expect(optionRead).not.toHaveBeenCalled();
+    expect(shortcutRead).not.toHaveBeenCalled();
+
+    await db.insert(CustomShortcutSchema).values({
+      name: 'Imported later',
+      shortcut: sql`${JSON.stringify(blocks)}`,
+    });
+    await service.onModuleInit();
+    expect(shortcutRead).toHaveBeenCalledTimes(1);
   });
 
   it('should create entity', async () => {

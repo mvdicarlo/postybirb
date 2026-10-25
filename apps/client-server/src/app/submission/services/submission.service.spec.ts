@@ -4,6 +4,7 @@ import {
   FileSubmissionMetadata,
   ISubmissionMetadata,
   IWebsiteFormFields,
+  NULL_ACCOUNT_ID,
   ScheduleType,
   SubmissionRating,
   SubmissionType,
@@ -16,12 +17,22 @@ import { Test, TestingModule } from '@nestjs/testing';
 import {
   clearDatabase,
   EntityNotFoundError,
+  getDatabase,
+  Insert,
+  PostEventSchema,
+  PostRecordSchema,
   PostRepository,
+  SubmissionFileSchema,
+  SubmissionRepository,
+  SubmissionSchema,
+  UnitOfWorkSchema,
+  WebsiteOptionsSchema,
 } from '@postybirb/database';
 import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { eq } from 'drizzle-orm';
 import { AccountModule } from '../../account/account.module';
 import { AccountService } from '../../account/account.service';
 
@@ -104,13 +115,17 @@ describe('SubmissionService', () => {
       );
       postRepository = new PostRepository();
       await accountService.onModuleInit();
+      await module
+        .get<WebsiteRegistryService>(WebsiteRegistryService)
+        .waitForInitialization();
     } catch (e) {
       console.error(e);
     }
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await module.close();
+    jest.restoreAllMocks();
   });
 
   function setup(): string {
@@ -566,6 +581,257 @@ describe('SubmissionService', () => {
     expect(records).toHaveLength(2);
     expect(records[0].isMultiSubmission).toBeTruthy();
     expect(records[1].isMultiSubmission).toBeTruthy();
+  });
+
+  describe('startup maintenance', () => {
+    async function seedSubmission(
+      id: string,
+      overrides: Partial<Insert<'SubmissionSchema'>> = {},
+    ) {
+      await getDatabase()
+        .insert(SubmissionSchema)
+        .values({
+          id,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          updatedAt: '2026-01-01T00:00:00.000Z',
+          type: SubmissionType.MESSAGE,
+          isInitialized: true,
+          isTemplate: false,
+          isMultiSubmission: false,
+          isScheduled: false,
+          order: 0,
+          metadata: {},
+          schedule: { scheduleType: ScheduleType.NONE },
+          ...overrides,
+        });
+    }
+
+    async function seedOption(
+      submissionId: string,
+      overrides: Partial<Insert<'WebsiteOptionsSchema'>> = {},
+    ) {
+      await getDatabase()
+        .insert(WebsiteOptionsSchema)
+        .values({
+          submissionId,
+          accountId: NULL_ACCOUNT_ID,
+          isDefault: true,
+          data: {},
+          ...overrides,
+        });
+    }
+
+    beforeEach(async () => {
+      await service.onModuleInit();
+    });
+
+    it('does not hydrate healthy submissions on repeated startups', async () => {
+      await seedSubmission('healthy');
+      await seedOption('healthy');
+      const findAll = jest.spyOn(SubmissionRepository.prototype, 'findAll');
+      const update = jest.spyOn(SubmissionRepository.prototype, 'update');
+      const optionRead = jest.spyOn(
+        WebsiteOptionsSchema.data,
+        'mapFromDriverValue',
+      );
+      const fileRead = jest.spyOn(
+        SubmissionFileSchema.metadata,
+        'mapFromDriverValue',
+      );
+      const eventRead = jest.spyOn(
+        PostEventSchema.metadata,
+        'mapFromDriverValue',
+      );
+      const unitRead = jest.spyOn(UnitOfWorkSchema.data, 'mapFromDriverValue');
+      const createDefault = jest.spyOn(
+        websiteOptionsService,
+        'createDefaultSubmissionOptions',
+      );
+
+      await service.onModuleInit();
+      await service.onModuleInit();
+
+      expect(findAll).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
+      expect(optionRead).not.toHaveBeenCalled();
+      expect(fileRead).not.toHaveBeenCalled();
+      expect(eventRead).not.toHaveBeenCalled();
+      expect(unitRead).not.toHaveBeenCalled();
+      expect(createDefault).not.toHaveBeenCalled();
+    });
+
+    it('recovers only missing defaults and preserves recovery title priorities', async () => {
+      const db = getDatabase();
+      const account = await createAccount();
+      for (const id of [
+        'healthy',
+        'null-account-default',
+        'flagged-default',
+        'option-title',
+        'file-title',
+        'template-title',
+      ]) {
+        await seedSubmission(
+          id,
+          id === 'template-title'
+            ? { metadata: { template: { name: 'Recovered template' } } }
+            : {},
+        );
+      }
+      await seedOption('healthy');
+      await seedOption('null-account-default', { isDefault: false });
+      await seedOption('flagged-default', { accountId: account.id });
+      await seedOption('option-title', {
+        accountId: account.id,
+        isDefault: false,
+        data: { title: 'Recovered option' },
+      });
+      await db.insert(SubmissionFileSchema).values({
+        submissionId: 'file-title',
+        fileName: 'Recovered file.png',
+        hasThumbnail: false,
+        hash: 'recovery-file',
+        height: 1,
+        width: 1,
+        mimeType: 'image/png',
+        size: 1,
+      });
+      const createDefault = jest.spyOn(
+        websiteOptionsService,
+        'createDefaultSubmissionOptions',
+      );
+      const findAll = jest.spyOn(SubmissionRepository.prototype, 'findAll');
+      const eventRead = jest.spyOn(
+        PostEventSchema.metadata,
+        'mapFromDriverValue',
+      );
+
+      await service.onModuleInit();
+
+      expect(findAll).not.toHaveBeenCalled();
+      expect(eventRead).not.toHaveBeenCalled();
+      expect(
+        createDefault.mock.calls.map(([submission, title]) => [
+          submission.id,
+          title,
+        ]),
+      ).toEqual(
+        expect.arrayContaining([
+          ['option-title', 'Recovered option'],
+          ['file-title', 'Recovered file'],
+          ['template-title', 'Recovered template'],
+        ]),
+      );
+      expect(createDefault).toHaveBeenCalledTimes(3);
+
+      createDefault.mockClear();
+      await service.onModuleInit();
+      expect(createDefault).not.toHaveBeenCalled();
+    });
+
+    it('normalizes gaps, duplicates, fractions, and archives without graph updates', async () => {
+      const db = getDatabase();
+      const seeds = [
+        { id: 'file-stable', type: SubmissionType.FILE, order: 0 },
+        {
+          id: 'file-gap',
+          type: SubmissionType.FILE,
+          order: 5.5,
+          isArchived: true,
+        },
+        { id: 'file-duplicate', type: SubmissionType.FILE, order: 5.5 },
+        { id: 'message-gap', type: SubmissionType.MESSAGE, order: 10 },
+        { id: 'message-duplicate', type: SubmissionType.MESSAGE, order: 10 },
+        {
+          id: 'template',
+          type: SubmissionType.MESSAGE,
+          order: -5,
+          isTemplate: true,
+        },
+      ];
+      for (const seed of seeds) {
+        await seedSubmission(seed.id, seed);
+        await seedOption(seed.id);
+      }
+      await db
+        .update(SubmissionSchema)
+        .set({ order: 7.5 })
+        .where(eq(SubmissionSchema.isMultiSubmission, true));
+      const update = jest.spyOn(SubmissionRepository.prototype, 'update');
+      const findAll = jest.spyOn(SubmissionRepository.prototype, 'findAll');
+      const transaction = jest.spyOn(db, 'transaction');
+
+      await service.onModuleInit();
+
+      expect(update).not.toHaveBeenCalled();
+      expect(findAll).not.toHaveBeenCalled();
+      expect(transaction).toHaveBeenCalledTimes(1);
+      const rows = await db
+        .select({
+          id: SubmissionSchema.id,
+          order: SubmissionSchema.order,
+          updatedAt: SubmissionSchema.updatedAt,
+          isMultiSubmission: SubmissionSchema.isMultiSubmission,
+        })
+        .from(SubmissionSchema);
+      const orders = new Map(rows.map((row) => [row.id, row.order]));
+      expect(orders.get('file-stable')).toBe(0);
+      expect(orders.get('file-gap')).toBe(1);
+      expect(orders.get('file-duplicate')).toBe(2);
+      expect(orders.get('message-gap')).toBe(0);
+      expect(orders.get('message-duplicate')).toBe(1);
+      expect(orders.get('template')).toBe(-5);
+      expect(
+        rows.filter((row) => row.isMultiSubmission).map((row) => row.order),
+      ).toEqual([7.5, 7.5]);
+      expect(rows.find((row) => row.id === 'file-stable')?.updatedAt).toBe(
+        '2026-01-01T00:00:00.000Z',
+      );
+
+      await service.onModuleInit();
+      expect(transaction).toHaveBeenCalledTimes(1);
+    });
+
+    it('deletes uninitialized submissions with cascades without hydrating them', async () => {
+      const db = getDatabase();
+      await seedSubmission('uninitialized', { isInitialized: false });
+      await seedOption('uninitialized');
+      await db.insert(PostRecordSchema).values({
+        id: 'unfinished-history',
+        submissionId: 'uninitialized',
+      });
+      const metadataRead = jest.spyOn(
+        SubmissionSchema.metadata,
+        'mapFromDriverValue',
+      );
+      const recordRead = jest.spyOn(
+        PostRecordSchema.state,
+        'mapFromDriverValue',
+      );
+
+      await service.onModuleInit();
+
+      expect(metadataRead).not.toHaveBeenCalled();
+      expect(recordRead).not.toHaveBeenCalled();
+      expect(
+        await db
+          .select({ id: SubmissionSchema.id })
+          .from(SubmissionSchema)
+          .where(eq(SubmissionSchema.id, 'uninitialized')),
+      ).toEqual([]);
+      expect(
+        await db
+          .select({ id: WebsiteOptionsSchema.id })
+          .from(WebsiteOptionsSchema)
+          .where(eq(WebsiteOptionsSchema.submissionId, 'uninitialized')),
+      ).toEqual([]);
+      expect(
+        await db
+          .select({ id: PostRecordSchema.id })
+          .from(PostRecordSchema)
+          .where(eq(PostRecordSchema.submissionId, 'uninitialized')),
+      ).toEqual([]);
+    });
   });
 
   it('should apply template', async () => {
