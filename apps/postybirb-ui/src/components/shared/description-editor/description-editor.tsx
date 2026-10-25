@@ -119,9 +119,12 @@ function createSuggestionExtension(
           render: () => {
             let component: ReactRenderer<SuggestionMenuRef> | null = null;
             let popup: TippyInstance[] | null = null;
+            let hasItems = false;
 
             return {
               onStart: (props) => {
+                hasItems = props.items.length > 0;
+
                 component = new ReactRenderer(SuggestionMenu, {
                   props: { items: props.items, command: props.command },
                   editor: props.editor,
@@ -133,24 +136,34 @@ function createSuggestionExtension(
                   getReferenceClientRect: props.clientRect as () => DOMRect,
                   appendTo: () => document.body,
                   content: component.element,
-                  showOnCreate: true,
+                  showOnCreate: hasItems,
                   interactive: true,
                   trigger: 'manual',
                   placement: 'bottom-start',
                 });
               },
               onUpdate: (props) => {
+                hasItems = props.items.length > 0;
+
                 component?.updateProps({
                   items: props.items,
                   command: props.command,
                 });
-                if (popup?.[0] && props.clientRect) {
-                  popup[0].setProps({
-                    getReferenceClientRect: props.clientRect as () => DOMRect,
-                  });
+
+                if (popup?.[0]) {
+                  if (props.clientRect) {
+                    popup[0].setProps({
+                      getReferenceClientRect: props.clientRect as () => DOMRect,
+                    });
+                  }
+                  if (hasItems) popup[0].show();
+                  else popup[0].hide();
                 }
               },
               onKeyDown: (props) => {
+                // Nothing to select -> let the editor handle Enter / arrows normally
+                if (!hasItems) return false;
+
                 if (props.event.key === 'Escape') {
                   popup?.[0]?.hide();
                   return true;
@@ -158,6 +171,7 @@ function createSuggestionExtension(
                 return component?.ref?.onKeyDown(props) ?? false;
               },
               onExit: () => {
+                hasItems = false;
                 popup?.[0]?.destroy();
                 component?.destroy();
               },
