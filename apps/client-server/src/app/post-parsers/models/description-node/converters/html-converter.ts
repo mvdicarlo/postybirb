@@ -136,7 +136,10 @@ export class HtmlConverter extends BaseConverter {
 
     const marks = node.marks ?? [];
 
-    return this.renderTextWithMarks(node.text, marks);
+    return this.renderTextWithMarks(
+      encode(node.text, { level: 'html5' }).replace(/\n/g, '<br />'),
+      marks,
+    );
   }
 
   /** Wraps already-encoded HTML with bold/italic/underline/strike, color and link marks. */
@@ -161,11 +164,6 @@ export class HtmlConverter extends BaseConverter {
       }
     }
 
-    const encodedText = encode(text, { level: 'html5' }).replace(
-      /\n/g,
-      '<br />',
-    );
-
     const openTags = segments.map((s) => `<${s}>`).join('');
     const closeTags = segments
       .slice()
@@ -173,7 +171,7 @@ export class HtmlConverter extends BaseConverter {
       .map((s) => `</${s}>`)
       .join('');
 
-    let formattedText = `${openTags}${encodedText}${closeTags}`;
+    let formattedText = `${openTags}${text}${closeTags}`;
 
     const color = marks.find((m) => m.type === 'textStyle')?.attrs?.color;
     if (color) {
