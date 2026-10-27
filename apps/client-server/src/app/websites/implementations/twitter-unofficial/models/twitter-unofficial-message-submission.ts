@@ -1,4 +1,8 @@
-import { DescriptionField, RatingField } from '@postybirb/form-builder';
+import {
+  DescriptionField,
+  RatingField,
+  TextField,
+} from '@postybirb/form-builder';
 import {
   DescriptionType,
   DescriptionValue,
@@ -27,4 +31,10 @@ export class TwitterUnofficialMessageSubmission extends BaseWebsiteOptions {
     ],
   })
   declare rating: SubmissionRating;
+
+  @TextField({ label: 'replyToUrl', section: 'website', span: 6 })
+  replyToUrl?: string;
+
+  @TextField({ label: 'quotePostUrl', section: 'website', span: 6 })
+  quotePostUrl?: string;
 }
