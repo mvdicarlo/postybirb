@@ -341,7 +341,7 @@ export default class Bluesky
       BlueskyMessageSubmission | BlueskyFileSubmission
     >,
   ) {
-    // Since bluesky rating is not mapped as other sited do
+    // Since bluesky rating is not mapped as other sites do
     // we should add warning, so users will not post unlabeled images
     const { rating } = postData.options;
     if (rating) {
@@ -403,8 +403,8 @@ export default class Bluesky
     const url = postData.options.replyToUrl;
     if (url?.trim() && !this.getPostIdFromUrl(url)) {
       validator.error(
-        'validation.file.bluesky.invalid-reply-url',
-        {},
+        'validation.replyurl.invalid-reply-url',
+        { error: '' },
         'replyToUrl',
       );
     }
@@ -423,7 +423,7 @@ export default class Bluesky
         await this.getPostCidAndUri(this.getLoggedInAgent(), url);
       } catch (e) {
         validator.error(
-          'validation.file.bluesky.invalid-quote-url',
+          'validation.quoteurl.invalid-quote-url',
           {
             error: e && e instanceof Error ? e.message : String(e),
           },
