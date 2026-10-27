@@ -1,4 +1,4 @@
-import { RadioField } from '@postybirb/form-builder';
+import { BooleanField, RadioField } from '@postybirb/form-builder';
 import { TwitterUnofficialMessageSubmission } from './twitter-unofficial-message-submission';
 
 export type ContentBlurValue =
@@ -32,4 +32,7 @@ export class TwitterUnofficialFileSubmission extends TwitterUnofficialMessageSub
     ],
   })
   contentBlur: ContentBlurValue;
+
+  @BooleanField({ label: 'blockGrokEdit' })
+  blockGrokEdit = true;
 }

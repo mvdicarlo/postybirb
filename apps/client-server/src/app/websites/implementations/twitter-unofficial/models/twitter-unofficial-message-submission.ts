@@ -18,18 +18,7 @@ export class TwitterUnofficialMessageSubmission extends BaseWebsiteOptions {
   })
   declare description: DescriptionValue;
 
-  @RatingField({
-    options: [
-      {
-        label: 'Safe',
-        value: SubmissionRating.GENERAL,
-      },
-      {
-        label: 'Sensitive',
-        value: SubmissionRating.ADULT,
-      },
-    ],
-  })
+  @RatingField({ hidden: true })
   declare rating: SubmissionRating;
 
   @TextField({ label: 'replyToUrl', section: 'website', span: 6 })

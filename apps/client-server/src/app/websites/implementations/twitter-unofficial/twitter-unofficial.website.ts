@@ -6,13 +6,15 @@ import {
   PostData,
   PostResponse,
   SimpleValidationResult,
+  SubmissionRating,
 } from '@postybirb/types';
-import { chunk } from 'lodash';
+import { chunk, uniqBy } from 'lodash';
 import { Rettiwt } from 'rettiwt-api';
-import { parseTweet } from 'twitter-text';
+import { extractMentions, parseTweet } from 'twitter-text';
 import { CancellationToken } from '../../../posting/cancellation-token';
 import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
+import { SubmissionValidator } from '../../commons/validator';
 import { DisableAds } from '../../decorators/disable-ads.decorator';
 import { UserLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
@@ -27,28 +29,28 @@ import {
   TwitterUnofficialFileSubmission,
 } from './models/twitter-unofficial-file-submission';
 import { TwitterUnofficialMessageSubmission } from './models/twitter-unofficial-message-submission';
+import {
+  SensitiveMediaWarning,
+  setMediaMetadata,
+} from './twitter-unofficial-media-metadata';
 
 type RettiwtSession = {
   rettiwt: Rettiwt;
   userId: string;
-  /** Raw cookie header + csrf token, used for the few calls Rettiwt lacks */
+  /** Raw cookie header + csrf token, only needed for media metadata */
   cookieHeader: string;
   ct0: string;
 };
 
 type ThreadOptions = {
-  text: string;
+  /** One entry per tweet, in order */
+  textChunks: string[];
   files: PostingFile[];
   replyToId?: string;
   quoteId?: string;
   contentBlur?: ContentBlurValue;
+  blockGrokEdit?: boolean;
 };
-
-/**
- * Public web-client bearer token (the same one x.com itself and Rettiwt use).
- */
-const WEB_BEARER_TOKEN =
-  'AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA';
 
 @WebsiteMetadata({
   name: 'twitter-unofficial',
@@ -85,6 +87,14 @@ export default class TwitterUnofficial
 
   private static readonly MAX_TWEET_LENGTH = 280;
 
+  /** Validation runs often, so remote lookups (mentions, quoted posts) are cached */
+  private static readonly LOOKUP_TTL_MS = 5 * 60 * 1000;
+
+  private readonly lookupCache = new Map<
+    string,
+    { value: boolean; expires: number }
+  >();
+
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<TwitterUnofficialAccountData> =
     {
       userName: true,
@@ -120,12 +130,16 @@ export default class TwitterUnofficial
       return undefined;
     }
 
-    const cookieHeader = `auth_token=${authToken}; ct0=${ct0}; twid=${twid}`;
     const apiKey = Buffer.from(
       `auth_token=${authToken};ct0=${ct0};twid=${twid};`,
     ).toString('base64');
 
-    return { rettiwt: new Rettiwt({ apiKey }), userId, cookieHeader, ct0 };
+    return {
+      rettiwt: new Rettiwt({ apiKey }),
+      userId,
+      cookieHeader: `auth_token=${authToken}; ct0=${ct0}; twid=${twid}`,
+      ct0,
+    };
   }
 
   private async requireSession(): Promise<RettiwtSession> {
@@ -189,145 +203,62 @@ export default class TwitterUnofficial
     )?.[1];
   }
 
-  private static normalizeBlur(
+  private static toMediaWarnings(
     blur?: ContentBlurValue,
-  ): 'other' | 'adult_content' | 'graphic_violence' | undefined {
+  ): SensitiveMediaWarning[] | undefined {
     if (!blur) {
       return undefined;
     }
-    return blur === 'graphical_violence' ? 'graphic_violence' : blur;
+    return [blur === 'graphical_violence' ? 'graphic_violence' : blur];
   }
 
   /**
-   * Splits text into chunks that each fit in a single tweet (weighted length,
-   * so URLs / emoji / CJK are counted the way Twitter counts them).
-   * Prefers paragraph, line, sentence, then word boundaries.
+   * Splits text into chunks that each fit in one tweet.
+   *
+   * Intentionally makes no assumptions about the language: it only cuts at the
+   * largest grapheme boundary where the chunk still fits, using Twitter's own
+   * weighted length (so URLs, emoji, CJK etc. are counted like Twitter does).
    */
-  private static splitText(
-    text: string,
-    max = TwitterUnofficial.MAX_TWEET_LENGTH,
-  ): string[] {
+  private static splitText(text: string): string[] {
+    const max = TwitterUnofficial.MAX_TWEET_LENGTH;
     const fits = (s: string) => parseTweet(s).weightedLength <= max;
 
+    const segmenter = new Intl.Segmenter(undefined, {
+      granularity: 'grapheme',
+    });
+    let graphemes = Array.from(
+      segmenter.segment(text.trim()),
+      (s) => s.segment,
+    );
+
     const chunks: string[] = [];
-    let remaining = text.trim();
-
-    while (remaining.length) {
-      if (fits(remaining)) {
-        chunks.push(remaining);
-        break;
-      }
-
-      // Largest prefix (in code points) that still fits
-      const chars = Array.from(remaining);
+    while (graphemes.length) {
+      // Binary search for the longest prefix that still fits
       let lo = 1;
-      let hi = chars.length;
+      let hi = graphemes.length;
       while (lo < hi) {
         const mid = Math.ceil((lo + hi) / 2);
-        if (fits(chars.slice(0, mid).join(''))) {
+        if (fits(graphemes.slice(0, mid).join(''))) {
           lo = mid;
         } else {
           hi = mid - 1;
         }
       }
-      const prefix = chars.slice(0, lo).join('');
 
-      // Don't break too early: only accept boundaries in the last half
-      const minIndex = Math.floor(prefix.length / 2);
-      const boundaries: RegExp[] = [
-        /\n\s*\n/g, // paragraph
-        /\n/g, // line
-        /[.!?…。！？]["')\]]*\s/g, // sentence
-        /\s/g, // word
-      ];
-
-      let cut = -1;
-      for (const re of boundaries) {
-        let match: RegExpExecArray | null;
-        let last = -1;
-        // eslint-disable-next-line no-cond-assign
-        while ((match = re.exec(prefix)) !== null) {
-          const end = match.index + match[0].length;
-          if (end >= minIndex) {
-            last = end;
-          }
-        }
-        if (last > 0) {
-          cut = last;
-          break;
-        }
-      }
-
-      if (cut <= 0) {
-        cut = prefix.length; // No good boundary, hard cut
-      }
-
-      const piece = remaining.slice(0, cut).trim();
-      if (piece.length) {
+      const piece = graphemes.slice(0, lo).join('');
+      if (piece.trim().length) {
         chunks.push(piece);
       }
-      remaining = remaining.slice(cut).trim();
+      graphemes = graphemes.slice(lo);
     }
 
     return chunks.length ? chunks : [''];
   }
 
-  /**
-   * Alt text and sensitive-media flags are not exposed by Rettiwt, so they are
-   * applied with a direct call using the same session cookies. Non-fatal.
-   */
-  private async setMediaMetadata(
-    session: RettiwtSession,
-    mediaId: string,
-    altText?: string,
-    contentBlur?: ReturnType<typeof TwitterUnofficial.normalizeBlur>,
-  ): Promise<void> {
-    if (!altText && !contentBlur) {
-      return;
-    }
-
-    const body: Record<string, unknown> = { media_id: mediaId };
-    if (altText) {
-      body.alt_text = { text: altText };
-    }
-    if (contentBlur) {
-      body.sensitive_media_warning = [contentBlur];
-    }
-
-    try {
-      const res = await fetch(
-        'https://x.com/i/api/1.1/media/metadata/create.json',
-        {
-          method: 'POST',
-          headers: {
-            authorization: `Bearer ${WEB_BEARER_TOKEN}`,
-            'content-type': 'application/json',
-            cookie: session.cookieHeader,
-            'x-csrf-token': session.ct0,
-            'x-twitter-auth-type': 'OAuth2Session',
-            'x-twitter-active-user': 'yes',
-            'x-twitter-client-language': 'en',
-          },
-          body: JSON.stringify(body),
-        },
-      );
-
-      if (!res.ok) {
-        this.logger.warn(
-          `Failed to set metadata for media ${mediaId}: HTTP ${res.status}`,
-        );
-      }
-    } catch (e) {
-      this.logger
-        .withError(e)
-        .warn(`Failed to set metadata for media ${mediaId}`);
-    }
-  }
-
   private async uploadFile(
     session: RettiwtSession,
     file: PostingFile,
-    contentBlur?: ContentBlurValue,
+    options: Pick<ThreadOptions, 'contentBlur' | 'blockGrokEdit'>,
   ): Promise<string> {
     const { buffer } = file;
     const arrayBuffer = buffer.buffer.slice(
@@ -340,23 +271,27 @@ export default class TwitterUnofficial
       throw new Error(`Failed to upload ${file.fileName ?? 'file'}`);
     }
 
-    await this.setMediaMetadata(
-      session,
-      id,
-      file.metadata?.altText?.trim() || undefined,
-      TwitterUnofficial.normalizeBlur(contentBlur),
-    );
+    // Non-fatal: the post is still valid without the metadata
+    try {
+      await setMediaMetadata(session, id, {
+        altText: file.metadata?.altText?.trim() || undefined,
+        sensitiveMediaWarning: TwitterUnofficial.toMediaWarnings(
+          options.contentBlur,
+        ),
+        blockGrokEdit: options.blockGrokEdit,
+      });
+    } catch (e) {
+      this.logger.withError(e).warn(`Failed to set metadata for media ${id}`);
+    }
 
     return id;
   }
 
   /**
-   * Posts text and files as a thread.
-   *
-   * Tweet i carries text chunk i and file batch i (4 files max). If there are
-   * more text chunks than file batches the remaining tweets are text-only, and
-   * vice versa. The first tweet replies to / quotes the requested post, every
-   * following tweet replies to the previous one.
+   * Posts a thread. Tweet i carries text chunk i and file batch i (4 files max).
+   * If there are more text chunks than file batches the remaining tweets are
+   * text-only, and vice versa. The first tweet replies to / quotes the requested
+   * post, every following tweet replies to the previous one.
    */
   private async postThread(
     options: ThreadOptions,
@@ -365,12 +300,11 @@ export default class TwitterUnofficial
     const session = await this.requireSession();
     const { rettiwt } = session;
 
-    const textChunks = TwitterUnofficial.splitText(options.text);
     const fileBatches = chunk(
       options.files,
       TwitterUnofficial.MAX_FILES_PER_TWEET,
     );
-    const total = Math.max(textChunks.length, fileBatches.length);
+    const total = Math.max(options.textChunks.length, fileBatches.length);
     const tweetIds: string[] = [];
 
     try {
@@ -380,13 +314,11 @@ export default class TwitterUnofficial
         const media: Array<{ id: string }> = [];
         for (const file of fileBatches[i] ?? []) {
           cancellationToken.throwIfAborted();
-          media.push({
-            id: await this.uploadFile(session, file, options.contentBlur),
-          });
+          media.push({ id: await this.uploadFile(session, file, options) });
         }
 
         const tweetId = await rettiwt.tweet.post({
-          text: textChunks[i] ?? '',
+          text: options.textChunks[i] ?? '',
           media: media.length ? media : undefined,
           replyTo: i === 0 ? options.replyToId : tweetIds[i - 1],
           quote: i === 0 ? options.quoteId : undefined,
@@ -461,11 +393,13 @@ export default class TwitterUnofficial
 
     return this.postThread(
       {
-        text: options.description ?? '',
+        // Length is enforced by validation, never split text on media posts
+        textChunks: [options.description ?? ''],
         files,
         replyToId: TwitterUnofficial.parseTweetId(options.replyToUrl),
         quoteId: TwitterUnofficial.parseTweetId(options.quotePostUrl),
         contentBlur: options.contentBlur,
+        blockGrokEdit: options.blockGrokEdit,
       },
       cancellationToken,
     );
@@ -474,7 +408,15 @@ export default class TwitterUnofficial
   async onValidateFileSubmission(
     postData: PostData<TwitterUnofficialFileSubmission>,
   ): Promise<SimpleValidationResult> {
-    return this.validateLinks<TwitterUnofficialFileSubmission>(postData);
+    const validator = this.createValidator<TwitterUnofficialFileSubmission>();
+
+    this.validateDescriptionLength(postData, validator);
+    this.validateRating(postData, validator);
+    this.validateReplyToUrl(postData, validator);
+    await this.validateQuotePostUrl(postData, validator);
+    await this.validateMentions(postData, validator);
+
+    return validator.result;
   }
 
   // ---------------------------------------------------------------------------
@@ -494,7 +436,7 @@ export default class TwitterUnofficial
 
     return this.postThread(
       {
-        text: options.description ?? '',
+        textChunks: TwitterUnofficial.splitText(options.description ?? ''),
         files: [],
         replyToId: TwitterUnofficial.parseTweetId(options.replyToUrl),
         quoteId: TwitterUnofficial.parseTweetId(options.quotePostUrl),
@@ -506,27 +448,189 @@ export default class TwitterUnofficial
   async onValidateMessageSubmission(
     postData: PostData<TwitterUnofficialMessageSubmission>,
   ): Promise<SimpleValidationResult> {
-    return this.validateLinks<TwitterUnofficialMessageSubmission>(postData);
+    const validator =
+      this.createValidator<TwitterUnofficialMessageSubmission>();
+
+    // No length limit: long text is split into a thread
+    this.validateReplyToUrl(postData, validator);
+    await this.validateQuotePostUrl(postData, validator);
+    await this.validateMentions(postData, validator);
+
+    return validator.result;
   }
 
   // ---------------------------------------------------------------------------
   // Validation
   // ---------------------------------------------------------------------------
 
-  private validateLinks<T extends TwitterUnofficialMessageSubmission>(
-    postData: PostData<T>,
-  ): SimpleValidationResult {
-    const validator = this.createValidator<T>();
-    const { replyToUrl, quotePostUrl } = postData.options;
-
-    if (replyToUrl?.trim() && !TwitterUnofficial.parseTweetId(replyToUrl)) {
-      validator.error('validation.url.invalid', {}, 'replyToUrl');
+  private async cachedLookup(
+    key: string,
+    lookup: () => Promise<boolean>,
+  ): Promise<boolean> {
+    const hit = this.lookupCache.get(key);
+    if (hit && hit.expires > Date.now()) {
+      return hit.value;
     }
 
-    if (quotePostUrl?.trim() && !TwitterUnofficial.parseTweetId(quotePostUrl)) {
-      validator.error('validation.url.invalid', {}, 'quotePostUrl');
+    const value = await lookup();
+    this.lookupCache.set(key, {
+      value,
+      expires: Date.now() + TwitterUnofficial.LOOKUP_TTL_MS,
+    });
+    return value;
+  }
+
+  private validateDescriptionLength(
+    postData: PostData<TwitterUnofficialFileSubmission>,
+    validator: SubmissionValidator<TwitterUnofficialFileSubmission>,
+  ): void {
+    const { weightedLength } = parseTweet(postData.options.description ?? '');
+    if (weightedLength > TwitterUnofficial.MAX_TWEET_LENGTH) {
+      validator.error(
+        'validation.description.max-length',
+        {
+          maxLength: TwitterUnofficial.MAX_TWEET_LENGTH,
+          currentLength: weightedLength,
+        },
+        'description',
+      );
+    }
+  }
+
+  /**
+   * Rettiwt can't set X's sensitive media flag from the rating, so users must
+   * pick contentBlur themselves. Warn so non-general images aren't posted unlabeled.
+   */
+  private validateRating(
+    postData: PostData<TwitterUnofficialFileSubmission>,
+    validator: SubmissionValidator<TwitterUnofficialFileSubmission>,
+  ): void {
+    const { rating, contentBlur } = postData.options;
+    // Undefined rating is handled by the default part validator
+    if (rating && rating !== SubmissionRating.GENERAL && !contentBlur) {
+      validator.warning(
+        'validation.file.twitter-unofficial.rating-matches-default',
+        {},
+        'contentBlur',
+      );
+    }
+  }
+
+  private validateReplyToUrl(
+    postData: PostData<
+      TwitterUnofficialMessageSubmission | TwitterUnofficialFileSubmission
+    >,
+    validator:
+      | SubmissionValidator<TwitterUnofficialMessageSubmission>
+      | SubmissionValidator<TwitterUnofficialFileSubmission>,
+  ): void {
+    const url = postData.options.replyToUrl;
+    if (url?.trim() && !TwitterUnofficial.parseTweetId(url)) {
+      validator.error(
+        'validation.replyurl.invalid-reply-url',
+        { error: '' },
+        'replyToUrl',
+      );
+    }
+  }
+
+  private async validateQuotePostUrl(
+    postData: PostData<
+      TwitterUnofficialMessageSubmission | TwitterUnofficialFileSubmission
+    >,
+    validator:
+      | SubmissionValidator<TwitterUnofficialMessageSubmission>
+      | SubmissionValidator<TwitterUnofficialFileSubmission>,
+  ): Promise<void> {
+    const url = postData.options.quotePostUrl;
+    if (!url?.trim()) {
+      return;
     }
 
-    return validator.result;
+    const tweetId = TwitterUnofficial.parseTweetId(url);
+    if (!tweetId) {
+      validator.error(
+        'validation.quoteurl.invalid-quote-url',
+        { error: 'Invalid post URL' },
+        'quotePostUrl',
+      );
+      return;
+    }
+
+    // Not logged in: nothing to check against, login state is validated elsewhere
+    const session = await this.createSession();
+    if (!session) {
+      return;
+    }
+
+    try {
+      const exists = await this.cachedLookup(`tweet:${tweetId}`, async () =>
+        Boolean(await session.rettiwt.tweet.details(tweetId)),
+      );
+
+      if (!exists) {
+        validator.error(
+          'validation.quoteurl.invalid-quote-url',
+          { error: 'Post not found' },
+          'quotePostUrl',
+        );
+      }
+    } catch (e) {
+      validator.error(
+        'validation.quoteurl.invalid-quote-url',
+        { error: e instanceof Error ? e.message : String(e) },
+        'quotePostUrl',
+      );
+    }
+  }
+
+  /**
+   * twitter-text only extracts real mentions, so things like "@/someone",
+   * emails or a lone "@" are ignored and never reported.
+   */
+  private async validateMentions(
+    postData: PostData<
+      TwitterUnofficialMessageSubmission | TwitterUnofficialFileSubmission
+    >,
+    validator:
+      | SubmissionValidator<TwitterUnofficialMessageSubmission>
+      | SubmissionValidator<TwitterUnofficialFileSubmission>,
+  ): Promise<void> {
+    const mentions = uniqBy(
+      extractMentions(postData.options.description ?? ''),
+      (m) => m.toLowerCase(),
+    );
+    if (!mentions.length) {
+      return;
+    }
+
+    const session = await this.createSession();
+    if (!session) {
+      return;
+    }
+
+    const invalidMentions: string[] = [];
+    for (const mention of mentions) {
+      try {
+        const exists = await this.cachedLookup(
+          `user:${mention.toLowerCase()}`,
+          async () => Boolean(await session.rettiwt.user.details(mention)),
+        );
+        if (!exists) {
+          invalidMentions.push(`@${mention}`);
+        }
+      } catch (e) {
+        // Lookup failed (rate limit, network): can't tell, so don't block the post
+        this.logger.withError(e).warn(`Could not verify mention @${mention}`);
+      }
+    }
+
+    if (invalidMentions.length) {
+      validator.error(
+        'validation.description.twitter-unofficial.invalid-mentions',
+        { mentions: invalidMentions },
+        'description',
+      );
+    }
   }
 }
