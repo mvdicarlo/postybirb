@@ -341,7 +341,7 @@ export default class Bluesky
       BlueskyMessageSubmission | BlueskyFileSubmission
     >,
   ) {
-    // Since bluesky rating is not mapped as other sited do
+    // Since bluesky rating is not mapped as other sites do
     // we should add warning, so users will not post unlabeled images
     const { rating } = postData.options;
     if (rating) {
