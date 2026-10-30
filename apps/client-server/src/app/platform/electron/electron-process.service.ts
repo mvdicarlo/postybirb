@@ -1,11 +1,13 @@
 /* eslint-disable max-classes-per-file */
 import { Injectable } from '@nestjs/common';
+import { Logger } from '@postybirb/logger';
 import {
-    PlatformForkOptions,
-    PlatformProcessService,
-    PlatformWorkerProcess,
+  PlatformForkOptions,
+  PlatformProcessService,
+  PlatformWorkerProcess,
 } from '@postybirb/platform';
 import { app, UtilityProcess, utilityProcess } from 'electron';
+import { createInterface } from 'readline';
 
 /**
  * Wraps an Electron {@link UtilityProcess} in the platform-agnostic
@@ -48,6 +50,8 @@ class ElectronWorkerProcess implements PlatformWorkerProcess {
  */
 @Injectable()
 export class ElectronProcessService extends PlatformProcessService {
+  private readonly logger = Logger(ElectronProcessService.name);
+
   readonly isolatesCrashes = true;
 
   async fork(
@@ -59,13 +63,51 @@ export class ElectronProcessService extends PlatformProcessService {
 
     const child = utilityProcess.fork(modulePath, [], {
       serviceName: options?.serviceName,
-      // Pipe child stdout/stderr to the main process logs for diagnostics.
-      stdio: 'inherit',
+      // Packaged Windows apps may have no console; capture output in app logs.
+      stdio: 'pipe',
+    });
+    const metadata = {
+      workerPath: modulePath,
+      serviceName: options?.serviceName,
+      pid: child.pid,
+      telemetry: false,
+    };
+
+    for (const streamName of ['stdout', 'stderr'] as const) {
+      const stream = child[streamName];
+      if (!stream) continue;
+      const lines = createInterface({ input: stream, crlfDelay: Infinity });
+      lines.on('line', (output: string) => {
+        if (output.length === 0) return;
+        const logger = this.logger.withMetadata({
+          ...metadata,
+          stream: streamName,
+        });
+        if (streamName === 'stderr') {
+          logger.warn(output);
+        } else {
+          logger.info(output);
+        }
+      });
+      lines.on('error', (error: Error) => {
+        this.logger
+          .withMetadata({ ...metadata, stream: streamName })
+          .withError(error)
+          .error(`Failed to read worker ${streamName}`);
+      });
+    }
+
+    child.on('error', (type, location) => {
+      // The full Node diagnostic report can contain environment variables.
+      this.logger
+        .withMetadata({ ...metadata, type, location })
+        .error('Worker reported a fatal runtime error');
     });
 
     // Resolve once the child has actually spawned; reject if it dies first.
     await new Promise<void>((resolve, reject) => {
       const onSpawn = () => {
+        metadata.pid = child.pid;
         cleanup();
         resolve();
       };
