@@ -16,6 +16,7 @@ import { PhilomenaLoginView } from './philomena';
 import { PrometheusLoginView } from './prometheus';
 import { SofurryLoginView } from './sofurry';
 import { SubscribeStarAdultLoginView } from './subscribe-star-adult';
+import { TailspaceLoginView } from './tailspace';
 import { TelegramLoginView } from './telegram';
 import { TwitterLoginView } from './twitter';
 import type { LoginViewComponent } from './types';
@@ -52,6 +53,7 @@ const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
   Prometheus: PrometheusLoginView,
   Sofurry: SofurryLoginView,
   SubscribeStarAdult: SubscribeStarAdultLoginView,
+  Tailspace: TailspaceLoginView,
   Telegram: TelegramLoginView,
   Twitter: TwitterLoginView,
   e621: E621LoginView,

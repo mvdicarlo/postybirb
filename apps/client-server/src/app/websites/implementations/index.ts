@@ -33,6 +33,7 @@ export { default as Prometheus } from './prometheus/prometheus.website';
 export { default as Sofurry } from './sofurry/sofurry.website';
 export { default as SubscribeStarAdult } from './subscribe-star/subscribe-star-adult.website';
 export { default as SubscribeStar } from './subscribe-star/subscribe-star.website';
+export { default as Tailspace } from './tailspace/tailspace.website';
 export { default as Telegram } from './telegram/telegram.website';
 export { default as TheJabArchives } from './thejabarchives/tja.website';
 export { default as Toyhouse } from './toyhouse/toyhouse.website';

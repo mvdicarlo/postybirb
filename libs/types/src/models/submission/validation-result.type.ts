@@ -250,4 +250,8 @@ export interface ValidationMessages {
     currentLength: number;
     maxLength: number;
   };
+
+  'validation.file.tailspace.comic-unavailable': object;
+
+  'validation.file.tailspace.comic-ignores-post-fields': object;
 }

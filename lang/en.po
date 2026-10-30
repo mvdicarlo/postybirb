@@ -435,6 +435,7 @@ msgstr "and {remainingCount} more"
 
 #: apps/postybirb-ui/src/components/website-login-views/philomena/philomena-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/tailspace/tailspace-login-view.tsx
 msgid "API Key"
 msgstr "API Key"
 
@@ -1091,6 +1092,10 @@ msgstr "Creative Commons"
 #: libs/translations/src/lib/field-translations.ts
 msgid "Creative Commons license"
 msgstr "Creative Commons license"
+
+#: apps/postybirb-ui/src/components/website-login-views/tailspace/tailspace-login-view.tsx
+msgid "Creator settings / PostyBirb integration"
+msgstr "Creator settings / PostyBirb integration"
 
 #: apps/postybirb-ui/src/components/shared/schedule-popover/cron-picker.tsx
 msgid "CRON Expression"
@@ -2379,6 +2384,7 @@ msgid "Login Status Filter"
 msgstr "Login Status Filter"
 
 #: apps/postybirb-ui/src/components/website-login-views/subscribe-star-adult/subscribe-star-adult-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/tailspace/tailspace-login-view.tsx
 msgid "Login verified"
 msgstr "Login verified"
 
@@ -3391,6 +3397,7 @@ msgstr "Russian"
 #: apps/postybirb-ui/src/components/website-login-views/philomena/philomena-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/sofurry/sofurry-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/tailspace/tailspace-login-view.tsx
 msgid "Save"
 msgstr "Save"
 
@@ -4195,6 +4202,10 @@ msgstr "Text"
 msgid "The calendar shows all your scheduled submissions. Switch between month, week, and day views. Click an event to reschedule or unschedule it. Drag events to move them to a different time."
 msgstr "The calendar shows all your scheduled submissions. Switch between month, week, and day views. Click an event to reschedule or unschedule it. Drag events to move them to a different time."
 
+#: apps/postybirb-ui/src/i18n/validation-translation.tsx
+msgid "The files are added as pages at the end of the comic. Title, description and tags are not used."
+msgstr "The files are added as pages at the end of the comic. Title, description and tags are not used."
+
 #: apps/postybirb-ui/src/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
 msgid "The folder \"{folderName}\" contains {fileCount} files."
 msgstr "The folder \"{folderName}\" contains {fileCount} files."
@@ -4854,6 +4865,10 @@ msgstr "Write your post description with rich text formatting. Type @ to insert 
 #: apps/postybirb-ui/src/components/disclaimer/disclaimer.tsx
 msgid "You agree to comply with all applicable laws, terms of service, and policies of any third party platforms you connect to or interact with through this application. Do not use this software to infringe intellectual property rights, violate privacy, or circumvent platform rules."
 msgstr "You agree to comply with all applicable laws, terms of service, and policies of any third party platforms you connect to or interact with through this application. Do not use this software to infringe intellectual property rights, violate privacy, or circumvent platform rules."
+
+#: apps/postybirb-ui/src/i18n/validation-translation.tsx
+msgid "You can no longer add pages to this comic. Log in to Tailspace again to refresh the list."
+msgstr "You can no longer add pages to this comic. Log in to Tailspace again to refresh the list."
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
 msgid "You can restart this tour anytime from here. Also look for the ? buttons on each page — they provide a guided tour of that specific section."
