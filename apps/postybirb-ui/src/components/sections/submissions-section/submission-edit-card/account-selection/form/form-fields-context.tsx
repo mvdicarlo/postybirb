@@ -7,7 +7,12 @@ import {
   FieldAggregateType,
   FormBuilderMetadata,
 } from '@postybirb/form-builder';
-import { SubmissionType, WebsiteOptionsDto } from '@postybirb/types';
+import {
+  DefaultDescriptionValue,
+  DescriptionValueSchema,
+  SubmissionType,
+  WebsiteOptionsDto,
+} from '@postybirb/types';
 import { isEqual } from 'lodash';
 import {
   createContext,
@@ -18,6 +23,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
 } from 'react';
 import { useQuery } from 'react-query';
 import formGeneratorApi from '../../../../../../api/form-generator.api';
@@ -25,6 +31,7 @@ import websiteOptionsApi from '../../../../../../api/website-options.api';
 import { useAccount } from '../../../../../../stores/entity/account-store';
 import type { SubmissionRecord } from '../../../../../../stores/records';
 import { showErrorWithContext } from '../../../../../../utils/notifications';
+import { DescriptionDraft, DescriptionSaveStatus } from './description-draft';
 
 interface FormFieldsContextValue {
   /** Form field metadata from API */
@@ -43,6 +50,9 @@ interface FormFieldsContextValue {
   getValue: <T = unknown>(name: string) => T;
   /** Update a field value */
   setValue: (name: string, value: unknown) => void;
+  descriptionSaveStatus: DescriptionSaveStatus;
+  retryDescriptionSave: () => void;
+  discardDescriptionChanges: () => void;
 }
 
 const FormFieldsContext = createContext<FormFieldsContextValue | null>(null);
@@ -52,11 +62,31 @@ interface FormFieldsProviderProps extends PropsWithChildren {
   submission: SubmissionRecord;
 }
 
-export function FormFieldsProvider({
+export function FormFieldsProvider({ option, ...props }: FormFieldsProviderProps) {
+  return <FormFieldsSession key={option.id} option={option} {...props} />;
+}
+
+function FormFieldsSession({
   option,
   submission,
   children,
 }: FormFieldsProviderProps) {
+  const [descriptionDraft] = useState(
+    () => new DescriptionDraft(
+      option.data.description ?? DefaultDescriptionValue(),
+      (update) => websiteOptionsApi.saveDescription(option.id, update),
+      (error) => showErrorWithContext(error, <Trans>Failed to save description</Trans>),
+    ),
+  );
+  const descriptionState = useSyncExternalStore(
+    descriptionDraft.subscribe,
+    descriptionDraft.getSnapshot,
+  );
+  useEffect(() => {
+    descriptionDraft.receive(option.data.description ?? DefaultDescriptionValue());
+  }, [descriptionDraft, option.data.description]);
+  useEffect(() => () => { descriptionDraft.flush(); }, [descriptionDraft]);
+
   // Local state for optimistic updates - provides instant UI feedback
   const [localValues, setLocalValues] = useState<Record<string, unknown>>({});
 
@@ -142,6 +172,7 @@ export function FormFieldsProvider({
   // Get current value for a field - prefers local optimistic value over server value
   const getValue = useCallback(
     <T = unknown,>(name: string): T => {
+      if (name === 'description') return descriptionState.value as T;
       // Local value takes precedence (optimistic update)
       // by checking that current option is the one passed in the props we ensure that we don't use
       // cached values from the different entity (e.g. description from one template does not render in another)
@@ -151,12 +182,16 @@ export function FormFieldsProvider({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (option.data as any)[name] as T;
     },
-    [option.data, option.id, localValues],
+    [option.data, option.id, localValues, descriptionState.value],
   );
 
   // Update a field value with immediate local update and debounced server save
   const setValue = useCallback(
     (name: string, value: unknown) => {
+      if (name === 'description') {
+        descriptionDraft.setValue(DescriptionValueSchema.parse(value));
+        return;
+      }
       // IMMEDIATE local update for UI responsiveness
       setLocalValues((prev) => ({ ...prev, [name]: value }));
 
@@ -165,11 +200,7 @@ export function FormFieldsProvider({
         clearTimeout(saveTimerRef.current);
       }
 
-      // Determine debounce time based on field characteristics.
-      // Description editor emits object values while typing, so it needs
-      // a longer debounce to avoid excessive backend updates.
-      const debounceTime =
-        name === 'description' ? 1250 : typeof value === 'string' ? 500 : 150;
+      const debounceTime = typeof value === 'string' ? 500 : 150;
 
       // Schedule the save with debounce
       saveTimerRef.current = setTimeout(async () => {
@@ -188,7 +219,7 @@ export function FormFieldsProvider({
         }
       }, debounceTime);
     },
-    [option.id, option.data, localValues],
+    [option.id, option.data, localValues, descriptionDraft],
   );
 
   const contextValue = useMemo<FormFieldsContextValue>(
@@ -201,6 +232,9 @@ export function FormFieldsProvider({
       getField,
       getValue,
       setValue,
+      descriptionSaveStatus: descriptionState.status,
+      retryDescriptionSave: descriptionDraft.retry,
+      discardDescriptionChanges: descriptionDraft.discard,
     }),
     [
       formFields,
@@ -211,6 +245,8 @@ export function FormFieldsProvider({
       getField,
       getValue,
       setValue,
+      descriptionState.status,
+      descriptionDraft,
     ],
   );
 

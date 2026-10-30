@@ -33,4 +33,11 @@ export const DescriptionValueSchema: z.ZodType<DescriptionValue> =
     insertTags: z.boolean().optional(),
     insertTitle: z.boolean().optional(),
     description: DescriptionSchema,
+    version: z
+      .object({
+        revision: z.number().int().nonnegative(),
+        mutationId: z.string().uuid().nullable(),
+        replacementRevision: z.number().int().nonnegative(),
+      })
+      .optional(),
   });

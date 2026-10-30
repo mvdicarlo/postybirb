@@ -799,14 +799,12 @@ export class SubmissionService
           }
 
           if (existingOption) {
-            // Upsert: merge existing data with template data
-            const mergedData = {
-              ...existingOption.data,
-              ...dataToApply,
-            };
-            await this.websiteOptionsService.update(existingOption.id, {
-              data: mergedData,
-            });
+            await this.websiteOptionsService.update(
+              existingOption.id,
+              { data: dataToApply },
+              'replace',
+              true,
+            );
           } else {
             // Create new option - only pass title if it exists in dataToApply
             await this.websiteOptionsService.createOption(

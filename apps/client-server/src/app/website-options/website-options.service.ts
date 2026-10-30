@@ -4,6 +4,7 @@ import {
   Description,
   DescriptionType,
   DescriptionValue,
+  DESCRIPTION_REVISION_CONFLICT,
   DynamicObject,
   EntityId,
   IDescriptionPreviewResult,
@@ -18,11 +19,13 @@ import {
   TipTapNode,
   UpdateSubmissionWebsiteOptionsDto,
   UpdateWebsiteOptionsDto,
+  UpdateWebsiteDescriptionDto,
   ValidateWebsiteOptionsDto,
   ValidationResult,
 } from '@postybirb/types';
 import {
   BadRequestException,
+  ConflictException,
   forwardRef,
   Inject,
   Injectable,
@@ -325,11 +328,42 @@ export class WebsiteOptionsService
     return record;
   }
 
-  async update(id: EntityId, update: UpdateWebsiteOptionsDto) {
+  /** Internal replacements mark description intent; ordinary HTTP field saves preserve it. */
+  async update(
+    id: EntityId,
+    update: UpdateWebsiteOptionsDto,
+    descriptionMode: 'replace' | 'preserve' = 'replace',
+    merge = false,
+  ) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
     const option = await this.repository.findByIdOrThrow(id);
     await this.postingActivity.assertSubmissionsMutable(option.submissionId);
-    const result = await this.repository.update(id, update);
+    const result = await this.repository.updateData(
+      id,
+      update.data,
+      descriptionMode === 'preserve' ? undefined : 'replace',
+      merge,
+    );
+    if (!result) throw new ConflictException('Description changed during update.');
+    this.markChanged(result.submissionId);
+    return result;
+  }
+
+  async updateDescription(id: EntityId, update: UpdateWebsiteDescriptionDto) {
+    const option = await this.repository.findByIdOrThrow(id);
+    await this.postingActivity.assertSubmissionsMutable(option.submissionId);
+    const result = await this.repository.updateData(
+      id,
+      { description: update.value },
+      update,
+      true,
+    );
+    if (!result) {
+      throw new ConflictException({
+        code: DESCRIPTION_REVISION_CONFLICT,
+        message: 'The description changed before this save could be applied.',
+      });
+    }
     this.markChanged(result.submissionId);
     return result;
   }
@@ -581,12 +615,12 @@ export class WebsiteOptionsService
     }
 
     for (const { option, description } of updates) {
-      await this.repository.update(option.id, {
-        data: {
-          ...option.data,
-          description,
-        },
-      });
+      await this.repository.updateData(
+        option.id,
+        { description },
+        'replace',
+        true,
+      );
       this.markChanged(option.submissionId);
     }
   }

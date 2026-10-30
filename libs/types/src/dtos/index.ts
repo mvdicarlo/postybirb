@@ -47,6 +47,7 @@ export * from './website-options/create-website-options.dto';
 export * from './website-options/preview-description.dto';
 export * from './website-options/update-submission-website-options.dto';
 export * from './website-options/update-website-options.dto';
+export * from './website-options/update-website-description.dto';
 export * from './website-options/validate-website-options.dto';
 export * from './website-options/website-options.dto';
 export * from './website/custom-website-route.dto';

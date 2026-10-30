@@ -4,7 +4,7 @@
  */
 
 import { Trans } from '@lingui/react/macro';
-import { Alert, Badge, Box, Checkbox, Group, Text } from '@mantine/core';
+import { Alert, Badge, Box, Button, Checkbox, Group, Text } from '@mantine/core';
 import { useDebouncedCallback, useDisclosure } from '@mantine/hooks';
 import { DescriptionFieldType } from '@postybirb/form-builder';
 import {
@@ -131,7 +131,10 @@ export function DescriptionField({
   fieldName,
   field,
 }: FormFieldProps<DescriptionFieldType>) {
-  const { getValue, setValue, option, submission } = useFormFieldsContext();
+  const {
+    getValue, setValue, option, submission,
+    descriptionSaveStatus, retryDescriptionSave, discardDescriptionChanges,
+  } = useFormFieldsContext();
   const defaultOption = useDefaultOption<DescriptionValue>(fieldName);
   const validations = useValidations(fieldName);
   const [previewOpened, { toggle: togglePreview }] = useDisclosure(false);
@@ -200,6 +203,27 @@ export function DescriptionField({
 
   return (
     <Box data-tour-id="edit-card-description">
+      {(descriptionSaveStatus === 'error' || descriptionSaveStatus === 'conflict') && (
+        <Alert color="red" mb="sm" title={<Trans>Description changes not saved</Trans>}>
+          {descriptionSaveStatus === 'conflict' ? (
+            <Trans>The description changed elsewhere. Your draft has been kept.</Trans>
+          ) : (
+            <Trans>The description could not be saved. Your draft has been kept.</Trans>
+          )}
+          <Group mt="xs">
+            <Button size="xs" onClick={retryDescriptionSave}>
+              {descriptionSaveStatus === 'conflict' ? (
+                <Trans>Keep my description</Trans>
+              ) : (
+                <Trans>Retry save</Trans>
+              )}
+            </Button>
+            <Button size="xs" variant="default" onClick={discardDescriptionChanges}>
+              <Trans>Use saved description</Trans>
+            </Button>
+          </Group>
+        </Alert>
+      )}
       {containsLegacyShortcuts && (
         <Alert
           icon={<IconAlertTriangle size={16} />}

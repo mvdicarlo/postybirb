@@ -5,11 +5,13 @@ import {
   SubmissionId,
   UpdateSubmissionWebsiteOptionsDto,
   UpdateWebsiteOptionsDto,
+  UpdateWebsiteDescriptionDto,
   ValidateWebsiteOptionsDto,
 } from '@postybirb/types';
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
+  ApiConflictResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
@@ -48,14 +50,28 @@ export class WebsiteOptionsController extends PostyBirbController<WebsiteOptions
   }
 
   @Patch(':id')
-  @ApiOkResponse({ description: 'Submission option updated.', type: Boolean })
+  @ApiOkResponse({
+    description: 'Submission fields updated; description snapshots are preserved.',
+  })
   @ApiNotFoundResponse({ description: 'Submission option Id not found.' })
   update(
     @Body()
     updateDto: UpdateWebsiteOptionsDto,
     @Param('id') id: EntityId,
   ) {
-    return this.service.update(id, updateDto).then((entity) => entity.toDTO());
+    return this.service.update(id, updateDto, 'preserve').then((entity) => entity.toDTO());
+  }
+
+  @Patch(':id/description')
+  @ApiOkResponse({ description: 'Description saved without updating other fields.' })
+  @ApiConflictResponse({ description: 'The description revision has changed.' })
+  updateDescription(
+    @Body() updateDto: UpdateWebsiteDescriptionDto,
+    @Param('id') id: EntityId,
+  ) {
+    return this.service
+      .updateDescription(id, updateDto)
+      .then((entity) => entity.toDTO());
   }
 
   @Patch('submission/:id')

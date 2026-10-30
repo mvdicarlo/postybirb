@@ -234,6 +234,19 @@ const cases: Array<{
     invalid: { data: { title: 1 } },
   },
   {
+    dto: Types.UpdateWebsiteDescriptionDto,
+    valid: {
+      value: { overrideDefault: false, description },
+      expectedRevision: 0,
+      mutationId: '00000000-0000-4000-8000-000000000001',
+    },
+    invalid: {
+      value: { overrideDefault: false, description },
+      expectedRevision: -1,
+      mutationId: 'invalid',
+    },
+  },
+  {
     dto: Types.UpdateSubmissionWebsiteOptionsDto,
     valid: { remove: ['option'], add: [websiteOptions] },
     invalid: { add: [{ ...websiteOptions, accountId: 1 }] },

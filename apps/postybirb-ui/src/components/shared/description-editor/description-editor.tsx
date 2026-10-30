@@ -17,7 +17,7 @@ import {
   IconTextPlus,
   IconUser,
 } from '@tabler/icons-react';
-import { AnyExtension, Extension } from '@tiptap/core';
+import { AnyExtension, createDocument, Extension } from '@tiptap/core';
 import Bold from '@tiptap/extension-bold';
 import BulletList from '@tiptap/extension-bullet-list';
 import Color from '@tiptap/extension-color';
@@ -41,10 +41,9 @@ import TextAlign from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Underline from '@tiptap/extension-underline';
 import { Fragment, Node, Slice } from '@tiptap/pm/model';
-import { PluginKey } from '@tiptap/pm/state';
+import { PluginKey, type Transaction } from '@tiptap/pm/state';
 import { Editor, EditorContent, ReactRenderer, useEditor } from '@tiptap/react';
 import Suggestion from '@tiptap/suggestion';
-import { isEqual } from 'lodash';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import tippy, { type Instance as TippyInstance } from 'tippy.js';
 
@@ -75,9 +74,9 @@ import './custom-blocks/shortcut.css';
 import './description-editor.css';
 
 export type DescriptionEditorProps = {
-  /** Content for the editor, including externally applied updates. */
+  /** Authoritative draft content. Its owner must reconcile server updates before passing them here. */
   value?: Description;
-  /** Callback when the editor content changes. */
+  /** Update the parent draft immediately; debounce persistence rather than these value echoes. */
   onChange: (value: Description) => void;
   /** Whether this is the default editor (hides certain options). */
   isDefaultEditor?: boolean;
@@ -89,7 +88,7 @@ export type DescriptionEditorProps = {
   onPreview?: () => void;
   /** Whether the editor is read-only (e.g., archived submission). */
   readOnly?: boolean;
-  /** Id of the editor to force recreation of the editor instance which ensures that initial content gets updated */
+  /** Document identity. Changing this recreates the editor and resets selection and undo history. */
   id?: string;
 };
 
@@ -188,6 +187,7 @@ export function DescriptionEditor({
   const websites = useWebsites();
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const activeTransactionsRef = useRef(new Set<Transaction>());
 
   const [htmlModalOpened, { open: openHtmlModal, close: closeHtmlModal }] =
     useDisclosure(false);
@@ -196,17 +196,6 @@ export function DescriptionEditor({
 
   // Editor ref for use in callbacks before editor is created
   const editorRef = useRef<Editor | null>(null);
-
-  // Tracks whether the live document has local edits that haven't been
-  // echoed back yet through the `value` prop. This is intentionally
-  // independent of `editor.isFocused`: focus is unreliable here because
-  // several of our custom shortcut NodeViews (e.g. the username shortcut's
-  // text input, and the website-only selector popover shared by every
-  // shortcut type) render real DOM inputs. Interacting with those blurs the
-  // ProseMirror view even though the user is still actively editing the
-  // document, which previously let a stale external `value` silently
-  // overwrite newer local changes.
-  const pendingLocalChangeRef = useRef(false);
 
   // Get username shortcuts from websites
   const usernameShortcuts = useMemo(
@@ -474,7 +463,6 @@ export function DescriptionEditor({
       editable: !readOnly,
       onUpdate: ({ editor: e }) => {
         if (readOnly) return;
-        pendingLocalChangeRef.current = true;
         onChangeRef.current(e.getJSON() as Description);
       },
       editorProps: {
@@ -540,42 +528,58 @@ export function DescriptionEditor({
   // Keep ref in sync with editor for callbacks
   editorRef.current = editor;
 
-  // When value passed externally updates, update the editor too
-  const lastValueRef = useRef({ editor, value });
   useEffect(() => {
-    if (!editor) return;
+    if (!editor) return undefined;
+    const activeTransactions = activeTransactionsRef.current;
+    const begin = ({ transaction }: { transaction: Transaction }) => {
+      activeTransactions.add(transaction);
+      // Filtered transactions do not emit the completion event.
+      queueMicrotask(() => activeTransactions.delete(transaction));
+    };
+    const end = ({ transaction }: { transaction: Transaction }) => {
+      activeTransactions.delete(transaction);
+    };
+    editor.on('beforeTransaction', begin);
+    editor.on('transaction', end);
+    return () => {
+      editor.off('beforeTransaction', begin);
+      editor.off('transaction', end);
+      activeTransactions.clear();
+    };
+  }, [editor]);
 
-    // If the incoming value already matches the live document, we're fully
-    // caught up: any local edits have been confirmed by this round-trip, so
-    // it's safe to clear the pending flag. This also covers the normal
-    // "editor just mounted/switched" case.
-    if (isEqual(editor.getJSON(), value)) {
-      pendingLocalChangeRef.current = false;
-      lastValueRef.current = { editor, value };
-      return;
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    editor.setEditable(!readOnly, false);
+  }, [editor, readOnly]);
+
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return undefined;
+
+    let cancelled = false;
+    const synchronize = () => {
+      if (cancelled || editor.isDestroyed) return;
+      // Compare schema-normalized documents so omitted default attributes and
+      // different representations of an empty document don't trigger resets.
+      const incomingDocument = createDocument(
+        value?.content?.length ? value : '',
+        editor.schema,
+      );
+      if (!editor.state.doc.eq(incomingDocument)) {
+        editor.commands.setContent(incomingDocument, { emitUpdate: false });
+      }
+    };
+
+    // React NodeViews can flush this effect inside ProseMirror's updateState.
+    // Let that transaction finish and its draft echo cancel any stale replacement.
+    if (activeTransactionsRef.current.size > 0) {
+      queueMicrotask(synchronize);
+    } else {
+      synchronize();
     }
-
-    // There are local edits the outside world hasn't echoed back yet (e.g. a
-    // debounced save is still in flight). Don't let a stale `value` clobber
-    // them. We can't rely on `editor.isFocused` for this: clicking into a
-    // shortcut's embedded input/popover blurs the ProseMirror view even
-    // though the user is still actively editing via that shortcut's UI.
-    if (pendingLocalChangeRef.current) return;
-
-    // Don't fight the user while they're actively typing/selecting directly
-    // in the editor to prevent shortcuts from disappearing.
-    if (editor.isFocused) return;
-
-    const previous = lastValueRef.current;
-    lastValueRef.current = { editor, value };
-
-    if (previous.editor === editor && isEqual(previous.value, value)) {
-      return;
-    }
-
-    editor.commands.setContent(value?.content?.length ? value : '', {
-      emitUpdate: false,
-    });
+    return () => {
+      cancelled = true;
+    };
   }, [editor, value]);
 
   return (
