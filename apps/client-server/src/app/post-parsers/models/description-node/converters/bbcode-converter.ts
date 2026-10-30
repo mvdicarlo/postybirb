@@ -89,6 +89,19 @@ export class BBCodeConverter extends BaseConverter {
   }
 
   convertInlineNode(node: TipTapNode, context: ConversionContext): string {
+    const html = this.renderInlineNode(node, context);
+    if (!html) return '';
+
+    return this.renderTextWithMarks(
+      html,
+      // username already renders its own [url], so don't add a second link wrapper
+      (node.type === 'username'
+        ? node.marks?.filter((e) => e.type !== 'link')
+        : node.marks) ?? [],
+    );
+  }
+
+  renderInlineNode(node: TipTapNode, context: ConversionContext): string {
     const attrs = node.attrs ?? {};
 
     if (node.type === 'username') {
@@ -136,20 +149,7 @@ export class BBCodeConverter extends BaseConverter {
       return '\n';
     }
 
-    const marks = node.marks ?? [];
-
-    // Check for link mark
-    const linkMark = marks.find((m) => m.type === 'link');
-    if (linkMark) {
-      const href = linkMark.attrs?.href ?? '';
-      const link = `[url=${href}]${node.text}[/url]`;
-      return this.renderTextWithMarks(
-        link,
-        marks.filter((m) => m.type !== 'link'),
-      );
-    }
-
-    return this.renderTextWithMarks(node.text, marks);
+    return this.renderTextWithMarks(node.text, node.marks ?? []);
   }
 
   /**
@@ -177,10 +177,6 @@ export class BBCodeConverter extends BaseConverter {
       }
     }
 
-    if (!segments.length) {
-      return text;
-    }
-
     let segmentedText = `${segments.map((e) => `[${e}]`).join('')}${text}${segments
       .reverse()
       .map((e) => `[/${e}]`)
@@ -190,6 +186,13 @@ export class BBCodeConverter extends BaseConverter {
     const textStyleMark = marks.find((m) => m.type === 'textStyle');
     if (textStyleMark?.attrs?.color) {
       segmentedText = `[color=${textStyleMark.attrs.color}]${segmentedText}[/color]`;
+    }
+
+    // Check for link mark
+    const linkMark = marks.find((m) => m.type === 'link');
+    if (linkMark) {
+      const href = linkMark.attrs?.href ?? '';
+      segmentedText = `[url=${href}]${segmentedText}[/url]`;
     }
 
     return segmentedText;
