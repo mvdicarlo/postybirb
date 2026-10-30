@@ -6,7 +6,7 @@ import { toError } from '@postybirb/utils/common';
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
 import { existsSync } from 'fs';
-import { cpus } from 'os';
+import { cpus, release } from 'os';
 import { join, resolve } from 'path';
 
 /**
@@ -31,6 +31,7 @@ export interface SharpWorkerInput {
  * Result returned from the sharp worker process.
  */
 export interface SharpWorkerResult {
+  diagnostics?: Record<string, unknown>;
   buffer?: Buffer;
   mimeType?: string;
   width?: number;
@@ -144,19 +145,25 @@ export class SharpInstanceManager implements OnModuleDestroy {
         mimeType: '',
       });
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { diagnostics } = result as any;
+      const { diagnostics } = result;
       if (diagnostics) {
         this.logger.withMetadata(diagnostics).info('Sharp health check passed');
       }
     } catch (error) {
       this.logger
+        .withMetadata({
+          platform: process.platform,
+          arch: process.arch,
+          osRelease: release(),
+          cpuModel: cpus()[0]?.model,
+          nodeVersion: process.version,
+          electronVersion: process.versions.electron,
+          workerPath: this.workerPath,
+        })
         .withError(error)
         .error(
-          'Sharp health check FAILED — image processing will not work. ' +
-            'This usually means native sharp bindings failed to load. ' +
-            'On Linux, ensure glibc >= 2.17 is installed. ' +
-            'On Snap/Flatpak, the sandbox may prevent loading native modules.',
+          'Sharp health check FAILED. Image processing may be unavailable. ' +
+            'See the worker error, stderr output, and child-process diagnostics for the cause.',
         );
     }
   }
@@ -203,9 +210,7 @@ export class SharpInstanceManager implements OnModuleDestroy {
    * utilityProcess in production (true crash isolation) or an in-process
    * stand-in under test.
    */
-  private async spawnWorker(
-    operation: string,
-  ): Promise<PlatformWorkerProcess> {
+  private async spawnWorker(operation: string): Promise<PlatformWorkerProcess> {
     const child = await this.platform.process.fork(this.workerPath, {
       serviceName: 'PostyBirb Sharp Image Processor',
     });
@@ -311,6 +316,7 @@ export class SharpInstanceManager implements OnModuleDestroy {
     }
 
     const child = await this.spawnWorker(input.operation);
+    const { pid } = child;
     this.activeChildren.add(child);
 
     return new Promise<SharpWorkerResult>((resolvePromise, rejectPromise) => {
@@ -337,11 +343,9 @@ export class SharpInstanceManager implements OnModuleDestroy {
             .withMetadata({
               operation: input.operation,
               timeoutMs: REQUEST_TIMEOUT_MS,
-              pid: child.pid,
+              pid,
             })
-            .error(
-              'Sharp operation timed out; terminating the worker process',
-            );
+            .error('Sharp operation timed out; terminating the worker process');
           rejectPromise(
             new Error(
               `Sharp ${input.operation} operation timed out after ${REQUEST_TIMEOUT_MS}ms`,
@@ -354,15 +358,22 @@ export class SharpInstanceManager implements OnModuleDestroy {
       child.onMessage((message: any) => {
         finish(() => {
           if (message?.error) {
+            const error = new Error(
+              message.error.message || 'Sharp worker error',
+            );
+            if (typeof message.error.stack === 'string') {
+              error.stack = message.error.stack;
+            }
             this.logger
               .withMetadata({
                 operation: input.operation,
+                pid,
                 workerError: message.error.message,
+                workerErrorCode: message.error.code,
               })
+              .withError(error)
               .warn('Sharp worker returned an error for operation');
-            rejectPromise(
-              new Error(message.error.message || 'Sharp worker error'),
-            );
+            rejectPromise(error);
             return;
           }
 
@@ -387,24 +398,21 @@ export class SharpInstanceManager implements OnModuleDestroy {
 
       child.onExit((code: number) => {
         // If we've already settled, this is the onExit from our own kill() —
-        // ignored by finish(). Otherwise the worker died before replying: a
-        // native libvips crash or OOM. Reject with a catchable error.
+        // ignored by finish(). Otherwise the worker exited before replying;
+        // the exit code alone does not establish whether this was a native crash.
         finish(() => {
           this.logger
             .withMetadata({
               operation: input.operation,
               exitCode: code,
-              pid: child.pid,
+              pid,
             })
-            .error(
-              'Sharp worker process exited before returning a result ' +
-                '(likely a native libvips crash or out-of-memory)',
-            );
+            .error('Sharp worker process exited before returning a result');
           rejectPromise(
             new Error(
-              `Sharp worker process exited unexpectedly (code ${code}) during ` +
-                `${input.operation}. This usually indicates a native libvips ` +
-                'crash or out-of-memory while processing an image.',
+              `Sharp worker process exited before returning a result (code ${code}) during ` +
+                `${input.operation}. Check worker startup errors, stderr output, ` +
+                'and child-process diagnostics for the cause.',
             ),
           );
         });
@@ -415,6 +423,7 @@ export class SharpInstanceManager implements OnModuleDestroy {
       } catch (error) {
         finish(() => {
           this.logger
+            .withMetadata({ operation: input.operation, pid })
             .withError(error)
             .error('Failed to dispatch image to sharp worker process');
           rejectPromise(toError(error));

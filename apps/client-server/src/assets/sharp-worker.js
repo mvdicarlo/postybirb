@@ -20,14 +20,21 @@
  * https://github.com/mvdicarlo/postybirb/issues/973
  * https://github.com/electron/electron/issues/46323#issuecomment-4909766458
  *
- * @type {typeof import('sharp')}
  */
-const sharp = require('@janhapke/sharp-electron');
 const os = require('os');
 
-// Configure sharp for this process
-sharp.cache({ files: 0 });
-sharp.concurrency(1); // Limit native thread count to reduce memory pressure
+/** @type {typeof import('sharp') | undefined} */
+let sharp;
+
+// Keep native loading inside dispatch's error boundary so DLL/module loading
+// failures can be returned over IPC instead of exiting before the first reply.
+function initializeSharp() {
+  if (sharp) return;
+  const instance = require('@janhapke/sharp-electron');
+  instance.cache({ files: 0 });
+  instance.concurrency(1);
+  sharp = instance;
+}
 
 // On glibc-based Linux, reduce memory arena count to prevent
 // the fragmentation that causes crashes after long idle.
@@ -103,7 +110,7 @@ async function isAnimated(buffer) {
 
 /**
  * @typedef {Object} SharpWorkerInput
- * @property {'resize' | 'metadata' | 'thumbnail'} operation
+ * @property {'resize' | 'metadata' | 'thumbnail' | 'healthcheck'} operation
  * @property {Buffer} buffer - The image buffer to process
  * @property {Object} [resize] - Resize parameters
  * @property {number} [resize.width]
@@ -475,6 +482,7 @@ async function generateThumbnail(
  * @returns {Promise<SharpWorkerResult>}
  */
 async function processImage(input) {
+  initializeSharp();
   const { operation } = input;
 
   switch (operation) {
@@ -698,7 +706,7 @@ async function processImage(input) {
  *  - the in-process test worker (which calls `module.exports.dispatch`).
  *
  * @param {{ id: number, input: unknown }} message
- * @returns {Promise<{ id: number, result?: unknown, error?: { message: string, stack?: string } }>}
+ * @returns {Promise<{ id: number, result?: unknown, error?: { message: string, stack?: string, code?: string | number } }>}
  */
 async function dispatch(message) {
   const { id, input } = message || {};
@@ -711,6 +719,11 @@ async function dispatch(message) {
       error: {
         message: error && error.message ? error.message : String(error),
         stack: error && error.stack ? error.stack : undefined,
+        code:
+          error &&
+          (typeof error.code === 'string' || typeof error.code === 'number')
+            ? error.code
+            : undefined,
       },
     };
   }
