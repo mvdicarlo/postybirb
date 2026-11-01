@@ -275,20 +275,20 @@ export class NpfConverter extends BaseConverter {
         if (text.length > 0) {
           this.currentFormatting.push({
             start: startPos,
-            end: startPos + codePointLength(text),
+            end: startPos + this.codePointLength(text),
             type: 'link',
             url: sc.url,
           });
         }
       }
-      this.currentPosition += codePointLength(text);
+      this.currentPosition += this.codePointLength(text);
       return text;
     }
 
     if (node.type === 'titleShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
       text = context.title ?? '';
-      this.currentPosition += codePointLength(text);
+      this.currentPosition += this.codePointLength(text);
       this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
       return text;
     }
@@ -296,7 +296,7 @@ export class NpfConverter extends BaseConverter {
     if (node.type === 'tagsShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
       text = context.tags?.map((e) => `#${e}`).join(' ') ?? '';
-      this.currentPosition += codePointLength(text);
+      this.currentPosition += this.codePointLength(text);
       this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
       return text;
     }
@@ -304,14 +304,14 @@ export class NpfConverter extends BaseConverter {
     if (node.type === 'contentWarningShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
       text = context.contentWarningText ?? '';
-      this.currentPosition += codePointLength(text);
+      this.currentPosition += this.codePointLength(text);
       this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
       return text;
     }
 
     if (node.type === 'hardBreak') {
       text = '\n';
-      this.currentPosition += codePointLength(text);
+      this.currentPosition += this.codePointLength(text);
       return text;
     }
 
@@ -323,7 +323,7 @@ export class NpfConverter extends BaseConverter {
   convertTextNode(node: TipTapNode): string {
     const text = node.text ?? '';
     const startPos = this.currentPosition;
-    this.currentPosition += codePointLength(text);
+    this.currentPosition += this.codePointLength(text);
 
     this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
 
@@ -417,6 +417,18 @@ export class NpfConverter extends BaseConverter {
     };
     return ext ? mimeMap[ext] : undefined;
   }
+
+  /**
+   * Tumblr NPF formatting indices are measured in Unicode code points,
+   * not UTF-16 code units (JS `.length`). Astral characters such as
+   * emoji and hieroglyphs are 2 code units but 1 code point.
+   */
+  private codePointLength(text: string): number {
+    let count = 0;
+    // for...of iterates by code point
+    for (const _ of text) count += 1;
+    return count;
+  }
 }
 
 /**
@@ -438,16 +450,4 @@ function rgbToHex(color: string): string {
     return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`;
   }
   return trimmed; // fallback (assumes full hex or named color)
-}
-
-/**
- * Tumblr NPF formatting indices are measured in Unicode code points,
- * not UTF-16 code units (JS `.length`). Astral characters such as
- * emoji and hieroglyphs are 2 code units but 1 code point.
- */
-function codePointLength(text: string): number {
-  let count = 0;
-  // for...of iterates by code point
-  for (const _ of text) count += 1;
-  return count;
 }
