@@ -38,7 +38,7 @@ import {
 
 import { toError } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
-import { eq } from 'drizzle-orm';
+import { and, eq, notInArray, or } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
@@ -106,17 +106,22 @@ export class SubmissionService
    * re-authenticated.
    */
   private async recreateMissingDefaultOptions() {
-    const submissions = await this.repository.findAll();
+    const defaultSubmissionIds = this.repository.db
+      .select({ submissionId: WebsiteOptionsSchema.submissionId })
+      .from(WebsiteOptionsSchema)
+      .where(
+        or(
+          eq(WebsiteOptionsSchema.isDefault, true),
+          eq(WebsiteOptionsSchema.accountId, NULL_ACCOUNT_ID),
+        ),
+      );
+    const submissions = await this.repository.find({
+      where: notInArray(SubmissionSchema.id, defaultSubmissionIds),
+      with: { options: true, files: true },
+    });
     let recreated = 0;
 
     for (const submission of submissions) {
-      const hasDefault = (submission.options ?? []).some(
-        (option) => option.isDefault || option.accountId === NULL_ACCOUNT_ID,
-      );
-      if (hasDefault) {
-        continue;
-      }
-
       try {
         // eslint-disable-next-line no-await-in-loop
         await this.websiteOptionsService.createDefaultSubmissionOptions(
@@ -170,18 +175,42 @@ export class SubmissionService
    */
   private async normalizeOrders() {
     this.logger.info('Normalizing submission orders');
+    const rows = await this.repository.db
+      .select({
+        id: SubmissionSchema.id,
+        type: SubmissionSchema.type,
+        order: SubmissionSchema.order,
+      })
+      .from(SubmissionSchema)
+      .where(
+        and(
+          eq(SubmissionSchema.isTemplate, false),
+          eq(SubmissionSchema.isMultiSubmission, false),
+        ),
+      );
+    const updates: { id: SubmissionId; order: number }[] = [];
 
     for (const type of [SubmissionType.FILE, SubmissionType.MESSAGE]) {
-      const submissions = (await this.repository.findAll())
-        .filter((s) => s.type === type && !s.isTemplate && !s.isMultiSubmission)
+      const submissions = rows
+        .filter((submission) => submission.type === type)
         .sort((a, b) => a.order - b.order);
 
       for (let i = 0; i < submissions.length; i++) {
         if (submissions[i].order !== i) {
-          // eslint-disable-next-line no-await-in-loop
-          await this.repository.update(submissions[i].id, { order: i });
+          updates.push({ id: submissions[i].id, order: i });
         }
       }
+    }
+
+    if (updates.length > 0) {
+      this.repository.db.transaction((tx) => {
+        for (const { id, order } of updates) {
+          tx.update(SubmissionSchema)
+            .set({ order })
+            .where(eq(SubmissionSchema.id, id))
+            .run();
+        }
+      });
     }
 
     this.logger.info('Order normalization complete');
@@ -192,11 +221,10 @@ export class SubmissionService
    * (e.g., from a crash during creation).
    */
   private async cleanupUninitializedSubmissions() {
-    const all = await this.repository.find({
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      where: (submission, { eq }) => eq(submission.isInitialized, false),
-    });
-    const uninitialized = all.filter((s) => !s.isInitialized);
+    const uninitialized = await this.repository.db
+      .select({ id: SubmissionSchema.id })
+      .from(SubmissionSchema)
+      .where(eq(SubmissionSchema.isInitialized, false));
     if (uninitialized.length > 0) {
       const ids = uninitialized.map((s) => s.id);
       this.logger
@@ -286,13 +314,16 @@ export class SubmissionService
   }
 
   private async populateMultiSubmission(type: SubmissionType) {
-    const existing = await this.repository.findOne({
-      where: (submission, { eq: equals, and }) =>
+    const [existing] = await this.repository.db
+      .select({ id: SubmissionSchema.id })
+      .from(SubmissionSchema)
+      .where(
         and(
-          eq(submission.type, type),
-          equals(submission.isMultiSubmission, true),
+          eq(SubmissionSchema.type, type),
+          eq(SubmissionSchema.isMultiSubmission, true),
         ),
-    });
+      )
+      .limit(1);
     if (existing) {
       return;
     }

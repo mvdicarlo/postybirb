@@ -240,6 +240,26 @@ The UI uses this result for post confirmation and retry previews.
 - Recurring schedules calculate the next run before posting, then update
   `scheduledFor` or disable the schedule when no next run exists.
 
+## Startup migration and maintenance
+
+Legacy history conversion checks record counts and existing Posts before loading
+history payloads. An existing Post is the per-Submission completion check; there
+is no separate migration marker table. Completed conversions skip event,
+account, and file reads on later launches.
+
+Only records without a Post are converted. Their events are read one Submission
+at a time using bounded record-ID batches, and account/file validation looks up
+only referenced IDs. Unit inserts are batched within the same per-Submission
+transaction as the Post insert, so failures roll back and remain retryable.
+Submissions with no eligible outcomes also remain eligible for a later retry.
+
+Other startup maintenance avoids the default full Submission graph: missing
+default options are filtered before loading recovery inputs, order normalization
+uses scalar columns and writes only changed orders, and cleanup/existence checks
+read IDs only. Description conversion selects only legacy array-format JSON.
+These checks run on every launch and require no additional indexes or schema
+changes.
+
 ## Code map
 
 | Responsibility                                             | Location                                                                                         |

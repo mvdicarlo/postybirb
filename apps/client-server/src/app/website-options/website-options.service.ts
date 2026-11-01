@@ -32,13 +32,15 @@ import {
 import { OnEvent } from '@nestjs/event-emitter';
 import {
   Account,
-  CustomShortcutRepository,
+  CustomShortcutSchema,
   Insert,
   Submission,
   SubmissionRepository,
   WebsiteOptions,
   WebsiteOptionsRepository,
+  WebsiteOptionsSchema,
 } from '@postybirb/database';
+import { eq as equals, sql } from 'drizzle-orm';
 
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
@@ -108,15 +110,21 @@ export class WebsiteOptionsService
   }
 
   /**
-   * One-time migration: convert any BlockNote-format descriptions
+   * Convert any remaining BlockNote-format descriptions
    * (stored as arrays) to TipTap format ({ type: 'doc', content: [] }).
    * Covers website options and custom shortcuts.
    */
   private async migrateBlockNoteDescriptions() {
     let migrated = 0;
+    const { db } = this.repository;
 
     // 1. Migrate website options
-    const options = await this.findAll();
+    const options = await db
+      .select({ id: WebsiteOptionsSchema.id, data: WebsiteOptionsSchema.data })
+      .from(WebsiteOptionsSchema)
+      .where(
+        sql`json_type(${WebsiteOptionsSchema.data}, '$.description.description') = 'array'`,
+      );
     for (const option of options) {
       const descValue = option.data?.description as
         | DescriptionValue
@@ -124,29 +132,38 @@ export class WebsiteOptionsService
       const desc = descValue?.description;
       if (desc && isBlockNoteFormat(desc)) {
         const converted = migrateDescription(desc);
-        await this.repository.update(option.id, {
-          data: {
-            ...option.data,
-            description: {
-              ...descValue,
-              description: converted,
+        db.update(WebsiteOptionsSchema)
+          .set({
+            data: {
+              ...option.data,
+              description: {
+                ...descValue,
+                description: converted,
+              },
             },
-          },
-        });
+          })
+          .where(equals(WebsiteOptionsSchema.id, option.id))
+          .run();
         migrated++;
       }
     }
 
     // 2. Migrate custom shortcuts
-    const customShortcutRepo = new CustomShortcutRepository();
-    const shortcuts = await customShortcutRepo.findAll();
+    const shortcuts = await db
+      .select({
+        id: CustomShortcutSchema.id,
+        shortcut: CustomShortcutSchema.shortcut,
+      })
+      .from(CustomShortcutSchema)
+      .where(sql`json_type(${CustomShortcutSchema.shortcut}) = 'array'`);
     for (const shortcut of shortcuts) {
-      const desc = (shortcut as DynamicObject).shortcut;
+      const desc = shortcut.shortcut;
       if (desc && isBlockNoteFormat(desc)) {
         const converted = migrateDescription(desc);
-        await customShortcutRepo.update(shortcut.id, {
-          shortcut: converted,
-        });
+        db.update(CustomShortcutSchema)
+          .set({ shortcut: converted })
+          .where(equals(CustomShortcutSchema.id, shortcut.id))
+          .run();
         migrated++;
       }
     }

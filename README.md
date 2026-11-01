@@ -117,7 +117,7 @@ This is expected behaviour — the packaging step intentionally overwrites the b
 
 ### Add website
 
-To add a new website [see this guide](./contributing/add-a-website)
+To add a new website [see this guide](./docs/contributing/add-a-website)
 
 ## Primary Modules (/apps)
 

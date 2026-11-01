@@ -10,17 +10,25 @@ import {
   UnitOfWorkSchema,
 } from '@postybirb/database';
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
-import {
-  PostEventType,
-  UnitOfWorkState,
-} from '@postybirb/types';
+import { PostEventType, UnitOfWorkState } from '@postybirb/types';
 import { IsTestEnvironment } from '@postybirb/utils/common';
-import { asc, eq } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  eq,
+  inArray,
+  isNotNull,
+  notExists,
+} from 'drizzle-orm';
+import { chunk } from 'lodash';
 import { v4 as uuid } from 'uuid';
 
 type LegacyPostRecord = Select<'PostRecordSchema'>;
 type LegacyPostEvent = Select<'PostEventSchema'>;
 type MigratedUnit = Select<'UnitOfWorkSchema'> & { targetKey: string };
+
+const MIGRATION_BATCH_SIZE = 250;
 
 const OUTCOME_EVENT_TYPES = new Set<PostEventType>([
   PostEventType.FILE_POSTED,
@@ -58,63 +66,134 @@ export class LegacyPostHistoryMigrationService implements OnModuleInit {
 
     const stats = await this.migrate();
     if (stats.submissionsScanned > 0) {
-      this.logger.withMetadata(stats).info('Legacy post history migration complete');
+      this.logger
+        .withMetadata(stats)
+        .info('Legacy post history migration complete');
     }
   }
 
   public async migrate(): Promise<LegacyPostHistoryMigrationStats> {
     const db = getDatabase();
-    const records = await db
-      .select()
+    const history = await db
+      .select({
+        submissionId: PostRecordSchema.submissionId,
+        postId: PostSchema.id,
+        recordCount: count(),
+      })
       .from(PostRecordSchema)
-      .orderBy(asc(PostRecordSchema.createdAt), asc(PostRecordSchema.id));
-    const migrationRecords = records.filter(
-      (
-        record,
-      ): record is LegacyPostRecord & { submissionId: string } =>
-        record.submissionId !== null,
-    );
-    const recordsBySubmission = this.groupBy(
-      migrationRecords,
-      (record) => record.submissionId,
-    );
+      .leftJoin(
+        PostSchema,
+        eq(PostSchema.submissionId, PostRecordSchema.submissionId),
+      )
+      .groupBy(PostRecordSchema.submissionId, PostSchema.id);
     const stats: LegacyPostHistoryMigrationStats = {
-      submissionsScanned: recordsBySubmission.size,
+      submissionsScanned: 0,
       postsCreated: 0,
       unitsCreated: 0,
       submissionsSkipped: 0,
       submissionsFailed: 0,
-      recordsSkipped: records.length - migrationRecords.length,
+      recordsSkipped: 0,
       eventsSkipped: 0,
     };
 
-    if (recordsBySubmission.size === 0) {
+    for (const group of history) {
+      if (group.submissionId === null) {
+        stats.recordsSkipped += group.recordCount;
+      } else {
+        stats.submissionsScanned += 1;
+        if (group.postId !== null) {
+          stats.submissionsSkipped += 1;
+        }
+      }
+    }
+
+    if (stats.submissionsScanned === stats.submissionsSkipped) {
       return stats;
     }
 
-    const [events, existingPosts, accounts, files] = await Promise.all([
-      db
-        .select()
-        .from(PostEventSchema)
-        .orderBy(asc(PostEventSchema.createdAt), asc(PostEventSchema.id)),
-      db.select({ submissionId: PostSchema.submissionId }).from(PostSchema),
-      db.select({ id: AccountSchema.id }).from(AccountSchema),
-      db.select({ id: SubmissionFileSchema.id }).from(SubmissionFileSchema),
-    ]);
-    const eventsByRecord = this.groupBy(events, (event) => event.postRecordId);
-    const migratedSubmissionIds = new Set(
-      existingPosts.map((post) => post.submissionId),
+    const records = await db
+      .select()
+      .from(PostRecordSchema)
+      .where(
+        and(
+          isNotNull(PostRecordSchema.submissionId),
+          notExists(
+            db
+              .select({ id: PostSchema.id })
+              .from(PostSchema)
+              .where(
+                eq(PostSchema.submissionId, PostRecordSchema.submissionId),
+              ),
+          ),
+        ),
+      )
+      .orderBy(asc(PostRecordSchema.createdAt), asc(PostRecordSchema.id));
+    const recordsBySubmission = this.groupBy(
+      records.filter(
+        (record): record is LegacyPostRecord & { submissionId: string } =>
+          record.submissionId !== null,
+      ),
+      (record) => record.submissionId,
     );
-    const accountIds = new Set(accounts.map((account) => account.id));
-    const fileIds = new Set(files.map((file) => file.id));
 
     for (const [submissionId, submissionRecords] of recordsBySubmission) {
-      if (migratedSubmissionIds.has(submissionId)) {
-        stats.submissionsSkipped += 1;
-        continue;
-      }
-
       try {
+        const events = chunk(submissionRecords, MIGRATION_BATCH_SIZE).flatMap(
+          (batch) =>
+            db
+              .select()
+              .from(PostEventSchema)
+              .where(
+                inArray(
+                  PostEventSchema.postRecordId,
+                  batch.map((record) => record.id),
+                ),
+              )
+              .orderBy(asc(PostEventSchema.createdAt), asc(PostEventSchema.id))
+              .all(),
+        );
+        const eventsByRecord = this.groupBy(
+          events,
+          (event) => event.postRecordId,
+        );
+        const accountIds = new Set(
+          chunk(
+            [
+              ...new Set(
+                events.flatMap((event) =>
+                  event.accountId ? [event.accountId] : [],
+                ),
+              ),
+            ],
+            MIGRATION_BATCH_SIZE,
+          )
+            .flatMap((ids) =>
+              db
+                .select({ id: AccountSchema.id })
+                .from(AccountSchema)
+                .where(inArray(AccountSchema.id, ids))
+                .all(),
+            )
+            .map((account) => account.id),
+        );
+        const fileIds = new Set(
+          chunk(
+            [
+              ...new Set(
+                events.flatMap((event) => (event.fileId ? [event.fileId] : [])),
+              ),
+            ],
+            MIGRATION_BATCH_SIZE,
+          )
+            .flatMap((ids) =>
+              db
+                .select({ id: SubmissionFileSchema.id })
+                .from(SubmissionFileSchema)
+                .where(inArray(SubmissionFileSchema.id, ids))
+                .all(),
+            )
+            .map((file) => file.id),
+        );
         const { units, eventsSkipped } = this.createUnits(
           submissionId,
           submissionRecords,
@@ -151,19 +230,20 @@ export class LegacyPostHistoryMigrationService implements OnModuleInit {
               cancelled: false,
             })
             .run();
-          tx.insert(UnitOfWorkSchema)
-            .values(
-              units.map(({ targetKey: _targetKey, ...unit }) => ({
-                ...unit,
-                postId,
-              })),
-            )
-            .run();
+          for (const batch of chunk(units, MIGRATION_BATCH_SIZE)) {
+            tx.insert(UnitOfWorkSchema)
+              .values(
+                batch.map(({ targetKey: _targetKey, ...unit }) => ({
+                  ...unit,
+                  postId,
+                })),
+              )
+              .run();
+          }
           return true;
         });
 
         if (inserted) {
-          migratedSubmissionIds.add(submissionId);
           stats.postsCreated += 1;
           stats.unitsCreated += units.length;
         } else {
@@ -259,16 +339,16 @@ export class LegacyPostHistoryMigrationService implements OnModuleInit {
               ? `legacy:${record.id}:${event.accountId}`
               : `legacy:${record.id}:${metadata.batchNumber}`,
           rateLimitedUntil: null,
-          state: succeeded
-            ? UnitOfWorkState.SUCCEEDED
-            : UnitOfWorkState.FAILED,
+          state: succeeded ? UnitOfWorkState.SUCCEEDED : UnitOfWorkState.FAILED,
           targetKey,
         });
       }
     }
 
     const latestIndexByTarget = new Map<string, number>();
-    units.forEach((unit, index) => latestIndexByTarget.set(unit.targetKey, index));
+    units.forEach((unit, index) =>
+      latestIndexByTarget.set(unit.targetKey, index),
+    );
     return {
       units: units.map((unit, index) => ({
         ...unit,
@@ -310,7 +390,12 @@ export class LegacyPostHistoryMigrationService implements OnModuleInit {
     const grouped = new Map<string, T[]>();
     for (const value of values) {
       const key = getKey(value);
-      grouped.set(key, [...(grouped.get(key) ?? []), value]);
+      const bucket = grouped.get(key);
+      if (bucket) {
+        bucket.push(value);
+      } else {
+        grouped.set(key, [value]);
+      }
     }
     return grouped;
   }
