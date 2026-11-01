@@ -15,6 +15,12 @@ import { BaseConverter } from './base-converter';
 export class NpfConverter extends BaseConverter {
   private currentFormatting: NPFInlineFormatting[] = [];
 
+  private get currentFormattingOrUndefined() {
+    return this.currentFormatting.length > 0
+      ? this.currentFormatting
+      : undefined;
+  }
+
   private currentPosition = 0;
 
   private blocks: NPFContentBlock[] = [];
@@ -126,10 +132,7 @@ export class NpfConverter extends BaseConverter {
           type: 'text',
           text,
           subtype,
-          formatting:
-            this.currentFormatting.length > 0
-              ? this.currentFormatting
-              : undefined,
+          formatting: this.currentFormattingOrUndefined,
         };
         if (indentLevel > 0 && indentLevel <= 7) {
           npfBlock.indent_level = indentLevel;
@@ -198,8 +201,7 @@ export class NpfConverter extends BaseConverter {
     context: ConversionContext,
   ): NPFTextBlock {
     const text = this.extractText(node.content ?? [], context);
-    const formatting =
-      this.currentFormatting.length > 0 ? this.currentFormatting : undefined;
+    const formatting = this.currentFormattingOrUndefined;
     return { type: 'text', text, formatting };
   }
 
@@ -214,8 +216,7 @@ export class NpfConverter extends BaseConverter {
       type: 'text',
       text,
       subtype,
-      formatting:
-        this.currentFormatting.length > 0 ? this.currentFormatting : undefined,
+      formatting: this.currentFormattingOrUndefined,
     };
   }
 
@@ -274,20 +275,20 @@ export class NpfConverter extends BaseConverter {
         if (text.length > 0) {
           this.currentFormatting.push({
             start: startPos,
-            end: startPos + text.length,
+            end: startPos + codePointLength(text),
             type: 'link',
             url: sc.url,
           });
         }
       }
-      this.currentPosition += text.length;
+      this.currentPosition += codePointLength(text);
       return text;
     }
 
     if (node.type === 'titleShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
       text = context.title ?? '';
-      this.currentPosition += text.length;
+      this.currentPosition += codePointLength(text);
       this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
       return text;
     }
@@ -295,7 +296,7 @@ export class NpfConverter extends BaseConverter {
     if (node.type === 'tagsShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
       text = context.tags?.map((e) => `#${e}`).join(' ') ?? '';
-      this.currentPosition += text.length;
+      this.currentPosition += codePointLength(text);
       this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
       return text;
     }
@@ -303,14 +304,14 @@ export class NpfConverter extends BaseConverter {
     if (node.type === 'contentWarningShortcut') {
       if (!this.shouldRenderShortcut(node, context)) return '';
       text = context.contentWarningText ?? '';
-      this.currentPosition += text.length;
+      this.currentPosition += codePointLength(text);
       this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
       return text;
     }
 
     if (node.type === 'hardBreak') {
       text = '\n';
-      this.currentPosition += text.length;
+      this.currentPosition += codePointLength(text);
       return text;
     }
 
@@ -322,7 +323,7 @@ export class NpfConverter extends BaseConverter {
   convertTextNode(node: TipTapNode): string {
     const text = node.text ?? '';
     const startPos = this.currentPosition;
-    this.currentPosition += text.length;
+    this.currentPosition += codePointLength(text);
 
     this.addFormattingForMarks(node.marks, startPos, this.currentPosition);
 
@@ -437,4 +438,16 @@ function rgbToHex(color: string): string {
     return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`;
   }
   return trimmed; // fallback (assumes full hex or named color)
+}
+
+/**
+ * Tumblr NPF formatting indices are measured in Unicode code points,
+ * not UTF-16 code units (JS `.length`). Astral characters such as
+ * emoji and hieroglyphs are 2 code units but 1 code point.
+ */
+function codePointLength(text: string): number {
+  let count = 0;
+  // for...of iterates by code point
+  for (const _ of text) count += 1;
+  return count;
 }
