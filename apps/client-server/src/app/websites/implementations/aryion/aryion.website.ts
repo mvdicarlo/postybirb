@@ -170,7 +170,7 @@ export default class Aryion
     const builder = new PostBuilder(this, cancellationToken)
       .asMultipart()
       .addFile('file', file)
-      .addFile('thumb', file)
+      .addThumbnail('thumb', file)
       .setField('desc', options.description)
       .setField('title', options.title)
       .setField('tags', filteredTags.join('\n'))

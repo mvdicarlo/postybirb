@@ -43,6 +43,7 @@ import { ArtconomyMessageSubmission } from './models/artconomy-message-submissio
     'application/rtf',
     'text/plain',
     'audio/mp3',
+    'application/pdf',
   ],
   acceptedFileSizes: {
     '*': FileSize.megabytes(49),
