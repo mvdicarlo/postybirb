@@ -192,7 +192,6 @@ export class WebsiteOptionsService
         sql`website = 'bluesky' and json_type(${WebsiteOptionsSchema.data}, '$.whoCanReply') = 'text'`,
       );
 
-    this.logger.info('Starting migration');
     for (const option of options) {
       if (!('whoCanReply' in option.data)) continue;
 
