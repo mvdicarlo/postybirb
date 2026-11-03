@@ -1,5 +1,6 @@
 import { SelectOption } from '@postybirb/form-builder';
 import { FormFile, HttpResponse } from '@postybirb/http/types';
+import { trackHttpDependency } from '@postybirb/http/utils';
 
 import {
   FileType,
@@ -192,66 +193,91 @@ export default class Weasyl
     builder?: PostBuilder,
   ): Promise<HttpResponse<string>> {
     cancellationToken.throwIfAborted();
-    const formData = builder
-      ? Object.fromEntries(
-          Object.entries(builder.build()).map(([key, value]) => [
-            key,
-            value instanceof FormFile
-              ? { value: value.buffer, options: value.fileOptions }
-              : value,
-          ]),
-        )
-      : undefined;
+    const method = builder ? 'POST' : 'GET';
+    const startTime = Date.now();
+    let statusCode = 0;
+    let success = false;
+    let error: Error | undefined;
 
-    const result = await new Promise<HttpResponse<string>>(
-      (resolve, reject) => {
-        const onAbort = () => {
-          reject(cancellationToken.signal.reason);
-          pendingRequest.abort();
-        };
-        const pendingRequest = request(
-          {
-            url,
-            method: builder ? 'POST' : 'GET',
-            jar: false,
-            formData,
-            headers: {
-              Referer: url,
-              Origin: this.BASE_URL,
-              Cookie: cookieHeader,
-              Host: 'www.weasyl.com',
+    try {
+      const formData = builder
+        ? Object.fromEntries(
+            Object.entries(builder.build()).map(([key, value]) => [
+              key,
+              value instanceof FormFile
+                ? { value: value.buffer, options: value.fileOptions }
+                : value,
+            ]),
+          )
+        : undefined;
+
+      const result = await new Promise<HttpResponse<string>>(
+        (resolve, reject) => {
+          const onAbort = () => {
+            reject(cancellationToken.signal.reason);
+            pendingRequest.abort();
+          };
+          const pendingRequest = request(
+            {
+              url,
+              method,
+              jar: false,
+              formData,
+              headers: {
+                Referer: url,
+                Origin: this.BASE_URL,
+                Cookie: cookieHeader,
+                Host: 'www.weasyl.com',
+              },
+              followAllRedirects: true,
+              followRedirect: (response) =>
+                new URL(response.headers.location ?? url, url).origin ===
+                this.BASE_URL,
+              gzip: true,
+              timeout: 300_000,
             },
-            followAllRedirects: true,
-            followRedirect: (response) =>
-              new URL(response.headers.location ?? url, url).origin ===
-              this.BASE_URL,
-            gzip: true,
-            timeout: 300_000,
-          },
-          (error, response, body: string) => {
-            cancellationToken.signal.removeEventListener('abort', onAbort);
-            if (error) {
-              reject(error);
-              return;
-            }
-            resolve({
-              body,
-              statusCode: response.statusCode ?? 0,
-              statusMessage: response.statusMessage ?? '',
-              responseUrl: response.request.uri.href ?? url,
-            });
-          },
-        );
-        cancellationToken.signal.addEventListener('abort', onAbort, {
-          once: true,
-        });
-        if (cancellationToken.aborted) onAbort();
-      },
-    );
+            (requestError, response, body: string) => {
+              cancellationToken.signal.removeEventListener('abort', onAbort);
+              if (requestError) {
+                reject(requestError);
+                return;
+              }
+              resolve({
+                body,
+                statusCode: response.statusCode ?? 0,
+                statusMessage: response.statusMessage ?? '',
+                responseUrl: response.request.uri.href ?? url,
+              });
+            },
+          );
+          cancellationToken.signal.addEventListener('abort', onAbort, {
+            once: true,
+          });
+          if (cancellationToken.aborted) onAbort();
+        },
+      );
 
-    cancellationToken.throwIfAborted();
-    PostResponse.validateBody(this, result);
-    return result;
+      statusCode = result.statusCode;
+      cancellationToken.throwIfAborted();
+      PostResponse.validateBody(this, result);
+      success = statusCode >= 200 && statusCode < 400;
+      return result;
+    } catch (requestError) {
+      error =
+        requestError instanceof Error
+          ? requestError
+          : new Error(String(requestError));
+      throw requestError;
+    } finally {
+      trackHttpDependency(
+        method,
+        url,
+        statusCode,
+        Date.now() - startTime,
+        success,
+        error,
+      );
+    }
   }
 
   async onPostFileSubmission(
