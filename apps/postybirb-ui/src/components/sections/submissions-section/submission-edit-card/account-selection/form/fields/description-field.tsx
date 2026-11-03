@@ -130,6 +130,7 @@ function countTextLength(
 export function DescriptionField({
   fieldName,
   field,
+  disabled,
 }: FormFieldProps<DescriptionFieldType>) {
   const {
     getValue, setValue, option, submission,
@@ -246,7 +247,7 @@ export function DescriptionField({
         {defaultOption === undefined ? null : (
           <Checkbox
             mb="4"
-            disabled={submission.isArchived}
+            disabled={disabled}
             checked={overrideDefault}
             onChange={(e) => {
               setValue(fieldName, {
@@ -261,7 +262,7 @@ export function DescriptionField({
         <Checkbox
           mb="4"
           disabled={
-            submission.isArchived || (overrideDefault && hasTitleShortcut)
+            disabled || (overrideDefault && hasTitleShortcut)
           }
           checked={insertTitle}
           onChange={(e) => {
@@ -276,7 +277,7 @@ export function DescriptionField({
         <Checkbox
           mb="4"
           disabled={
-            submission.isArchived || (overrideDefault && hasTagsShortcut)
+            disabled || (overrideDefault && hasTagsShortcut)
           }
           checked={insertTags}
           onChange={(e) => {
@@ -297,7 +298,7 @@ export function DescriptionField({
               showCustomShortcuts
               isDefaultEditor={option.isDefault}
               onPreview={togglePreview}
-              readOnly={submission.isArchived}
+              readOnly={disabled}
               onChange={(value) => {
                 setValue(fieldName, {
                   ...fieldValue,

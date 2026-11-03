@@ -14,9 +14,10 @@ import { FormFieldProps } from './form-field.type';
 function TextField({
   fieldName,
   field,
+  disabled,
   defaultValue,
 }: FormFieldProps<TextFieldType> & { defaultValue: string | undefined }) {
-  const { getValue, setValue, submission } = useFormFieldsContext();
+  const { getValue, setValue } = useFormFieldsContext();
   const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
   const inputLength = (value || defaultValue)?.length ?? 0;
   return (
@@ -26,7 +27,7 @@ function TextField({
       placeholder={defaultValue}
       w="100%"
       maxLength={field.maxLength}
-      disabled={submission.isArchived}
+      disabled={disabled}
       rightSection={
         <Group wrap="nowrap" gap="4">
           <FieldCopyButton value={value} />
@@ -52,9 +53,10 @@ function TextField({
 function TextAreaField({
   fieldName,
   field,
+  disabled,
   defaultValue,
 }: FormFieldProps<TextFieldType> & { defaultValue: string | undefined }) {
-  const { getValue, setValue, submission } = useFormFieldsContext();
+  const { getValue, setValue } = useFormFieldsContext();
   const value = getValue<string>(fieldName) ?? field.defaultValue ?? '';
 
   return (
@@ -64,7 +66,7 @@ function TextAreaField({
       placeholder={defaultValue}
       w="100%"
       maxLength={field.maxLength}
-      disabled={submission.isArchived}
+      disabled={disabled}
       description={
         field.maxLength
           ? `${value?.length ?? 0} / ${field.maxLength}`
@@ -79,6 +81,7 @@ function TextAreaField({
 export function InputField({
   fieldName,
   field,
+  disabled,
 }: FormFieldProps<TextFieldType>) {
   const defaultValue = useDefaultOption<string>(fieldName);
   const validations = useValidations(fieldName);
@@ -93,12 +96,14 @@ export function InputField({
         <TextField
           fieldName={fieldName}
           field={field}
+          disabled={disabled}
           defaultValue={defaultValue}
         />
       ) : (
         <TextAreaField
           fieldName={fieldName}
           field={field}
+          disabled={disabled}
           defaultValue={defaultValue}
         />
       )}

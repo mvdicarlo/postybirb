@@ -27,13 +27,13 @@ export function openLink(url?: string) {
  */
 export function ExternalLink(
   props: PropsWithChildren<
-    Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'target' | 'onClick'>
+    Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'target' | 'onClick'> & { inline?: boolean }
   >,
 ) {
-  const { href } = props;
+  const { href, inline } = props;
   return (
     <Tooltip label={href} position="top" withArrow>
-      <Group gap={2}>
+      <Group gap={2} style={{ display: inline ? 'inline' : undefined }}>
         <Anchor
           {...props}
           target="_blank"

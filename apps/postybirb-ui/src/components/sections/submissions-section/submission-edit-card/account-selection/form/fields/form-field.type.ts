@@ -11,4 +11,6 @@ export interface FormFieldProps<
   fieldName: string;
   /** The field metadata from form-builder */
   field: T;
+  /** Whether metadata conditions or the archived state disable the field. */
+  disabled: boolean;
 }

@@ -17,9 +17,10 @@ import { FormFieldProps } from './form-field.type';
 export function BooleanField({
   fieldName,
   field,
+  disabled,
 }: FormFieldProps<BooleanFieldType>) {
   const { t } = useLingui();
-  const { getValue, setValue, submission } = useFormFieldsContext();
+  const { getValue, setValue } = useFormFieldsContext();
   const validations = useValidations(fieldName);
 
   const value = Boolean(
@@ -40,7 +41,7 @@ export function BooleanField({
     >
       <Checkbox
         checked={value}
-        disabled={submission.isArchived}
+        disabled={disabled}
         onChange={(event) => setValue(fieldName, event.currentTarget.checked)}
         label={getTranslatedLabel(field, t)}
       />

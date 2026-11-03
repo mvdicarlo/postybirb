@@ -392,6 +392,10 @@ msgid "Allow free download"
 msgstr "Permitir download gratuito"
 
 #: libs/translations/src/lib/field-translations.ts
+msgid "Allow individual purchases"
+msgstr ""
+
+#: libs/translations/src/lib/field-translations.ts
 msgid "Allow modifications of your work"
 msgstr "Permitir modificações na sua obra"
 
@@ -427,6 +431,11 @@ msgstr "Ocorreu um erro"
 #: apps/postybirb-ui/src/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
 msgid "and {remainingCount} more"
 msgstr "e mais {remainingCount}"
+
+#: apps/postybirb-ui/src/components/website-login-views/philomena/philomena-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
+msgid "API Key"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/twitter/twitter-login-view.tsx
 msgid "API Key (Consumer Key)"
@@ -631,6 +640,10 @@ msgstr "Substitua nomes de usuário automaticamente para cada site. Útil quando
 msgid "Back"
 msgstr "Voltar"
 
+#: apps/postybirb-ui/src/components/layout/layout.tsx
+msgid "Back to list"
+msgstr ""
+
 #: libs/translations/src/lib/field-translations.ts
 msgid "Block guests"
 msgstr "Bloquear visitantes"
@@ -740,6 +753,10 @@ msgstr "Verificar status do login"
 msgid "Check that handle and password are valid or try using email instead of handle."
 msgstr "Verifique se o nome de usuário e a senha são válidos ou tente usar o e-mail no lugar do nome de usuário."
 
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "Check that your Adore34 PostyBirb API key is active and has files:upload, posts:write, and tiers:read permissions."
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Check your telegram messages"
 msgstr "Verifique suas mensagens no Telegram"
@@ -778,7 +795,16 @@ msgstr ""
 msgid "Clear"
 msgstr "Limpar"
 
+#: apps/postybirb-ui/src/components/sections/accounts-section/accounts-section.tsx
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-list.tsx
+msgid "Clear filters"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/drawers/converter-drawer/converter-drawer.tsx
+#: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/submission-list.tsx
+#: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
+#: apps/postybirb-ui/src/components/shared/search-input.tsx
 msgid "Clear search"
 msgstr "Limpar busca"
 
@@ -823,6 +849,14 @@ msgstr "Clique para criar um monitor de arquivos. Depois, escolha qual pasta mon
 msgid "Client"
 msgstr "Cliente"
 
+#: apps/postybirb-ui/src/components/drawers/section-drawer.tsx
+msgid "Close drawer"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
+msgid "Close settings"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Cloud Password"
 msgstr "Senha da nuvem"
@@ -846,6 +880,11 @@ msgstr "Código enviado"
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 msgid "Collapse"
 msgstr "Recolher"
+
+#: apps/postybirb-ui/src/components/layout/side-nav.tsx
+#: apps/postybirb-ui/src/components/layout/side-nav.tsx
+msgid "Collapse navigation"
+msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Collections"
@@ -968,10 +1007,6 @@ msgstr "Copiar"
 msgid "Create"
 msgstr "Criar"
 
-#: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
-msgid "Create a File or Message submission to start posting"
-msgstr "Crie um envio de arquivo ou mensagem para começar a publicar"
-
 #: apps/postybirb-ui/src/components/drawers/file-watcher-drawer/file-watcher-drawer.tsx
 msgid "Create a file watcher to automatically import new files from a folder"
 msgstr "Crie um monitor de arquivos para importar novos arquivos de uma pasta automaticamente"
@@ -1008,6 +1043,7 @@ msgstr "Criar monitor de arquivos"
 msgid "Create new submission"
 msgstr "Criar envio"
 
+#: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 msgid "Create New Template"
@@ -1117,6 +1153,7 @@ msgstr "Escuro"
 
 #: apps/postybirb-ui/src/components/theme-picker/theme-picker.tsx
 #: apps/postybirb-ui/src/components/theme-picker/theme-picker.tsx
+#: apps/postybirb-ui/src/components/theme-picker/theme-picker.tsx
 msgid "Dark Mode"
 msgstr "Modo escuro"
 
@@ -1128,6 +1165,7 @@ msgstr "Painel"
 msgid "Dashboard Overview"
 msgstr "Visão geral do painel"
 
+#: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
 #: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
 msgid "Dashboard Tour"
 msgstr "Tour do painel"
@@ -1396,6 +1434,10 @@ msgstr "Duplicar"
 msgid "Duplicated successfully"
 msgstr "Duplicado com sucesso"
 
+#: apps/postybirb-ui/src/i18n/languages.tsx
+msgid "Dutch"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/e621/e621-login-view.tsx
 msgid "e621 requires API credentials for posting. You'll need to generate an API key from your account settings to authenticate PostyBirb."
 msgstr "O e621 exige credenciais de API para publicar. Gere uma chave de API nas configurações da sua conta para autenticar o PostyBirb."
@@ -1568,6 +1610,11 @@ msgstr "Remover do histórico ativo para publicar novamente na próxima tentativ
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 msgid "Expand"
 msgstr "Expandir"
+
+#: apps/postybirb-ui/src/components/layout/side-nav.tsx
+#: apps/postybirb-ui/src/components/layout/side-nav.tsx
+msgid "Expand navigation"
+msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Explicit text"
@@ -1962,10 +2009,6 @@ msgstr "Obter código de autorização"
 msgid "Get Authorization URL"
 msgstr "Obter URL de autorização"
 
-#: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
-msgid "Get started by adding your accounts and creating your first submission."
-msgstr "Comece adicionando suas contas e criando seu primeiro envio."
-
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/tags-settings-section.tsx
 msgid "Global tag search provider"
 msgstr "Provedor global de busca de tags"
@@ -1980,9 +2023,9 @@ msgstr "Voltar"
 msgid "Go forward"
 msgstr "Avançar"
 
-#: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
-msgid "Go to Accounts to add and log into your websites"
-msgstr "Acesse Contas para adicionar e entrar nos seus sites"
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "Go to <0>Adore34</0> under your creator account. In Creator Settings, open Integrations under Security, enable PostyBirb, and copy the personal API key."
+msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Gore"
@@ -2171,6 +2214,10 @@ msgstr "Inserir tags no final"
 msgid "Insert title at start"
 msgstr "Inserir título no início"
 
+#: libs/translations/src/lib/field-translations.ts
+msgid "Inspired by Saga"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/website-login-views/instagram/instagram-login-view.tsx
 msgid "Instagram Authentication"
 msgstr "Autenticação no Instagram"
@@ -2195,6 +2242,11 @@ msgstr "Formato de data inválido: {value}. Era esperada uma data no formato ISO
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
 msgid "Invalid post URL to reply to."
 msgstr "A URL da publicação à qual deseja responder é inválida."
+
+#. placeholder {0}: error.replace("Invalid quote post url", "")
+#: apps/postybirb-ui/src/i18n/validation-translation.tsx
+msgid "Invalid quote post URL: {0}"
+msgstr ""
 
 #. Bluesky login form
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
@@ -2237,6 +2289,10 @@ msgstr "IP da rede local"
 msgid "Language"
 msgstr "Idioma"
 
+#: apps/postybirb-ui/src/components/language-picker/language-picker.tsx
+msgid "Language: {currentLanguageName}"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/spellchecker-settings-section.tsx
 msgid "Languages to check"
 msgstr "Idiomas a verificar"
@@ -2265,6 +2321,7 @@ msgstr "Vamos fazer um breve tour pela interface. Apresentaremos os principais r
 msgid "Light"
 msgstr "Claro"
 
+#: apps/postybirb-ui/src/components/theme-picker/theme-picker.tsx
 #: apps/postybirb-ui/src/components/theme-picker/theme-picker.tsx
 #: apps/postybirb-ui/src/components/theme-picker/theme-picker.tsx
 msgid "Light Mode"
@@ -2332,6 +2389,10 @@ msgstr "Falha ao tentar entrar como {loggedInAs}"
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/data-settings-section.tsx
 msgid "Logs"
 msgstr "Logs"
+
+#: apps/postybirb-ui/src/components/layout/side-nav.tsx
+msgid "Main navigation"
+msgstr ""
 
 #: apps/postybirb-ui/src/i18n/validation-translation.tsx
 msgid "Make sure that the default rating matches Bluesky Label Rating."
@@ -2558,9 +2619,17 @@ msgstr "Nenhum envio"
 msgid "No submissions selected"
 msgstr "Nenhum envio selecionado"
 
+#: apps/postybirb-ui/src/components/sections/submissions-section/submission-list.tsx
+msgid "No submissions yet"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-quick-edit-actions.tsx
 msgid "No tags added yet"
 msgstr "Nenhuma tag adicionada ainda"
+
+#: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
+msgid "No templates yet"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/home-section/validation-issues-panel.tsx
 msgid "No validation issues"
@@ -2680,6 +2749,10 @@ msgstr "Definir apenas a data agendada (não ativar)"
 msgid "Open a browser window when Cloudflare requires attention"
 msgstr "Abrir uma janela do navegador quando o Cloudflare exigir atenção"
 
+#: apps/postybirb-ui/src/components/website-login-views/philomena/philomena-login-view.tsx
+msgid "Open account settings"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/shared/schedule-popover/cron-picker.tsx
 msgid "Open CRON helper"
 msgstr "Abrir assistente CRON"
@@ -2780,6 +2853,10 @@ msgstr "Pendente"
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
 msgid "Per-Account Dimensions"
 msgstr "Dimensões por conta"
+
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "Personal API key"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/website-login-views/telegram/telegram-login-view.tsx
 msgid "Phone Number"
@@ -2954,6 +3031,10 @@ msgstr "Anterior"
 msgid "Previous attempts ({evicted})"
 msgstr "Tentativas anteriores ({evicted})"
 
+#: libs/translations/src/lib/field-translations.ts
+msgid "Price (credits)"
+msgstr ""
+
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-actions.tsx
 msgid "Primary"
 msgstr "Principal"
@@ -3001,10 +3082,6 @@ msgstr "Na fila"
 msgid "Quick counts of your file and message submissions, plus how many are queued or scheduled. Click any card to navigate to that section."
 msgstr "Veja os totais de envios de arquivos e mensagens, além de quantos estão na fila ou agendados. Clique em um cartão para acessar a seção correspondente."
 
-#: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
-msgid "Quick tips to get started:"
-msgstr "Dicas rápidas para começar:"
-
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/accounts-tour.tsx
 msgid "Quickly find accounts that need attention. Filter by All, Logged in, or Not logged in status."
 msgstr "Encontre rapidamente as contas que precisam de atenção. Filtre pelos status Todos, Conectado ou Não conectado."
@@ -3012,6 +3089,10 @@ msgstr "Encontre rapidamente as contas que precisam de atenção. Filtre pelos s
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/app-settings-section.tsx
 msgid "Quit"
 msgstr "Sair"
+
+#: libs/translations/src/lib/field-translations.ts
+msgid "Quote post URL"
+msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Racism"
@@ -3301,10 +3382,13 @@ msgstr "Russo"
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/remote-settings-section.tsx
 #: apps/postybirb-ui/src/components/drawers/schedule-drawer/schedule-editor-modal.tsx
 #: apps/postybirb-ui/src/components/sections/templates-section/template-card.tsx
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/bluesky/bluesky-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/discord/discord-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/e621/e621-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/inkbunny/inkbunny-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/philomena/philomena-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/sofurry/sofurry-login-view.tsx
 msgid "Save"
 msgstr "Salvar"
@@ -3368,10 +3452,6 @@ msgstr "Agendamento configurado (inativo)"
 msgid "Schedule Overview"
 msgstr "Visão geral do agendamento"
 
-#: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
-msgid "Schedule posts to automatically publish at specific times"
-msgstr "Agende publicações para que sejam feitas automaticamente em horários específicos"
-
 #: apps/postybirb-ui/src/components/shared/multi-scheduler-modal/multi-scheduler-modal.tsx
 msgid "Schedule Settings"
 msgstr "Configurações de agendamento"
@@ -3407,6 +3487,10 @@ msgstr "Agendado (ativo)"
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 msgid "Scheduling is off, so this will not post on its own."
 msgstr "O agendamento está desativado, então este envio não será publicado automaticamente."
+
+#: apps/postybirb-ui/src/components/shared/search-input.tsx
+msgid "Search"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-converters-tour.tsx
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/tag-groups-tour.tsx
@@ -3582,10 +3666,19 @@ msgstr "Configure suas contas de sites aqui. Entre nos sites em que deseja publi
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
 #: apps/postybirb-ui/src/config/nav-items.tsx
 msgid "Settings"
 msgstr "Configurações"
+
+#: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
+msgid "Settings / Security"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/dialogs/settings-dialog/settings-dialog.tsx
+msgid "Settings categories"
+msgstr ""
 
 #: libs/translations/src/lib/field-translations.ts
 msgid "Sexual Themes"
@@ -3621,6 +3714,10 @@ msgstr "Nome do atalho"
 #: apps/postybirb-ui/src/components/drawers/custom-shortcuts-drawer/custom-shortcuts-drawer.tsx
 msgid "Shortcuts Tour"
 msgstr "Tour dos atalhos"
+
+#: apps/postybirb-ui/src/components/sections/accounts-section/accounts-section.tsx
+msgid "Show hidden websites"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/dialogs/settings-dialog/sections/tags-settings-section.tsx
 msgid "Show wiki page related to tag on hover"
@@ -3687,6 +3784,16 @@ msgstr "Alguns sites não aceitaram este envio. Tente novamente pelo histórico 
 #: apps/postybirb-ui/src/components/error-boundary/error-boundary.tsx
 msgid "Something went wrong"
 msgstr "Algo deu errado"
+
+#: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
+#: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
+msgid "Sort A to Z"
+msgstr ""
+
+#: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
+#: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
+msgid "Sort Z to A"
+msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/file-management/file-metadata.tsx
@@ -4010,7 +4117,7 @@ msgstr "Fazer o tour"
 
 #: apps/postybirb-ui/src/components/layout/side-nav.tsx
 #: apps/postybirb-ui/src/components/layout/side-nav.tsx
-#: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
+#: apps/postybirb-ui/src/components/layout/side-nav.tsx
 msgid "Take the Tour"
 msgstr "Fazer o tour"
 
@@ -4071,6 +4178,7 @@ msgid "Templates Overview"
 msgstr "Visão geral dos modelos"
 
 #: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
+#: apps/postybirb-ui/src/components/sections/templates-section/templates-section.tsx
 msgid "Templates Tour"
 msgstr "Tour dos modelos"
 
@@ -4097,6 +4205,10 @@ msgstr "Ocorreu um erro no formulário e ele não pôde ser exibido corretamente
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/submission-edit-tour.tsx
 msgid "The header shows the submission title and action buttons. Use the template button to apply saved settings, the send button to post, and the trash button to delete."
 msgstr "O cabeçalho mostra o título do envio e os botões de ação. Use o botão de modelo para aplicar configurações salvas, o botão de envio para publicar e o botão da lixeira para excluir."
+
+#: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
+msgid "The key starts with adore_ak_ and is only shown once by Adore34."
+msgstr ""
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-badges.tsx
 msgid "The last post attempt was cancelled before it finished."
@@ -4150,6 +4262,10 @@ msgstr "Este é o seu painel. Veja o status dos envios, controle a fila de publi
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/home-tour.tsx
 msgid "This is your home dashboard. It gives you a quick overview of your submissions, schedule, and account health at a glance."
 msgstr "Este é o seu painel inicial. Ele oferece uma visão rápida dos seus envios, agendamentos e da condição das suas contas."
+
+#: apps/postybirb-ui/src/components/website-login-views/philomena/philomena-login-view.tsx
+msgid "This Philomena website requires an API key for posting. Generate one from your account settings and enter it below."
+msgstr ""
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/schedule-tour.tsx
 msgid "This sidebar lists your unscheduled submissions. Drag any submission from here onto the calendar to schedule it for a specific date and time."
@@ -4434,10 +4550,6 @@ msgstr "URL"
 msgid "Use custom description"
 msgstr "Usar descrição personalizada"
 
-#: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
-msgid "Use templates to save time on repeated posts"
-msgstr "Use modelos para economizar tempo em publicações recorrentes"
-
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-edit-card/account-selection/account-default-template-modal.tsx
 msgid "Use the template you are currently editing as the default"
 msgstr "Usar como padrão o modelo que você está editando"
@@ -4463,6 +4575,10 @@ msgid "Use thumbnail as cover art"
 msgstr "Usar miniatura como capa"
 
 #: libs/translations/src/lib/field-translations.ts
+msgid "Use thumbnails as preview images"
+msgstr ""
+
+#: libs/translations/src/lib/field-translations.ts
 msgid "Use title"
 msgstr "Usar título"
 
@@ -4476,6 +4592,8 @@ msgstr "Usado como base das URLs de origem para outros sites, como o e621. É in
 
 #: apps/postybirb-ui/src/components/website-login-views/e621/e621-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/inkbunny/inkbunny-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/philomena/philomena-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
 msgid "Username"
 msgstr "Nome de usuário"
 
@@ -4670,7 +4788,6 @@ msgid "Weekly"
 msgstr "Semanalmente"
 
 #: apps/postybirb-ui/src/components/onboarding-tour/tours/layout-tour.tsx
-#: apps/postybirb-ui/src/components/sections/home-section/home-content.tsx
 msgid "Welcome to PostyBirb!"
 msgstr "Boas-vindas ao PostyBirb!"
 

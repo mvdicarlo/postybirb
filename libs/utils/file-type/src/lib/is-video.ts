@@ -13,6 +13,7 @@ const SUPPORTED_MIME: string[] = [
   'video/mj2',
   'video/mp2t',
   'video/mp4',
+  'video/mov',
   'video/mpeg',
   'video/ogg',
   'video/quicktime',

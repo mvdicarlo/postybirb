@@ -85,6 +85,7 @@ function flattenForMantine(
 export function SelectField({
   fieldName,
   field,
+  disabled,
 }: FormFieldProps<SelectFieldType>) {
   const { getValue, setValue, submission } = useFormFieldsContext();
   const validations = useValidations(fieldName);
@@ -149,7 +150,7 @@ export function SelectField({
           value={treeValue}
           onChange={handleTreeChange}
           multiple={field.allowMultiple}
-          disabled={submission.isArchived}
+          disabled={disabled}
           error={validations.isInvalid}
         />
       </FieldLabel>
@@ -172,7 +173,7 @@ export function SelectField({
           data={flatOptions}
           value={multiValue}
           onChange={handleMultiChange}
-          disabled={submission.isArchived}
+          disabled={disabled}
           clearable
           searchable
         />
@@ -192,7 +193,7 @@ export function SelectField({
         data={flatOptions}
         value={singleValue}
         onChange={(val) => setValue(fieldName, val)}
-        disabled={submission.isArchived}
+        disabled={disabled}
         clearable
         searchable
       />

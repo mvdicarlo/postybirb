@@ -3,6 +3,7 @@
  * Maps website login component names to their React components.
  */
 
+import { Adore34LoginView } from './adore34';
 import { BlueskyLoginView } from './bluesky';
 import { CustomLoginView } from './custom';
 import { DiscordLoginView } from './discord';
@@ -15,6 +16,7 @@ import { PhilomenaLoginView } from './philomena';
 import { PrometheusLoginView } from './prometheus';
 import { SofurryLoginView } from './sofurry';
 import { SubscribeStarAdultLoginView } from './subscribe-star-adult';
+import { TailspaceLoginView } from './tailspace';
 import { TelegramLoginView } from './telegram';
 import { TwitterLoginView } from './twitter';
 import type { LoginViewComponent } from './types';
@@ -35,6 +37,7 @@ export type { LoginViewComponent, LoginViewProps } from './types';
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
+  Adore34: Adore34LoginView,
   Bluesky: BlueskyLoginView,
   Custom: CustomLoginView,
   Discord: DiscordLoginView,
@@ -50,6 +53,7 @@ const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
   Prometheus: PrometheusLoginView,
   Sofurry: SofurryLoginView,
   SubscribeStarAdult: SubscribeStarAdultLoginView,
+  Tailspace: TailspaceLoginView,
   Telegram: TelegramLoginView,
   Twitter: TwitterLoginView,
   e621: E621LoginView,

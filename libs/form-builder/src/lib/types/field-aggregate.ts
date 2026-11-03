@@ -19,7 +19,12 @@ export type DescriptionFieldType = ExtractFieldTypeFromDecorator<
 >;
 export type TextFieldType = ExtractFieldTypeFromDecorator<typeof TextField>;
 export type TitleFieldType = ExtractFieldTypeFromDecorator<typeof TitleField>;
-export type SelectFieldType = ExtractFieldTypeFromDecorator<typeof SelectField>;
+export type SelectFieldType = Parameters<
+  typeof SelectField<Record<string, unknown>>
+>[0] & {
+  formField: 'select';
+  allowMultiple: boolean;
+};
 export type BooleanFieldType = ExtractFieldTypeFromDecorator<
   typeof BooleanField
 >;

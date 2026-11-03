@@ -41,13 +41,22 @@ export function FormField({ fieldName, field }: FormFieldProps) {
   // If showWhen exists and evaluates to false, field is hidden
   // If no showWhen and hidden is true, field is hidden
   if (field.showWhen) {
-    const shouldShow = evaluateShowWhen(field, getValue, option, submission);
+    const shouldShow = evaluateFieldConditions(
+      field.showWhen,
+      getValue,
+      option,
+      submission,
+    );
     if (!shouldShow) {
       return null;
     }
   } else if (field.hidden) {
     return null;
   }
+
+  const disabled =
+    submission.isArchived ||
+    !evaluateFieldConditions(field.enableWhen, getValue, option, submission);
 
   let formField: JSX.Element | null = null;
   switch (field.formField) {
@@ -56,13 +65,18 @@ export function FormField({ fieldName, field }: FormFieldProps) {
         <DescriptionField
           fieldName={fieldName}
           field={field as DescriptionFieldType}
+          disabled={disabled}
         />
       );
       break;
     case 'input':
     case 'textarea':
       formField = (
-        <InputField fieldName={fieldName} field={field as TextFieldType} />
+        <InputField
+          fieldName={fieldName}
+          field={field as TextFieldType}
+          disabled={disabled}
+        />
       );
       break;
     case 'radio':
@@ -71,22 +85,35 @@ export function FormField({ fieldName, field }: FormFieldProps) {
         <RadioField
           fieldName={fieldName}
           field={field as RadioFieldType | RatingFieldType}
+          disabled={disabled}
         />
       );
       break;
     case 'checkbox':
       formField = (
-        <BooleanField fieldName={fieldName} field={field as BooleanFieldType} />
+        <BooleanField
+          fieldName={fieldName}
+          field={field as BooleanFieldType}
+          disabled={disabled}
+        />
       );
       break;
     case 'tag':
       formField = (
-        <TagField fieldName={fieldName} field={field as TagFieldType} />
+        <TagField
+          fieldName={fieldName}
+          field={field as TagFieldType}
+          disabled={disabled}
+        />
       );
       break;
     case 'select':
       formField = (
-        <SelectField fieldName={fieldName} field={field as SelectFieldType} />
+        <SelectField
+          fieldName={fieldName}
+          field={field as SelectFieldType}
+          disabled={disabled}
+        />
       );
       break;
     case 'datetime':
@@ -94,12 +121,17 @@ export function FormField({ fieldName, field }: FormFieldProps) {
         <DateTimeField
           fieldName={fieldName}
           field={field as DateTimeFieldType}
+          disabled={disabled}
         />
       );
       break;
     case 'number':
       formField = (
-        <NumberField fieldName={fieldName} field={field as NumberFieldType} />
+        <NumberField
+          fieldName={fieldName}
+          field={field as NumberFieldType}
+          disabled={disabled}
+        />
       );
       break;
     default:
@@ -131,22 +163,22 @@ export function FormField({ fieldName, field }: FormFieldProps) {
 }
 
 /**
- * Evaluates showWhen conditions to determine if field should be visible.
+ * Evaluates conditions for field visibility and availability.
  */
-function evaluateShowWhen(
-  field: FieldAggregateType,
+function evaluateFieldConditions(
+  conditions: FieldAggregateType['enableWhen'],
   getValue: <T>(name: string) => T,
   option: { data: unknown; isDefault?: boolean },
   submission: {
     options: Array<{ isDefault?: boolean; data: unknown }>;
   },
 ): boolean {
-  if (!field.showWhen || field.showWhen.length === 0) return true;
+  if (!conditions || conditions.length === 0) return true;
 
   const defaultOption = submission.options.find((opt) => opt.isDefault);
 
-  for (const [fieldName, allowedValues] of field.showWhen) {
-    let currentValue = getValue(fieldName as string);
+  for (const [fieldName, allowedValues] of conditions) {
+    let currentValue = getValue(fieldName);
 
     // For rating field, fall back to default option value
     if (option !== defaultOption && fieldName === 'rating' && !currentValue) {
