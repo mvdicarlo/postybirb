@@ -13,6 +13,7 @@ export const FieldLabelTranslations = {
   allowFreeDownload: msg`Allow free download`,
   allowModifications: msg`Allow modifications of your work`,
   allowPurchases: msg`Allow individual purchases`,
+  allowQuotePosts: msg`Allow quote posts`,
   allowReblogging: msg`Allow reblogging`,
   artistName: msg`Artist name`,
   audience: msg`Audience`,
