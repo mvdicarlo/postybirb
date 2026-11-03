@@ -11,7 +11,7 @@ export type BlueskyAccountData = {
 
 export type BlueskyOAuthRoutes = {
   login: {
-    request: BlueskyAccountData;
+    request: Omit<BlueskyAccountData, 'whoCanreplyConfigurable'>;
     response: { result: boolean };
   };
 };

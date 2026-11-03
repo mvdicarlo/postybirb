@@ -27,7 +27,7 @@ export class BlueskySubmissionPartTransformer extends BaseSubmissionPartTransfor
       title: legacyData.title ?? '',
       tags: this.convertTags(legacyData.tags),
       description: this.convertDescription(legacyData.description),
-      rating: this.convertRating(legacyData.rating)!,
+      rating: this.convertRating(legacyData.rating),
       contentWarning: this.convertContentWarning(legacyData.spoilerText),
       labelRating: legacyData.label_rating ?? '',
       replyToUrl: legacyData.replyToUrl,
