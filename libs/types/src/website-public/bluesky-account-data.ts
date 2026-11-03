@@ -6,12 +6,12 @@ export type BlueskyAccountData = {
   serviceUrl?: string; // Defaults to bsky.social
   appViewUrl?: string; // Defaults to bsky.app
 
-  whoCanReplyConfigurable: SelectOption[]
+  whoCanReplyConfigurable?: SelectOption[]
 };
 
 export type BlueskyOAuthRoutes = {
   login: {
-    request: Omit<BlueskyAccountData, 'whoCanreplyConfigurable'>;
+    request: BlueskyAccountData;
     response: { result: boolean };
   };
 };

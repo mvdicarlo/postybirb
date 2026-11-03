@@ -33,8 +33,6 @@ export class BlueskyDataTransformer
     return {
       username: legacyData.username,
       password: legacyData.password,
-
-      whoCanReplyConfigurable: []
     };
   }
 }
