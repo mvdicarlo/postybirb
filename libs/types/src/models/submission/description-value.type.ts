@@ -39,6 +39,14 @@ export const DefaultDescription = (): Description => ({
   content: [],
 });
 
+export interface DescriptionVersion {
+  revision: number;
+  /** Identifies an editor save; intentional replacements use null. */
+  mutationId: string | null;
+  /** Revision of the latest intentional replacement, retained by later saves. */
+  replacementRevision: number;
+}
+
 /**
  * An object representing a description value.
  * @typedef {Object} DescriptionValue
@@ -46,6 +54,9 @@ export const DefaultDescription = (): Description => ({
  * @property {string} description - The description value.
  */
 export type DescriptionValue = {
+  /** Server-owned synchronization metadata. Older descriptions start at revision zero. */
+  version?: DescriptionVersion;
+
   /**
    * Indicates whether the default description is overridden.
    * @type {boolean}

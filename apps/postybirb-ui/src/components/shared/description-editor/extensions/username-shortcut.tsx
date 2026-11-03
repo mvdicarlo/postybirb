@@ -26,7 +26,11 @@ import {
 } from '@tabler/icons-react';
 import { mergeAttributes, Node } from '@tiptap/core';
 import { Selection } from '@tiptap/pm/state';
-import { NodeViewWrapper, ReactNodeViewRenderer } from '@tiptap/react';
+import {
+  NodeViewProps,
+  NodeViewWrapper,
+  ReactNodeViewRenderer,
+} from '@tiptap/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWebsites } from '../../../../stores';
 
@@ -40,13 +44,9 @@ import { useWebsites } from '../../../../stores';
 function UsernameShortcutView({
   node,
   updateAttributes,
+  getPos,
   editor: tiptapEditor,
-}: {
-  node: { attrs: { shortcut: string; only: string; username: string } };
-  updateAttributes: (attrs: Record<string, unknown>) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  editor: any;
-}) {
+}: NodeViewProps) {
   const websites = useWebsites();
 
   const shortcutName = node.attrs.shortcut;
@@ -64,53 +64,37 @@ function UsernameShortcutView({
     setUsernameValue(usernameProp);
   }, [usernameProp]);
 
-  // Arrow key navigation: listen for adjacency to this node
+  // Resolve this instance's live position rather than matching by shortcut name.
   useEffect(() => {
     const pmView = tiptapEditor?.view;
     if (!pmView) return;
 
-    let isAdjacentRef: 'before' | 'after' | null = null;
-
-    const checkAdjacency = () => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target !== pmView.dom || !pmView.hasFocus()) return;
       const { state } = pmView;
       const { selection } = state;
-
-      if (!selection.empty) {
-        isAdjacentRef = null;
+      const pos = getPos();
+      if (
+        !selection.empty ||
+        typeof pos !== 'number' ||
+        e.shiftKey ||
+        e.altKey ||
+        e.ctrlKey ||
+        e.metaKey
+      )
         return;
-      }
+      const current = state.doc.nodeAt(pos);
+      if (current?.type.name !== 'username') return;
 
-      const pos = selection.from;
-      const $pos = state.doc.resolve(pos);
-
-      // Check node before cursor
-      if (pos > 0) {
-        const nodeBefore = state.doc.nodeAt(pos - 1);
-        if (nodeBefore?.type.name === 'username' && nodeBefore.attrs.shortcut === shortcutName) {
-          isAdjacentRef = 'after';
-          return;
-        }
-      }
-
-      // Check node after cursor
-      const nodeAfter = state.doc.nodeAt(pos);
-      if (nodeAfter?.type.name === 'username' && nodeAfter.attrs.shortcut === shortcutName) {
-        isAdjacentRef = 'before';
-        return;
-      }
-
-      isAdjacentRef = null;
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (document.activeElement === inputRef.current) return;
-
-      if (e.key === 'ArrowRight' && isAdjacentRef === 'before') {
+      if (e.key === 'ArrowRight' && selection.from === pos) {
         e.preventDefault();
         e.stopPropagation();
         inputRef.current?.focus();
         inputRef.current?.setSelectionRange(0, 0);
-      } else if (e.key === 'ArrowLeft' && isAdjacentRef === 'after') {
+      } else if (
+        e.key === 'ArrowLeft' &&
+        selection.from === pos + current.nodeSize
+      ) {
         e.preventDefault();
         e.stopPropagation();
         inputRef.current?.focus();
@@ -119,24 +103,9 @@ function UsernameShortcutView({
       }
     };
 
-    // ProseMirror update handler to check adjacency on selection changes
-    const origDispatch = pmView.dispatch.bind(pmView);
-    // We use a simpler approach: check on each transaction
-    const onTransaction = () => {
-      checkAdjacency();
-    };
-
-    // Listen to editor updates
-    tiptapEditor.on('selectionUpdate', onTransaction);
-    checkAdjacency();
-
-    document.addEventListener('keydown', handleKeyDown, true);
-
-    return () => {
-      tiptapEditor.off('selectionUpdate', onTransaction);
-      document.removeEventListener('keydown', handleKeyDown, true);
-    };
-  }, [tiptapEditor, shortcutName]);
+    pmView.dom.addEventListener('keydown', handleKeyDown, true);
+    return () => pmView.dom.removeEventListener('keydown', handleKeyDown, true);
+  }, [tiptapEditor, getPos]);
 
   // Popover state management for website selection
   const [opened, { close, toggle }] = useDisclosure(false);
@@ -144,8 +113,8 @@ function UsernameShortcutView({
   const [debouncedSearchTerm] = useDebouncedValue(searchTerm, 300);
 
   // Local state for selected website IDs
-  const [selectedWebsiteIds, setSelectedWebsiteIds] = useState<string[]>(
-    () => (onlyProp ? onlyProp.split(',').filter(Boolean) : []),
+  const [selectedWebsiteIds, setSelectedWebsiteIds] = useState<string[]>(() =>
+    onlyProp ? onlyProp.split(',').filter(Boolean) : [],
   );
 
   useEffect(() => {
@@ -191,7 +160,24 @@ function UsernameShortcutView({
       const input = e.target as HTMLInputElement;
       const { selectionStart, selectionEnd, value } = input;
       const isAtStart = selectionStart === 0 && selectionEnd === 0;
-      const isAtEnd = selectionStart === value.length && selectionEnd === value.length;
+      const isAtEnd =
+        selectionStart === value.length && selectionEnd === value.length;
+      const isPlainArrow = !e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey;
+
+      const leaveShortcut = (direction: -1 | 1) => {
+        const pos = getPos();
+        const pmView = tiptapEditor.view;
+        if (typeof pos !== 'number') return;
+        const current = pmView.state.doc.nodeAt(pos);
+        if (current?.type.name !== 'username') return;
+        const target = direction === -1 ? pos : pos + current.nodeSize;
+        pmView.dispatch(
+          pmView.state.tr.setSelection(
+            Selection.near(pmView.state.doc.resolve(target), direction),
+          ),
+        );
+        pmView.focus();
+      };
 
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -201,41 +187,15 @@ function UsernameShortcutView({
         setUsernameValue(usernameProp);
         commitUsername(usernameProp);
         input.blur();
-      } else if (e.key === 'ArrowLeft' && isAtStart) {
+      } else if (e.key === 'ArrowLeft' && isAtStart && isPlainArrow) {
         e.preventDefault();
-        input.blur();
-        const pmView = tiptapEditor?.view;
-        if (pmView) {
-          const { state } = pmView;
-          state.doc.descendants((docNode: { type: { name: string }; attrs: { shortcut: string } }, pos: number) => {
-            if (docNode.type.name === 'username' && docNode.attrs.shortcut === shortcutName) {
-              const tr = state.tr.setSelection(Selection.near(state.doc.resolve(pos)));
-              pmView.dispatch(tr);
-              pmView.focus();
-              return false;
-            }
-            return true;
-          });
-        }
-      } else if (e.key === 'ArrowRight' && isAtEnd) {
+        leaveShortcut(-1);
+      } else if (e.key === 'ArrowRight' && isAtEnd && isPlainArrow) {
         e.preventDefault();
-        input.blur();
-        const pmView = tiptapEditor?.view;
-        if (pmView) {
-          const { state } = pmView;
-          state.doc.descendants((docNode: { type: { name: string }; attrs: { shortcut: string }; nodeSize: number }, pos: number) => {
-            if (docNode.type.name === 'username' && docNode.attrs.shortcut === shortcutName) {
-              const tr = state.tr.setSelection(Selection.near(state.doc.resolve(pos + docNode.nodeSize)));
-              pmView.dispatch(tr);
-              pmView.focus();
-              return false;
-            }
-            return true;
-          });
-        }
+        leaveShortcut(1);
       }
     },
-    [usernameProp, commitUsername, tiptapEditor, shortcutName],
+    [usernameProp, commitUsername, tiptapEditor, getPos],
   );
 
   const handleInputClick = useCallback((e: React.MouseEvent) => {
@@ -291,7 +251,11 @@ function UsernameShortcutView({
   }, [selectedWebsiteIds.length, websites.length]);
 
   return (
-    <NodeViewWrapper as="span" className="username-shortcut" style={{ verticalAlign: 'text-bottom', position: 'relative' }}>
+    <NodeViewWrapper
+      as="span"
+      className="username-shortcut"
+      style={{ verticalAlign: 'text-bottom', position: 'relative' }}
+    >
       <Badge
         className="username-shortcut-badge"
         variant="light"
@@ -305,7 +269,9 @@ function UsernameShortcutView({
         <IconArrowRight size={12} style={{ opacity: 0.5 }} />
         <Popover
           opened={opened}
-          onChange={(isOpen) => { if (!isOpen) close(); }}
+          onChange={(isOpen) => {
+            if (!isOpen) close();
+          }}
           position="bottom-start"
           width={300}
           shadow="md"
@@ -313,7 +279,10 @@ function UsernameShortcutView({
           withinPortal
         >
           <Popover.Target>
-            <Tooltip label={<Trans>Select websites to apply usernames to</Trans>} withArrow>
+            <Tooltip
+              label={<Trans>Select websites to apply usernames to</Trans>}
+              withArrow
+            >
               <Box
                 component="span"
                 className="only-website-selector"
@@ -349,7 +318,10 @@ function UsernameShortcutView({
             </Tooltip>
           </Popover.Target>
 
-          <Popover.Dropdown p={0} onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}>
+          <Popover.Dropdown
+            p={0}
+            onMouseDown={(e: React.MouseEvent) => e.stopPropagation()}
+          >
             <Stack gap="xs">
               <Box>
                 <Group align="apart" p="xs" style={{ alignItems: 'center' }}>
@@ -474,8 +446,7 @@ export const UsernameShortcutExtension = Node.create({
   },
 
   addNodeView() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return ReactNodeViewRenderer(UsernameShortcutView as any);
+    return ReactNodeViewRenderer(UsernameShortcutView);
   },
 
   addCommands() {

@@ -4,6 +4,7 @@ import {
   CreateWebsiteOptionsDto,
   DefaultDescriptionValue,
   DefaultTagValue,
+  DESCRIPTION_REVISION_CONFLICT,
   SubmissionRating,
   SubmissionType,
   TipTapNode,
@@ -12,6 +13,7 @@ import { ConflictException } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, PostRepository } from '@postybirb/database';
+import { v4 } from 'uuid';
 
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
@@ -37,6 +39,7 @@ import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { WebsitesModule } from '../websites/websites.module';
 
 import { WebsiteOptionsService } from './website-options.service';
+import { WebsiteOptionsController } from './website-options.controller';
 
 describe('WebsiteOptionsService', () => {
   let service: WebsiteOptionsService;
@@ -166,6 +169,104 @@ describe('WebsiteOptionsService', () => {
       account: record.account,
       submission: record.submission.toDTO(),
     });
+  });
+
+  it('saves descriptions independently and preserves them through unversioned field updates', async () => {
+    const submission = await createSubmission();
+    const original = submission.options[0];
+    const controller = new WebsiteOptionsController(service);
+    const mutationId = v4();
+    const saved = await controller.updateDescription(
+      {
+        value: { ...DefaultDescriptionValue(), insertTitle: true },
+        expectedRevision: 0,
+        mutationId,
+      },
+      original.id,
+    );
+    expect(saved.data.description?.version).toEqual({
+      revision: 1,
+      mutationId,
+      replacementRevision: 0,
+    });
+    const renamed = await controller.update(
+      {
+        data: { ...original.data, title: 'Renamed' },
+      },
+      original.id,
+    );
+    expect(renamed.data.title).toBe('Renamed');
+    expect(renamed.data.description).toEqual(saved.data.description);
+    await expect(
+      controller.updateDescription(
+        {
+          value: DefaultDescriptionValue(),
+          expectedRevision: 0,
+          mutationId: v4(),
+        },
+        original.id,
+      ),
+    ).rejects.toMatchObject({
+      response: { code: DESCRIPTION_REVISION_CONFLICT },
+    });
+  });
+
+  it('marks template descriptions only when description overriding is requested', async () => {
+    const submission = await createSubmission();
+    const original = submission.options[0];
+    const description = {
+      ...DefaultDescriptionValue(),
+      description: {
+        type: 'doc' as const,
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: 'Template' }] },
+        ],
+      },
+    };
+    const request = {
+      targetSubmissionIds: [submission.id],
+      options: [
+        {
+          accountId: original.accountId,
+          data: {
+            description,
+            title: 'Ignored',
+            rating: SubmissionRating.MATURE,
+          },
+        },
+      ],
+      overrideTitle: false,
+      overrideDescription: false,
+    };
+    expect(
+      (await submissionService.applyTemplateOptions(request)).success,
+    ).toBe(1);
+    const unchanged = await service.findByIdOrThrow(original.id);
+    expect(unchanged.data.description).toEqual(original.data.description);
+    expect(
+      (
+        await submissionService.applyTemplateOptions({
+          ...request,
+          overrideDescription: true,
+        })
+      ).success,
+    ).toBe(1);
+    const replaced = await service.findByIdOrThrow(original.id);
+    expect(replaced.data.title).toBe(original.data.title);
+    expect(replaced.data.description?.version?.replacementRevision).toBe(1);
+    expect(
+      (
+        await submissionService.applyTemplateOptions({
+          ...request,
+          overrideDescription: true,
+        })
+      ).success,
+    ).toBe(1);
+    const repeated = await service.findByIdOrThrow(original.id);
+    expect(repeated.data.description?.description).toEqual(
+      description.description,
+    );
+    expect(repeated.data.description?.version?.replacementRevision).toBe(2);
   });
 
   it('should remove entity', async () => {
