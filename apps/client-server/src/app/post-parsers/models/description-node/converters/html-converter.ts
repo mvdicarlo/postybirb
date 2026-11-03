@@ -63,6 +63,19 @@ export class HtmlConverter extends BaseConverter {
   }
 
   convertInlineNode(node: TipTapNode, context: ConversionContext): string {
+    const html = this.renderInlineNode(node, context);
+    if (!html) return '';
+
+    return this.renderTextWithMarks(
+      html,
+      // username already renders its own <a>, so don't add a second link wrapper
+      (node.type === 'username'
+        ? node.marks?.filter((e) => e.type !== 'link')
+        : node.marks) ?? [],
+    );
+  }
+
+  renderInlineNode(node: TipTapNode, context: ConversionContext): string {
     const attrs = node.attrs ?? {};
 
     if (node.type === 'username') {
@@ -123,27 +136,15 @@ export class HtmlConverter extends BaseConverter {
 
     const marks = node.marks ?? [];
 
-    // Check for link mark — wrap entire text in <a>
-    const linkMark = marks.find((m) => m.type === 'link');
-    if (linkMark) {
-      const href = linkMark.attrs?.href ?? '';
-      const innerHtml = this.renderTextWithMarks(
-        node.text,
-        marks.filter((m) => m.type !== 'link'),
-      );
-      return `<a target="_blank" href="${href}">${innerHtml}</a>`;
-    }
-
-    return this.renderTextWithMarks(node.text, marks);
+    return this.renderTextWithMarks(
+      encode(node.text, { level: 'html5' }).replace(/\n/g, '<br />'),
+      marks,
+    );
   }
 
-  /**
-   * Renders text with formatting marks (bold, italic, etc.) applied.
-   */
+  /** Wraps already-encoded HTML with bold/italic/underline/strike, color and link marks. */
   private renderTextWithMarks(text: string, marks: TipTapMark[]): string {
     const segments: string[] = [];
-    const styles: string[] = [];
-
     for (const mark of marks) {
       switch (mark.type) {
         case 'bold':
@@ -163,29 +164,23 @@ export class HtmlConverter extends BaseConverter {
       }
     }
 
-    // Check for textStyle mark with color
-    const textStyleMark = marks.find((m) => m.type === 'textStyle');
-    if (textStyleMark?.attrs?.color) {
-      styles.push(`color: ${textStyleMark.attrs.color}`);
-    }
-
-    const encodedText = encode(text, { level: 'html5' }).replace(
-      /\n/g,
-      '<br />',
-    );
-
     const openTags = segments.map((s) => `<${s}>`).join('');
     const closeTags = segments
       .slice()
       .reverse()
       .map((s) => `</${s}>`)
       .join('');
-    const formattedText = `${openTags}${encodedText}${closeTags}`;
 
-    // A span is only required to carry an inline color style; there is no
-    // dedicated HTML element for applying color to inline text.
-    if (styles.length) {
-      return `<span style="${styles.join(';')}">${formattedText}</span>`;
+    let formattedText = `${openTags}${text}${closeTags}`;
+
+    const color = marks.find((m) => m.type === 'textStyle')?.attrs?.color;
+    if (color) {
+      formattedText = `<span style="color: ${color}">${formattedText}</span>`;
+    }
+
+    const link = marks.find((m) => m.type === 'link');
+    if (link) {
+      formattedText = `<a target="_blank" href="${link.attrs?.href ?? ''}">${formattedText}</a>`;
     }
 
     return formattedText;
