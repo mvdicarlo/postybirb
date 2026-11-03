@@ -1,4 +1,5 @@
 import { SelectOption } from '@postybirb/form-builder';
+import { FormFile, HttpResponse } from '@postybirb/http/types';
 
 import {
   FileType,
@@ -10,6 +11,7 @@ import {
 } from '@postybirb/types';
 import { getFileTypeFromMimeType } from '@postybirb/utils/file-type';
 import { parse } from 'node-html-parser';
+import request from 'request';
 import { CancellationToken } from '../../../posting/cancellation-token';
 import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -178,14 +180,96 @@ export default class Weasyl
     }
   }
 
+  /*
+   * For whatever reason Weasyl does not play well with our electron HTTP client.
+   * This method uses the request library instead which mimic what is already working
+   * in PostyBirb-Plus.
+   */
+  private async sendWeasylRequest(
+    url: string,
+    cookieHeader: string,
+    cancellationToken: CancellationToken,
+    builder?: PostBuilder,
+  ): Promise<HttpResponse<string>> {
+    cancellationToken.throwIfAborted();
+    const formData = builder
+      ? Object.fromEntries(
+          Object.entries(builder.build()).map(([key, value]) => [
+            key,
+            value instanceof FormFile
+              ? { value: value.buffer, options: value.fileOptions }
+              : value,
+          ]),
+        )
+      : undefined;
+
+    const result = await new Promise<HttpResponse<string>>(
+      (resolve, reject) => {
+        const onAbort = () => {
+          reject(cancellationToken.signal.reason);
+          pendingRequest.abort();
+        };
+        const pendingRequest = request(
+          {
+            url,
+            method: builder ? 'POST' : 'GET',
+            jar: false,
+            formData,
+            headers: {
+              Referer: url,
+              Origin: this.BASE_URL,
+              Cookie: cookieHeader,
+              Host: 'www.weasyl.com',
+            },
+            followAllRedirects: true,
+            followRedirect: (response) =>
+              new URL(response.headers.location ?? url, url).origin ===
+              this.BASE_URL,
+            gzip: true,
+            timeout: 300_000,
+          },
+          (error, response, body: string) => {
+            cancellationToken.signal.removeEventListener('abort', onAbort);
+            if (error) {
+              reject(error);
+              return;
+            }
+            resolve({
+              body,
+              statusCode: response.statusCode ?? 0,
+              statusMessage: response.statusMessage ?? '',
+              responseUrl: response.request.uri.href ?? url,
+            });
+          },
+        );
+        cancellationToken.signal.addEventListener('abort', onAbort, {
+          once: true,
+        });
+        if (cancellationToken.aborted) onAbort();
+      },
+    );
+
+    cancellationToken.throwIfAborted();
+    PostResponse.validateBody(this, result);
+    return result;
+  }
+
   async onPostFileSubmission(
     postData: PostData<WeasylFileSubmission>,
     files: PostingFile[],
     cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
+    cancellationToken.throwIfAborted();
     const fileType = getFileTypeFromMimeType(files[0].mimeType);
     const contentType = this.getContentType(fileType);
     const url = `${this.BASE_URL}/submit/${contentType}`;
+    const cookies = await this.platform.http.getWebsiteCookies(
+      this.accountId,
+      url,
+    );
+    const cookieHeader = cookies
+      .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .join('; ');
 
     const {
       description,
@@ -200,8 +284,6 @@ export default class Weasyl
 
     const builder = new PostBuilder(this, cancellationToken)
       .asMultipart()
-      .withHeader('Referer', url)
-      .withHeader('Origin', 'https://www.weasyl.com')
       .setField('title', title)
       .setField('rating', this.convertRating(rating))
       .setField('content', this.modifyDescription(description))
@@ -222,8 +304,12 @@ export default class Weasyl
       builder.addThumbnail('coverfile', files[0]);
     }
 
-    let result = await builder.send<string>(url);
-    const { body } = result;
+    let result = await this.sendWeasylRequest(
+      url,
+      cookieHeader,
+      cancellationToken,
+      builder,
+    );
 
     if (result.body.includes('manage_thumbnail')) {
       const html = parse(result.body);
@@ -233,8 +319,6 @@ export default class Weasyl
       }
       const thumbnailBuilder = new PostBuilder(this, cancellationToken)
         .asMultipart()
-        .withHeader('Referer', url)
-        .withHeader('Origin', 'https://www.weasyl.com')
         .setField('x1', '0')
         .setField('x2', '0')
         .setField('y1', '0')
@@ -242,11 +326,15 @@ export default class Weasyl
         .setField('thumbfile', '')
         .setField('submitid', submitId.getAttribute('value') || '');
 
-      result = await thumbnailBuilder.send<string>(
+      result = await this.sendWeasylRequest(
         `${this.BASE_URL}/manage/thumbnail`,
+        cookieHeader,
+        cancellationToken,
+        thumbnailBuilder,
       );
     }
 
+    const { body } = result;
     if (
       body.includes(
         'You have already made a submission with this submission file',
@@ -275,9 +363,11 @@ export default class Weasyl
 
     if (body.includes('Weasyl experienced a technical issue')) {
       // Unknown issue so do a second check
-      const recheck = await this.platform.http.get<string>(result.responseUrl, {
-        partition: this.accountId,
-      });
+      const recheck = await this.sendWeasylRequest(
+        result.responseUrl,
+        cookieHeader,
+        cancellationToken,
+      );
       if (recheck.body.includes('Submission Information')) {
         return PostResponse.fromWebsite(this).withSourceUrl(
           recheck.responseUrl,
@@ -305,23 +395,32 @@ export default class Weasyl
     postData: PostData<WeasylMessageSubmission>,
     cancellationToken: CancellationToken,
   ): Promise<PostResponse> {
+    cancellationToken.throwIfAborted();
     const url = `${this.BASE_URL}/submit/journal`;
-    const submissionPage = await this.platform.http.get<string>(url, {
-      partition: this.accountId,
-    });
-    PostResponse.validateBody(this, submissionPage);
+    const cookies = await this.platform.http.getWebsiteCookies(
+      this.accountId,
+      url,
+    );
+    const cookieHeader = cookies
+      .map((cookie) => `${cookie.name}=${cookie.value}`)
+      .join('; ');
+    await this.sendWeasylRequest(url, cookieHeader, cancellationToken);
 
     const { description, title, rating, tags } = postData.options;
 
-    const result = await new PostBuilder(this, cancellationToken)
+    const builder = new PostBuilder(this, cancellationToken)
       .asMultipart()
-      .withHeader('Referer', url)
-      .withHeader('Origin', 'https://www.weasyl.com')
       .setField('title', title)
       .setField('rating', this.convertRating(rating))
       .setField('content', this.modifyDescription(description))
-      .setField('tags', tags.join(' '))
-      .send<string>(`${this.BASE_URL}/submit/journal`);
+      .setField('tags', tags.join(' '));
+
+    const result = await this.sendWeasylRequest(
+      url,
+      cookieHeader,
+      cancellationToken,
+      builder,
+    );
 
     return PostResponse.fromWebsite(this).withAdditionalInfo({
       body: result,
