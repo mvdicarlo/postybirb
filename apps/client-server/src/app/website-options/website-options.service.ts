@@ -1,4 +1,24 @@
 import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import {
+  Account,
+  AccountSchema,
+  CustomShortcutSchema,
+  Insert,
+  Submission,
+  SubmissionRepository,
+  WebsiteOptions,
+  WebsiteOptionsRepository,
+  WebsiteOptionsSchema,
+} from '@postybirb/database';
+import {
   AccountId,
   CreateWebsiteOptionsDto,
   Description,
@@ -21,26 +41,7 @@ import {
   ValidateWebsiteOptionsDto,
   ValidationResult,
 } from '@postybirb/types';
-import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-} from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import {
-  Account,
-  CustomShortcutSchema,
-  Insert,
-  Submission,
-  SubmissionRepository,
-  WebsiteOptions,
-  WebsiteOptionsRepository,
-  WebsiteOptionsSchema,
-} from '@postybirb/database';
-import { eq as equals, sql } from 'drizzle-orm';
+import { eq, eq as equals, sql } from 'drizzle-orm';
 
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountService } from '../account/account.service';
@@ -88,6 +89,7 @@ export class WebsiteOptionsService
 
   async onModuleInit() {
     await this.migrateBlockNoteDescriptions();
+    await this.migrateOptions();
   }
 
   @OnEvent(getEntityCrudEventNames(CUSTOM_SHORTCUT_EVENT_PREFIX).removed)
@@ -172,6 +174,59 @@ export class WebsiteOptionsService
       this.logger.info(
         `Migrated ${migrated} BlockNote description(s) to TipTap format`,
       );
+    }
+  }
+
+  private async migrateOptions() {
+    let migrated = 0;
+    const { db } = this.repository;
+
+    const options = await db
+      .select({ id: WebsiteOptionsSchema.id, data: WebsiteOptionsSchema.data })
+      .from(AccountSchema)
+      .innerJoin(
+        WebsiteOptionsSchema,
+        eq(WebsiteOptionsSchema.accountId, AccountSchema.id),
+      )
+      .where(
+        sql`website = 'bluesky' and json_type(${WebsiteOptionsSchema.data}, '$.whoCanReply') = 'text'`,
+      );
+
+    this.logger.info('Starting migration');
+    for (const option of options) {
+      if (!('whoCanReply' in option.data)) continue;
+
+      const { whoCanReply, ...data } = option.data;
+      const dataTyped = data as {
+        whoCanReplyGlobal: string;
+        whoCanReplyConfigurable: string[];
+      };
+      dataTyped.whoCanReplyGlobal = !whoCanReply
+        ? ''
+        : whoCanReply === 'nobody'
+          ? 'nobody'
+          : 'configurable';
+          
+      if (dataTyped.whoCanReplyGlobal === 'configurable') {
+        dataTyped.whoCanReplyConfigurable = [];
+        dataTyped.whoCanReplyConfigurable.push(
+          ...(whoCanReply as string).split(','),
+        );
+      }
+
+      db.update(WebsiteOptionsSchema)
+        .set({
+          data: {
+            ...data,
+          },
+        })
+        .where(equals(WebsiteOptionsSchema.id, option.id))
+        .run();
+      migrated++;
+    }
+
+    if (migrated > 0) {
+      this.logger.info(`Migrated ${migrated} website options to new format`);
     }
   }
 

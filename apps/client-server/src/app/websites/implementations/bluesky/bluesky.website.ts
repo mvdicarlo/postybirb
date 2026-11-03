@@ -558,7 +558,7 @@ export default class Bluesky
     )[] = [];
 
     // If set to nobody leaves the list empty - nobody can reply
-    if (whoCanReplyGlobal === 'configure' && whoCanReplyConfigurable) {
+    if (whoCanReplyGlobal === 'configurable' && whoCanReplyConfigurable) {
       for (const whoCanReply of whoCanReplyConfigurable) {
         switch (whoCanReply) {
           case BlueskyWhoCanReply.Mention:

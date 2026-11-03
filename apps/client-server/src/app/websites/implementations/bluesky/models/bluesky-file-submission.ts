@@ -83,28 +83,10 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
     options: [
       { value: '', label: 'Everybody' },
       { value: 'nobody', label: 'Nobody' },
-      { value: 'configure', label: 'Configure' },
+      { value: 'configurable', label: 'Configure' },
     ],
-    customDerive(_, options) {
-      if (options.whoCanReply && options.whoCanReplyGlobal === undefined) {
-        switch (options.whoCanReply) {
-          case 'nobody':
-            // eslint-disable-next-line no-param-reassign
-            options.whoCanReplyGlobal = 'nobody';
-            break;
-          case 'following':
-          case 'mention':
-          case 'mention,following':
-            // eslint-disable-next-line no-param-reassign
-            options.whoCanReplyGlobal = 'configure';
-            break;
-          default:
-            break;
-        }
-      }
-    },
   })
-  whoCanReplyGlobal?: '' | 'nobody' | 'configure';
+  whoCanReplyGlobal?: '' | 'nobody' | 'configurable';
 
   @SelectField<BlueskyFileSubmission>({
     label: 'whoCanReply',
@@ -118,33 +100,8 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
         populate: 'options',
       },
     ],
-    showWhen: [['whoCanReplyGlobal', ['configure']]],
-    customDerive(_, options) {
-      if (
-        options.whoCanReply !== 'nobody' &&
-        options.whoCanReply !== '' &&
-        !options.whoCanReplyConfigurable
-      ) {
-        // eslint-disable-next-line no-param-reassign
-        options.whoCanReplyConfigurable = []
-        switch (options.whoCanReply) {
-          case 'following':
-            options.whoCanReplyConfigurable.push(BlueskyWhoCanReply.Following);
-            break;
-          case 'mention':
-            options.whoCanReplyConfigurable.push(BlueskyWhoCanReply.Mention);
-            break;
-          case 'mention,following':
-            options.whoCanReplyConfigurable.push(
-              BlueskyWhoCanReply.Mention,
-              BlueskyWhoCanReply.Following,
-            );
-            break;
-          default:
-            break;
-        }
-      }
-    },
+    minSelected: 1,
+    showWhen: [['whoCanReplyGlobal', ['configurable']]],
   })
   whoCanReplyConfigurable?: string[];
 
