@@ -47,7 +47,14 @@ export class WebsiteOptions
 
   public isDefault: boolean;
 
-  constructor(init: Partial<IWebsiteOptions> & { submissionId?: SubmissionId } = {}) {
+  public migrationVersion: number;
+
+  constructor(
+    init: Partial<IWebsiteOptions> & {
+      submissionId?: SubmissionId;
+      migrationVersion?: number;
+    } = {},
+  ) {
     super(init);
     Object.defineProperty(this, 'entitySchemaKey', {
       value: 'WebsiteOptionsSchema',
@@ -59,6 +66,7 @@ export class WebsiteOptions
     this.submissionId = init.submissionId ?? '';
     this.data = init.data ?? ({} as IWebsiteFormFields);
     this.isDefault = init.isDefault ?? false;
+    this.migrationVersion = init.migrationVersion ?? 0;
   }
 
   public toObject(): IWebsiteOptions {

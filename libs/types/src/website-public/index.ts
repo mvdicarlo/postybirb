@@ -10,5 +10,6 @@ export * from './misskey-account-data';
 export * from './philomena-account-data';
 export * from './prometheus-account-data';
 export * from './sofurry-account-data';
+export * from './tailspace-account-data';
 export * from './telegram-account-data';
 export * from './twitter-account-data';

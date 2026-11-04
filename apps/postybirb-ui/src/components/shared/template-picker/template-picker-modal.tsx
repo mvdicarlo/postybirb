@@ -5,43 +5,43 @@
 
 import { Trans, useLingui } from '@lingui/react/macro';
 import {
-  Box,
-  Button,
-  Checkbox,
-  ComboboxItem,
-  ComboboxItemGroup,
-  Divider,
-  Fieldset,
-  Group,
-  Modal,
-  MultiSelect,
-  ScrollArea,
-  Stack,
-  Text,
-  Title,
-  Tooltip,
+    Box,
+    Button,
+    Checkbox,
+    ComboboxItem,
+    ComboboxItemGroup,
+    Divider,
+    Fieldset,
+    Group,
+    Modal,
+    MultiSelect,
+    ScrollArea,
+    Stack,
+    Text,
+    Title,
+    Tooltip,
 } from '@mantine/core';
 import {
-  AccountId,
-  IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
-  SubmissionId,
-  SubmissionType,
-  WebsiteOptionsDto,
+    AccountId,
+    IWebsiteFormFields,
+    NULL_ACCOUNT_ID,
+    SubmissionId,
+    SubmissionType,
+    WebsiteOptionsDto,
 } from '@postybirb/types';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 import submissionApi from '../../../api/submission.api';
 import {
-  AccountRecord,
-  SubmissionRecord,
-  useAccounts,
-  useSubmissionsByType,
+    AccountRecord,
+    SubmissionRecord,
+    useAccounts,
+    useSubmissionsByType,
 } from '../../../stores';
 import { useSortedTemplateSubmissions } from '../../../stores/ui/templates-ui-store';
 import {
-  showErrorNotification,
-  showSuccessNotification,
+    showErrorNotification,
+    showSuccessNotification,
 } from '../../../utils/notifications';
 
 interface TemplatePickerModalProps {
@@ -220,6 +220,7 @@ export function TemplatePickerModal({
 
         return {
           accountId: opt.accountId as AccountId,
+          sourceOptionId: opt.id,
           data: data as IWebsiteFormFields,
         };
       });

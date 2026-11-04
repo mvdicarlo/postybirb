@@ -50,6 +50,19 @@ export function backupBeforePendingMigrations(
       return;
     }
 
+    backupBeforeDataMigration(sqlite, databasePath);
+  } catch (err) {
+    logger
+      .withError(err)
+      .error('Failed to create pre-migration database backup');
+  }
+}
+
+export function backupBeforeDataMigration(
+  sqlite: Database.Database,
+  databasePath: string,
+): void {
+  try {
     const backupPath = createBackup(sqlite, databasePath);
     logger
       .withMetadata({ backupPath })

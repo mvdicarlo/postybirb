@@ -333,22 +333,28 @@ function LinkButton({ editor }: { editor: Editor }) {
         size="md"
         centered
       >
-        <TextInput
-          label="URL"
-          placeholder="https://example.com"
-          value={url}
-          onChange={(event) => setUrl(event.currentTarget.value)}
-          data-autofocus
-          mb="md"
-        />
-        <Group justify="flex-end">
-          <Button variant="default" onClick={close}>
-            <Trans>Cancel</Trans>
-          </Button>
-          <Button onClick={handleInsertLink} disabled={!url.trim()}>
-            <Trans>Insert</Trans>
-          </Button>
-        </Group>
+        <form onSubmit={handleInsertLink}>
+          <TextInput
+            label="URL"
+            placeholder="https://example.com"
+            value={url}
+            onChange={(event) => setUrl(event.currentTarget.value)}
+            data-autofocus
+            mb="md"
+          />
+          <Group justify="flex-end">
+            <Button variant="default" onClick={close}>
+              <Trans>Cancel</Trans>
+            </Button>
+            <Button
+              type="submit"
+              onClick={handleInsertLink}
+              disabled={!url.trim()}
+            >
+              <Trans>Insert</Trans>
+            </Button>
+          </Group>
+        </form>
       </Modal>
     </>
   );

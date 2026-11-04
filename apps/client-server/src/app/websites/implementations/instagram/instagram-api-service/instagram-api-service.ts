@@ -1,50 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
-import { DynamicObject } from '@postybirb/types';
+import { DynamicObject, InstagramApiType } from '@postybirb/types';
 
 const GRAPH_API_BASE = 'https://graph.instagram.com/v21.0';
-
-/**
- * Temporary in-memory store for OAuth authorization codes.
- * Maps state nonce → { code, timestamp }.
- * Codes expire after 5 minutes.
- */
-const pendingOAuthCodes = new Map<
-  string,
-  { code: string; timestamp: number }
->();
-
-const CODE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
-
-/**
- * Store an authorization code received from the OAuth callback.
- */
-export function storeOAuthCode(state: string, code: string): void {
-  pendingOAuthCodes.set(state, { code, timestamp: Date.now() });
-}
-
-/**
- * Retrieve and consume a stored authorization code.
- * Returns the code if found and not expired, otherwise undefined.
- */
-export function retrieveOAuthCode(state: string): string | undefined {
-  const entry = pendingOAuthCodes.get(state);
-  if (!entry) return undefined;
-
-  pendingOAuthCodes.delete(state);
-
-  if (Date.now() - entry.timestamp > CODE_EXPIRY_MS) {
-    return undefined;
-  }
-
-  return entry.code;
-}
-
-export interface InstagramTokenResult {
-  accessToken: string;
-  tokenType: string;
-  expiresIn: number;
-}
+const UNIFIED_GRAPH_API_BASE = 'https://graph.facebook.com/v26.0';
 
 export interface InstagramLongLivedTokenResult {
   accessToken: string;
@@ -55,6 +14,7 @@ export interface InstagramLongLivedTokenResult {
 export interface InstagramBusinessAccount {
   igUserId: string;
   igUsername: string;
+  apiType: InstagramApiType;
 }
 
 export interface InstagramContainerResult {
@@ -95,106 +55,46 @@ export class InstagramApiService {
     return InstagramApiService.loggerInstance;
   }
 
-  // ========================================================================
-  // OAuth Flow
-  // ========================================================================
-
-  /**
-   * Generate the Instagram OAuth authorization URL.
-   * Uses the Instagram API with Instagram Login flow.
-   */
-  static getAuthUrl(appId: string, redirectUri: string, state: string): string {
-    const scopes = [
-      'instagram_business_basic',
-      'instagram_business_content_publish',
-      'instagram_business_manage_comments',
-      'instagram_business_manage_insights',
-    ].join(',');
-
-    return (
-      `https://www.instagram.com/oauth/authorize` +
-      `?client_id=${encodeURIComponent(appId)}` +
-      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-      `&scope=${encodeURIComponent(scopes)}` +
-      `&state=${encodeURIComponent(state)}` +
-      `&response_type=code` +
-      `&force_reauth=true`
-    );
+  private static getGraphApiBase(apiType: InstagramApiType): string {
+    return apiType === 'unified' ? UNIFIED_GRAPH_API_BASE : GRAPH_API_BASE;
   }
 
-  /**
-   * Exchange an authorization code for a short-lived access token.
-   * Uses the Instagram API token endpoint (POST, form-urlencoded).
-   */
-  static async exchangeCodeForToken(
-    appId: string,
-    appSecret: string,
-    code: string,
-    redirectUri: string,
-  ): Promise<InstagramTokenResult> {
-    const params = new URLSearchParams({
-      client_id: appId,
-      client_secret: appSecret,
-      grant_type: 'authorization_code',
-      redirect_uri: redirectUri,
-      code,
-    });
-
-    const response = await fetch(
-      'https://api.instagram.com/oauth/access_token',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: params.toString(),
-      },
-    );
-    const data = (await response.json()) as DynamicObject;
-
-    if (data.error) {
-      InstagramApiService.logger.error('Token exchange failed', data.error);
-      throw new Error(
-        data.error.message || 'Failed to exchange code for token',
+  static sanitizeError(
+    error: unknown,
+    ...secrets: (string | undefined)[]
+  ): Error {
+    const values = secrets
+      .filter((secret): secret is string => !!secret)
+      .flatMap((secret) => [
+        secret,
+        encodeURIComponent(Buffer.from(secret).toString('utf8')),
+        new URLSearchParams({ token: secret })
+          .toString()
+          .slice('token='.length),
+      ])
+      .sort((a, b) => b.length - a.length);
+    const redact = (value: string) =>
+      values.reduce(
+        (text, secret) => text.split(secret).join('[REDACTED]'),
+        value,
       );
-    }
+    const original =
+      error instanceof Error
+        ? error
+        : new Error(
+            typeof error === 'string' ? error : 'Instagram request failed',
+          );
 
-    return {
-      accessToken: data.access_token,
-      tokenType: data.token_type,
-      expiresIn: data.expires_in,
-    };
+    // Do not copy causes or request metadata that may contain credentials.
+    const sanitized = new Error(redact(original.message));
+    sanitized.name = redact(original.name);
+    sanitized.stack = original.stack ? redact(original.stack) : undefined;
+    return sanitized;
   }
 
-  /**
-   * Exchange a short-lived token for a long-lived token (~60 days).
-   * Uses the Instagram Graph API ig_exchange_token grant.
-   */
-  static async getLongLivedToken(
-    appSecret: string,
-    shortLivedToken: string,
-  ): Promise<InstagramLongLivedTokenResult> {
-    const url =
-      `https://graph.instagram.com/access_token` +
-      `?grant_type=ig_exchange_token` +
-      `&client_secret=${encodeURIComponent(appSecret)}` +
-      `&access_token=${encodeURIComponent(shortLivedToken)}`;
-
-    const response = await fetch(url);
-    const data = (await response.json()) as DynamicObject;
-
-    if (data.error) {
-      InstagramApiService.logger.error(
-        'Long-lived token exchange failed',
-        data.error,
-      );
-      throw new Error(data.error.message || 'Failed to get long-lived token');
-    }
-
-    return {
-      accessToken: data.access_token,
-      tokenType: data.token_type,
-      expiresIn: data.expires_in,
-    };
-  }
+  // ========================================================================
+  // Token Refresh
+  // ========================================================================
 
   /**
    * Refresh a still-valid long-lived token for a new 60-day token.
@@ -212,8 +112,12 @@ export class InstagramApiService {
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
-      InstagramApiService.logger.error('Token refresh failed', data.error);
-      throw new Error(data.error.message || 'Failed to refresh token');
+      const error = InstagramApiService.sanitizeError(
+        new Error(data.error.message || 'Failed to refresh token'),
+        accessToken,
+      );
+      InstagramApiService.logger.error('Token refresh failed', error);
+      throw error;
     }
 
     return {
@@ -229,7 +133,7 @@ export class InstagramApiService {
 
   /**
    * Get the authenticated Instagram user's ID and username.
-   * With Instagram Login, the token is already scoped to the IG account — no Facebook Page lookup needed.
+   * Unified Login tokens require discovery through the system user's assigned accounts.
    */
   static async getInstagramBusinessAccount(
     accessToken: string,
@@ -238,6 +142,11 @@ export class InstagramApiService {
 
     const response = await fetch(url);
     const data = (await response.json()) as DynamicObject;
+
+    // Unified Login tokens cannot be parsed by graph.instagram.com.
+    if (data.error?.code === 190) {
+      return InstagramApiService.getUnifiedLoginAccount(accessToken);
+    }
 
     if (data.error) {
       throw new Error(
@@ -254,6 +163,45 @@ export class InstagramApiService {
     return {
       igUserId: data.user_id,
       igUsername: data.username || data.user_id,
+      apiType: 'instagram',
+    };
+  }
+
+  private static async getUnifiedLoginAccount(
+    accessToken: string,
+  ): Promise<InstagramBusinessAccount> {
+    const response = await fetch(
+      `${UNIFIED_GRAPH_API_BASE}/me/assigned_instagram_accounts?fields=id,username&limit=2`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    const data = (await response.json()) as {
+      data?: { id: string; username: string }[];
+      paging?: { next?: string };
+      error?: { message: string };
+    };
+
+    if (data.error) {
+      throw new Error(data.error.message);
+    }
+    if (!data.data?.length) {
+      throw new Error(
+        'No Instagram account is assigned to this Unified Login token. Grant instagram_basic and share your Business or Creator account when generating the token.',
+      );
+    }
+    if (data.data.length > 1 || data.paging?.next) {
+      throw new Error(
+        'This token has access to multiple Instagram accounts. Generate a token that shares only the account you want to connect.',
+      );
+    }
+
+    const [account] = data.data;
+    if (!account.id || !account.username) {
+      throw new Error('Instagram did not return an account ID and username');
+    }
+    return {
+      igUserId: account.id,
+      igUsername: account.username,
+      apiType: 'unified',
     };
   }
 
@@ -262,9 +210,11 @@ export class InstagramApiService {
    */
   static async verifyToken(
     accessToken: string,
+    igUserId: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<{ username: string } | null> {
     try {
-      const url = `${GRAPH_API_BASE}/me?fields=username&access_token=${encodeURIComponent(accessToken)}`;
+      const url = `${InstagramApiService.getGraphApiBase(apiType)}/${igUserId}?fields=username&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetch(url);
       const data = (await response.json()) as DynamicObject;
 
@@ -293,6 +243,7 @@ export class InstagramApiService {
     caption?: string,
     altText?: string,
     isCarouselItem?: boolean,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<InstagramContainerResult> {
     const params = new URLSearchParams({
       access_token: accessToken,
@@ -309,7 +260,7 @@ export class InstagramApiService {
       params.set('is_carousel_item', 'true');
     }
 
-    const url = `${GRAPH_API_BASE}/${igUserId}/media`;
+    const url = `${InstagramApiService.getGraphApiBase(apiType)}/${igUserId}/media`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -318,11 +269,15 @@ export class InstagramApiService {
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
+      const error = InstagramApiService.sanitizeError(
+        new Error(data.error.message || 'Failed to create image container'),
+        accessToken,
+      );
       InstagramApiService.logger.error(
         'Failed to create image container',
-        data.error,
+        error,
       );
-      throw new Error(data.error.message || 'Failed to create image container');
+      throw error;
     }
 
     return { id: data.id };
@@ -336,6 +291,7 @@ export class InstagramApiService {
     igUserId: string,
     childIds: string[],
     caption?: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<InstagramContainerResult> {
     const params = new URLSearchParams({
       access_token: accessToken,
@@ -347,7 +303,7 @@ export class InstagramApiService {
       params.set('caption', caption);
     }
 
-    const url = `${GRAPH_API_BASE}/${igUserId}/media`;
+    const url = `${InstagramApiService.getGraphApiBase(apiType)}/${igUserId}/media`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -356,13 +312,15 @@ export class InstagramApiService {
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
+      const error = InstagramApiService.sanitizeError(
+        new Error(data.error.message || 'Failed to create carousel container'),
+        accessToken,
+      );
       InstagramApiService.logger.error(
         'Failed to create carousel container',
-        data.error,
+        error,
       );
-      throw new Error(
-        data.error.message || 'Failed to create carousel container',
-      );
+      throw error;
     }
 
     return { id: data.id };
@@ -374,8 +332,9 @@ export class InstagramApiService {
   static async checkContainerStatus(
     accessToken: string,
     containerId: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<InstagramContainerStatus> {
-    const url = `${GRAPH_API_BASE}/${containerId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`;
+    const url = `${InstagramApiService.getGraphApiBase(apiType)}/${containerId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`;
     const response = await fetch(url);
     const data = (await response.json()) as DynamicObject;
 
@@ -393,6 +352,7 @@ export class InstagramApiService {
   static async pollUntilReady(
     accessToken: string,
     containerId: string,
+    apiType: InstagramApiType = 'instagram',
     timeoutMs = 300_000, // 5 minutes
     intervalMs = 10_000, // 10 seconds
   ): Promise<void> {
@@ -402,6 +362,7 @@ export class InstagramApiService {
       const status = await InstagramApiService.checkContainerStatus(
         accessToken,
         containerId,
+        apiType,
       );
 
       switch (status) {
@@ -422,7 +383,11 @@ export class InstagramApiService {
           break;
         default:
           InstagramApiService.logger.warn(
-            `Unknown container status: ${status}`,
+            'Unknown container status',
+            InstagramApiService.sanitizeError(
+              new Error(String(status)),
+              accessToken,
+            ),
           );
       }
 
@@ -443,13 +408,14 @@ export class InstagramApiService {
     accessToken: string,
     igUserId: string,
     containerId: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<InstagramPublishResult> {
     const params = new URLSearchParams({
       access_token: accessToken,
       creation_id: containerId,
     });
 
-    const url = `${GRAPH_API_BASE}/${igUserId}/media_publish`;
+    const url = `${InstagramApiService.getGraphApiBase(apiType)}/${igUserId}/media_publish`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -458,8 +424,12 @@ export class InstagramApiService {
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
-      InstagramApiService.logger.error('Failed to publish media', data.error);
-      throw new Error(data.error.message || 'Failed to publish media');
+      const error = InstagramApiService.sanitizeError(
+        new Error(data.error.message || 'Failed to publish media'),
+        accessToken,
+      );
+      InstagramApiService.logger.error('Failed to publish media', error);
+      throw error;
     }
 
     return { id: data.id };
@@ -471,16 +441,20 @@ export class InstagramApiService {
   static async getMediaPermalink(
     accessToken: string,
     mediaId: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<string | undefined> {
     try {
-      const url = `${GRAPH_API_BASE}/${mediaId}?fields=permalink&access_token=${encodeURIComponent(accessToken)}`;
+      const url = `${InstagramApiService.getGraphApiBase(apiType)}/${mediaId}?fields=permalink&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetch(url);
       const data = (await response.json()) as DynamicObject;
 
       if (data.error) {
         InstagramApiService.logger.warn(
           'Failed to get media permalink',
-          data.error,
+          InstagramApiService.sanitizeError(
+            new Error(data.error.message || 'Failed to get media permalink'),
+            accessToken,
+          ),
         );
         return undefined;
       }
@@ -497,9 +471,10 @@ export class InstagramApiService {
   static async checkPublishingLimit(
     accessToken: string,
     igUserId: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<InstagramPublishingLimit | null> {
     try {
-      const url = `${GRAPH_API_BASE}/${igUserId}/content_publishing_limit?fields=quota_usage,config&access_token=${encodeURIComponent(accessToken)}`;
+      const url = `${InstagramApiService.getGraphApiBase(apiType)}/${igUserId}/content_publishing_limit?fields=quota_usage,config&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetch(url);
       const data = (await response.json()) as DynamicObject;
 

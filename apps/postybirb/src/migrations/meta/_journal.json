@@ -85,6 +85,13 @@
       "when": 1788520713778,
       "tag": "0011_busy_hawkeye",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1793798010283,
+      "tag": "0012_workable_stellaris",
+      "breakpoints": true
     }
   ]
 }

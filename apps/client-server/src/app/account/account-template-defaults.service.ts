@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { AccountRepository, SubmissionRepository } from '@postybirb/database';
+import {
+  AccountRepository,
+  SubmissionRepository,
+  WebsiteOptions,
+} from '@postybirb/database';
 import { AccountId, DynamicObject, SubmissionType } from '@postybirb/types';
 import { PostyBirbService } from '../common/service/postybirb-service';
 
@@ -24,6 +28,15 @@ export class AccountTemplateDefaultsService extends PostyBirbService<AccountRepo
     accountId: AccountId,
     type: SubmissionType,
   ): Promise<DynamicObject | undefined> {
+    return (await this.resolveDefaultOption(accountId, type))?.data as
+      | DynamicObject
+      | undefined;
+  }
+
+  async resolveDefaultOption(
+    accountId: AccountId,
+    type: SubmissionType,
+  ): Promise<WebsiteOptions | undefined> {
     const account = await this.repository.findById(accountId);
     if (!account) {
       return undefined;
@@ -42,7 +55,6 @@ export class AccountTemplateDefaultsService extends PostyBirbService<AccountRepo
       return undefined;
     }
 
-    const option = template.options?.find((o) => o.accountId === accountId);
-    return option?.data as DynamicObject | undefined;
+    return template.options?.find((option) => option.accountId === accountId);
   }
 }

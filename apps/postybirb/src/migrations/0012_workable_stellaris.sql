@@ -1,0 +1,1 @@
+ALTER TABLE `website-options` ADD `migrationVersion` integer DEFAULT 0 NOT NULL;

@@ -453,6 +453,20 @@ export const TranslationMessages: TranslationsMap = {
       </Trans>
     );
   },
+
+  'validation.file.tailspace.comic-unavailable': () => (
+    <Trans>
+      You can no longer add pages to this comic. Log in to Tailspace again to
+      refresh the list.
+    </Trans>
+  ),
+
+  'validation.file.tailspace.comic-ignores-post-fields': () => (
+    <Trans>
+      The files are added as pages at the end of the comic. Title, description
+      and tags are not used.
+    </Trans>
+  ),
 };
 
 export function ValidationTranslation({

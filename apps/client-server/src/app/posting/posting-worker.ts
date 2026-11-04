@@ -1,16 +1,16 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-    AccountRepository,
-    Post,
-    PostRepository,
-    Submission,
-    SubmissionFile,
-    SubmissionFileRepository,
-    SubmissionRepository,
-    UnitOfWork,
-    UnitOfWorkRepository,
-    WebsiteOptions,
-    WebsiteOptionsRepository,
+  AccountRepository,
+  Post,
+  PostRepository,
+  Submission,
+  SubmissionFile,
+  SubmissionFileRepository,
+  SubmissionRepository,
+  UnitOfWork,
+  UnitOfWorkRepository,
+  WebsiteOptions,
+  WebsiteOptionsRepository,
 } from '@postybirb/database';
 import {
   Logger,
@@ -19,17 +19,18 @@ import {
   trackException,
 } from '@postybirb/logger';
 import {
-    AccountId,
-    FileType,
-    IFileBuffer,
-    IPostResponse,
-    ISubmissionFile,
-    IWebsiteFormFields,
-    PostData,
-    PostId,
-    ScheduleType,
-    SubmissionId,
-    UnitOfWorkState,
+  AccountId,
+  FileType,
+  IFileBuffer,
+  IPostResponse,
+  ISubmissionFile,
+  IWebsiteFormFields,
+  PostData,
+  PostId,
+  PostResponse,
+  ScheduleType,
+  SubmissionId,
+  UnitOfWorkState,
 } from '@postybirb/types';
 import { getFileType } from '@postybirb/utils/file-type';
 import { chunk, groupBy } from 'lodash';
@@ -39,8 +40,8 @@ import { PostParsersService } from '../post-parsers/post-parsers.service';
 import { publishSubmissionProjectionChanged } from '../submission/submission.events';
 import { ValidationService } from '../validation/validation.service';
 import {
-    PostBatchData,
-    PostBatchSourceUrl,
+  PostBatchData,
+  PostBatchSourceUrl,
 } from '../websites/models/website-modifiers/file-website';
 import { UnknownWebsite } from '../websites/website';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
@@ -50,8 +51,8 @@ import { getImageResizeParameters } from './post-file-resizer/image-resize-param
 import { PostFileResizerService } from './post-file-resizer/post-file-resizer.service';
 import { PostingRateLimiterService } from './posting-rate-limiter.service';
 import {
-    isUnitOfWorkAttemptSettled,
-    selectExecutableWork,
+  isUnitOfWorkAttemptSettled,
+  selectExecutableWork,
 } from './unit-of-work-rate-limit';
 
 type PostingWorkerContext = {
@@ -623,7 +624,11 @@ export class PostingWorker {
       if (error !== this.cancellationToken.signal.reason) {
         this.trackPostDependency(websiteInstance, submission, startedAt, false);
       }
-      throw error;
+      if (error instanceof PostResponse) {
+        response = error
+      } else {
+        throw error;
+      }
     }
 
     if (
