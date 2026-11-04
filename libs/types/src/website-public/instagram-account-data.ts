@@ -1,11 +1,15 @@
+export type InstagramApiType = 'instagram' | 'unified';
+
 export type InstagramAccountData = {
   /** Meta/Facebook App ID */
   appId?: string;
   /** Meta/Facebook App Secret */
   appSecret?: string;
-  /** Long-lived access token (60-day expiry) */
+  /** Instagram access token supplied directly or obtained through OAuth */
   accessToken?: string;
-  /** ISO string of when the access token expires */
+  /** API setup for this token; older accounts default to Instagram Login */
+  apiType?: InstagramApiType;
+  /** ISO string of when the access token expires, when known */
   tokenExpiry?: string;
   /** Instagram-scoped user ID */
   igUserId?: string;
@@ -14,6 +18,19 @@ export type InstagramAccountData = {
 };
 
 export type InstagramOAuthRoutes = {
+  /**
+   * Validates and stores a bearer token and discovers its Instagram account.
+   */
+  setAccessToken: {
+    request: { accessToken: string };
+    response: {
+      success: boolean;
+      igUsername?: string;
+      igUserId?: string;
+      apiType?: InstagramApiType;
+      message?: string;
+    };
+  };
   /**
    * Stores Meta App credentials (App ID / App Secret).
    */

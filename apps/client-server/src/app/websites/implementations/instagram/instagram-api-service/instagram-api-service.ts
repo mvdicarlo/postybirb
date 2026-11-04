@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Logger, PostyBirbLogger } from '@postybirb/logger';
-import { DynamicObject } from '@postybirb/types';
+import { DynamicObject, InstagramApiType } from '@postybirb/types';
 
 const GRAPH_API_BASE = 'https://graph.instagram.com/v21.0';
+const UNIFIED_GRAPH_API_BASE = 'https://graph.facebook.com/v26.0';
 
 /**
  * Temporary in-memory store for OAuth authorization codes.
@@ -55,6 +56,7 @@ export interface InstagramLongLivedTokenResult {
 export interface InstagramBusinessAccount {
   igUserId: string;
   igUsername: string;
+  apiType: InstagramApiType;
 }
 
 export interface InstagramContainerResult {
@@ -93,6 +95,10 @@ export class InstagramApiService {
       InstagramApiService.loggerInstance = Logger('InstagramApiService');
     }
     return InstagramApiService.loggerInstance;
+  }
+
+  private static getGraphApiBase(apiType: InstagramApiType): string {
+    return apiType === 'unified' ? UNIFIED_GRAPH_API_BASE : GRAPH_API_BASE;
   }
 
   // ========================================================================
@@ -229,7 +235,7 @@ export class InstagramApiService {
 
   /**
    * Get the authenticated Instagram user's ID and username.
-   * With Instagram Login, the token is already scoped to the IG account — no Facebook Page lookup needed.
+   * Unified Login tokens require discovery through the system user's assigned accounts.
    */
   static async getInstagramBusinessAccount(
     accessToken: string,
@@ -238,6 +244,11 @@ export class InstagramApiService {
 
     const response = await fetch(url);
     const data = (await response.json()) as DynamicObject;
+
+    // Unified Login tokens cannot be parsed by graph.instagram.com.
+    if (data.error?.code === 190) {
+      return InstagramApiService.getUnifiedLoginAccount(accessToken);
+    }
 
     if (data.error) {
       throw new Error(
@@ -254,6 +265,45 @@ export class InstagramApiService {
     return {
       igUserId: data.user_id,
       igUsername: data.username || data.user_id,
+      apiType: 'instagram',
+    };
+  }
+
+  private static async getUnifiedLoginAccount(
+    accessToken: string,
+  ): Promise<InstagramBusinessAccount> {
+    const response = await fetch(
+      `${UNIFIED_GRAPH_API_BASE}/me/assigned_instagram_accounts?fields=id,username&limit=2`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    const data = (await response.json()) as {
+      data?: { id: string; username: string }[];
+      paging?: { next?: string };
+      error?: { message: string };
+    };
+
+    if (data.error) {
+      throw new Error(data.error.message);
+    }
+    if (!data.data?.length) {
+      throw new Error(
+        'No Instagram account is assigned to this Unified Login token. Grant instagram_basic and share your Business or Creator account when generating the token.',
+      );
+    }
+    if (data.data.length > 1 || data.paging?.next) {
+      throw new Error(
+        'This token has access to multiple Instagram accounts. Generate a token that shares only the account you want to connect.',
+      );
+    }
+
+    const [account] = data.data;
+    if (!account.id || !account.username) {
+      throw new Error('Instagram did not return an account ID and username');
+    }
+    return {
+      igUserId: account.id,
+      igUsername: account.username,
+      apiType: 'unified',
     };
   }
 
@@ -262,9 +312,11 @@ export class InstagramApiService {
    */
   static async verifyToken(
     accessToken: string,
+    igUserId: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<{ username: string } | null> {
     try {
-      const url = `${GRAPH_API_BASE}/me?fields=username&access_token=${encodeURIComponent(accessToken)}`;
+      const url = `${InstagramApiService.getGraphApiBase(apiType)}/${igUserId}?fields=username&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetch(url);
       const data = (await response.json()) as DynamicObject;
 
@@ -293,6 +345,7 @@ export class InstagramApiService {
     caption?: string,
     altText?: string,
     isCarouselItem?: boolean,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<InstagramContainerResult> {
     const params = new URLSearchParams({
       access_token: accessToken,
@@ -309,7 +362,7 @@ export class InstagramApiService {
       params.set('is_carousel_item', 'true');
     }
 
-    const url = `${GRAPH_API_BASE}/${igUserId}/media`;
+    const url = `${InstagramApiService.getGraphApiBase(apiType)}/${igUserId}/media`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -336,6 +389,7 @@ export class InstagramApiService {
     igUserId: string,
     childIds: string[],
     caption?: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<InstagramContainerResult> {
     const params = new URLSearchParams({
       access_token: accessToken,
@@ -347,7 +401,7 @@ export class InstagramApiService {
       params.set('caption', caption);
     }
 
-    const url = `${GRAPH_API_BASE}/${igUserId}/media`;
+    const url = `${InstagramApiService.getGraphApiBase(apiType)}/${igUserId}/media`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -374,8 +428,9 @@ export class InstagramApiService {
   static async checkContainerStatus(
     accessToken: string,
     containerId: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<InstagramContainerStatus> {
-    const url = `${GRAPH_API_BASE}/${containerId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`;
+    const url = `${InstagramApiService.getGraphApiBase(apiType)}/${containerId}?fields=status_code&access_token=${encodeURIComponent(accessToken)}`;
     const response = await fetch(url);
     const data = (await response.json()) as DynamicObject;
 
@@ -393,6 +448,7 @@ export class InstagramApiService {
   static async pollUntilReady(
     accessToken: string,
     containerId: string,
+    apiType: InstagramApiType = 'instagram',
     timeoutMs = 300_000, // 5 minutes
     intervalMs = 10_000, // 10 seconds
   ): Promise<void> {
@@ -402,6 +458,7 @@ export class InstagramApiService {
       const status = await InstagramApiService.checkContainerStatus(
         accessToken,
         containerId,
+        apiType,
       );
 
       switch (status) {
@@ -443,13 +500,14 @@ export class InstagramApiService {
     accessToken: string,
     igUserId: string,
     containerId: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<InstagramPublishResult> {
     const params = new URLSearchParams({
       access_token: accessToken,
       creation_id: containerId,
     });
 
-    const url = `${GRAPH_API_BASE}/${igUserId}/media_publish`;
+    const url = `${InstagramApiService.getGraphApiBase(apiType)}/${igUserId}/media_publish`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -471,9 +529,10 @@ export class InstagramApiService {
   static async getMediaPermalink(
     accessToken: string,
     mediaId: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<string | undefined> {
     try {
-      const url = `${GRAPH_API_BASE}/${mediaId}?fields=permalink&access_token=${encodeURIComponent(accessToken)}`;
+      const url = `${InstagramApiService.getGraphApiBase(apiType)}/${mediaId}?fields=permalink&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetch(url);
       const data = (await response.json()) as DynamicObject;
 
@@ -497,9 +556,10 @@ export class InstagramApiService {
   static async checkPublishingLimit(
     accessToken: string,
     igUserId: string,
+    apiType: InstagramApiType = 'instagram',
   ): Promise<InstagramPublishingLimit | null> {
     try {
-      const url = `${GRAPH_API_BASE}/${igUserId}/content_publishing_limit?fields=quota_usage,config&access_token=${encodeURIComponent(accessToken)}`;
+      const url = `${InstagramApiService.getGraphApiBase(apiType)}/${igUserId}/content_publishing_limit?fields=quota_usage,config&access_token=${encodeURIComponent(accessToken)}`;
       const response = await fetch(url);
       const data = (await response.json()) as DynamicObject;
 

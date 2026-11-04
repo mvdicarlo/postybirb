@@ -35,13 +35,13 @@ import { InstagramFileSubmission } from './models/instagram-file-submission';
  *
  * Key constraints:
  * - Requires a Business or Creator Instagram account
- * - Each user creates their own Meta Developer App (Development Mode, no App Review needed)
+ * - Accepts user-provided Instagram Login or Unified Login bearer tokens
  * - Instagram's API requires publicly accessible image URLs — files are uploaded
  *   to temporary Azure Blob Storage, Instagram cURLs them, then blobs are cleaned up
  * - Images only (v1) — JPEG format required (auto-converted via outputMimeType)
  * - Carousels support up to 10 images
  * - 100 API-published posts per 24-hour period
- * - Long-lived tokens expire after 60 days and must be refreshed
+ * - Long-lived tokens expire after 60 days; directly supplied tokens may have unknown expiry
  */
 @WebsiteMetadata({
   name: 'instagram',
@@ -71,6 +71,7 @@ export default class Instagram
       appId: true,
       appSecret: true,
       accessToken: false,
+      apiType: true,
       tokenExpiry: true,
       igUserId: false,
       igUsername: true,
@@ -81,6 +82,50 @@ export default class Instagram
   // ========================================================================
 
   public onAuthRoute: OAuthRouteHandlers<InstagramOAuthRoutes> = {
+    setAccessToken: async ({ accessToken }) => {
+      const token =
+        typeof accessToken === 'string'
+          ? accessToken
+              .trim()
+              .replace(/^Bearer\s+/i, '')
+              .trim()
+          : '';
+      if (!token || /^Bearer$/i.test(token)) {
+        return { success: false, message: 'An access token is required' };
+      }
+
+      try {
+        const igAccount =
+          await InstagramApiService.getInstagramBusinessAccount(token);
+
+        const current = this.websiteDataStore.getData();
+        const loginState = await this.login({
+          ...current,
+          accessToken: token,
+          apiType: igAccount.apiType,
+          tokenExpiry: undefined,
+          igUserId: igAccount.igUserId,
+          igUsername: igAccount.igUsername,
+        });
+
+        if (!loginState.isLoggedIn) {
+          return {
+            success: false,
+            message: 'Failed to log in with the supplied Instagram token',
+          };
+        }
+
+        return { success: true, ...igAccount };
+      } catch (e) {
+        this.logger.error('Instagram token login failed', e);
+        return {
+          success: false,
+          message:
+            e instanceof Error ? e.message : 'Failed to log in to Instagram',
+        };
+      }
+    },
+
     setAppCredentials: async ({ appId, appSecret }) => {
       const current = this.websiteDataStore.getData();
       await this.setWebsiteData({
@@ -154,6 +199,7 @@ export default class Instagram
         await this.setWebsiteData({
           ...(current as InstagramAccountData),
           accessToken: longLived.accessToken,
+          apiType: igAccount.apiType,
           tokenExpiry,
           igUserId: igAccount.igUserId,
           igUsername: igAccount.igUsername,
@@ -177,9 +223,16 @@ export default class Instagram
     },
 
     refreshToken: async () => {
-      const { accessToken } = this.websiteDataStore.getData();
+      const { accessToken, apiType } = this.websiteDataStore.getData();
       if (!accessToken) {
         return { success: false, message: 'No access token to refresh' };
+      }
+      if (apiType === 'unified') {
+        return {
+          success: false,
+          message:
+            'Unified Login tokens cannot be refreshed with Instagram Login. Generate a replacement token in the Meta App Dashboard and log in again.',
+        };
       }
 
       try {
@@ -230,7 +283,7 @@ export default class Instagram
 
       // Auto-refresh if within 7 days of expiry
       const sevenDays = 7 * 24 * 60 * 60 * 1000;
-      if (expiry - now < sevenDays) {
+      if (data.apiType !== 'unified' && expiry - now < sevenDays) {
         this.logger.info('Instagram token nearing expiry, auto-refreshing');
         try {
           await this.onAuthRoute.refreshToken({} as never);
@@ -241,7 +294,11 @@ export default class Instagram
     }
 
     // Verify token is still valid
-    const verified = await InstagramApiService.verifyToken(data.accessToken);
+    const verified = await InstagramApiService.verifyToken(
+      data.accessToken,
+      data.igUserId,
+      data.apiType,
+    );
 
     if (verified) {
       return { loggedIn: true, username: data.igUsername };
@@ -280,7 +337,7 @@ export default class Instagram
   ): Promise<PostResponse> {
     cancellationToken.throwIfAborted();
 
-    const { accessToken, igUserId } = this.websiteDataStore.getData();
+    const { accessToken, igUserId, apiType } = this.websiteDataStore.getData();
     if (!accessToken || !igUserId) {
       return PostResponse.fromWebsite(this).withException(
         new Error('Instagram is not logged in'),
@@ -312,15 +369,22 @@ export default class Instagram
           filesToPost[0].url,
           postData.options.description,
           altText,
+          false,
+          apiType,
         );
 
-        await InstagramApiService.pollUntilReady(accessToken, container.id);
+        await InstagramApiService.pollUntilReady(
+          accessToken,
+          container.id,
+          apiType,
+        );
         cancellationToken.throwIfAborted();
 
         publishResult = await InstagramApiService.publishMedia(
           accessToken,
           igUserId,
           container.id,
+          apiType,
         );
       } else {
         // Carousel post (2-10 images)
@@ -336,6 +400,7 @@ export default class Instagram
             undefined, // No caption on carousel items
             altText,
             true, // is_carousel_item
+            apiType,
           );
           childIds.push(child.id);
         }
@@ -346,10 +411,15 @@ export default class Instagram
           igUserId,
           childIds,
           postData.options.description,
+          apiType,
         );
 
         // Poll until ready
-        await InstagramApiService.pollUntilReady(accessToken, carousel.id);
+        await InstagramApiService.pollUntilReady(
+          accessToken,
+          carousel.id,
+          apiType,
+        );
         cancellationToken.throwIfAborted();
 
         // Publish
@@ -357,6 +427,7 @@ export default class Instagram
           accessToken,
           igUserId,
           carousel.id,
+          apiType,
         );
       }
 
@@ -364,6 +435,7 @@ export default class Instagram
       const permalink = await InstagramApiService.getMediaPermalink(
         accessToken,
         publishResult.id,
+        apiType,
       );
 
       return PostResponse.fromWebsite(this)
