@@ -55,7 +55,10 @@ import { OAuthWebsite } from '../../models/website-modifiers/oauth-website';
 import { WithCustomDescriptionParser } from '../../models/website-modifiers/with-custom-description-parser';
 import { Website } from '../../website';
 import { BlueskyConverter } from './bluesky-description-converter';
-import { BlueskyFileSubmission } from './models/bluesky-file-submission';
+import {
+  BlueskyFileSubmission,
+  BlueskyWhoCanReply,
+} from './models/bluesky-file-submission';
 import { BlueskyMessageSubmission } from './models/bluesky-message-submission';
 
 type LoggedInAgent = SetNonNullable<AtpAgent, 'session' | 'pdsUrl'>;
@@ -110,7 +113,7 @@ export default class Bluesky
   readonly MAX_CHARS = 300;
 
   public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<BlueskyAccountData> =
-    { username: true, password: true };
+    { username: true, password: true, whoCanReplyConfigurable: true };
 
   private agent?: AtpAgent;
 
@@ -137,7 +140,37 @@ export default class Bluesky
       .catch((error) => {
         this.logger.error(error);
         return { loggedIn: false };
+      })
+      .finally(async () => {
+        await this.populateWhoCanReply();
       });
+  }
+
+  private async populateWhoCanReply() {
+    const lists = await this.agent?.app.bsky.graph.getLists({
+      actor: this.agent.assertDid,
+      limit: 50,
+    });
+
+    this.websiteDataStore.setData({
+      ...this.websiteDataStore.getData(),
+      whoCanReplyConfigurable: [
+        {
+          items: [
+            { value: BlueskyWhoCanReply.Mention, label: 'Mentioned Users' },
+            { value: BlueskyWhoCanReply.Following, label: 'Followed users' },
+            { value: BlueskyWhoCanReply.Followers, label: 'Your followers' },
+          ],
+          label: '',
+        },
+        {
+          label: 'Your lists',
+          items: lists?.success
+            ? lists.data.lists.map((e) => ({ label: e.name, value: e.cid }))
+            : [],
+        },
+      ],
+    });
   }
 
   createFileModel(): BlueskyFileSubmission {
@@ -264,12 +297,17 @@ export default class Bluesky
       const friendlyUrl = `${origin.padEnd(origin.length, '/')}profile/${profile.data.did}/post/${postId}`;
 
       // After the post has been made, check to see if we need to set a ThreadGate; these are the options to control who can reply to your post, and need additional calls
-      if (postData.options.whoCanReply) {
+      if (postData.options.whoCanReplyGlobal) {
         this.createThreadgate(
           agent,
           postResult.uri,
-          postData.options.whoCanReply,
+          postData.options.whoCanReplyGlobal,
+          postData.options.whoCanReplyConfigurable,
         );
+      }
+
+      if (!postData.options.allowQuotePosts) {
+        this.createPostgate(agent, postResult.uri);
       }
 
       const response =
@@ -509,32 +547,53 @@ export default class Bluesky
   private createThreadgate(
     agent: LoggedInAgent,
     postUri: string,
-    whoCanReply: NonNullable<BlueskyFileSubmission['whoCanReply']>,
+    whoCanReplyGlobal: NonNullable<BlueskyFileSubmission['whoCanReplyGlobal']>,
+    whoCanReplyConfigurable?: string[],
   ) {
     const allow: (
       | $Typed<AppBskyFeedThreadgate.MentionRule>
       | $Typed<AppBskyFeedThreadgate.FollowingRule>
+      | $Typed<AppBskyFeedThreadgate.FollowerRule>
       | $Typed<AppBskyFeedThreadgate.ListRule>
     )[] = [];
 
-    switch (whoCanReply) {
-      case 'mention':
-        allow.push({ $type: 'app.bsky.feed.threadgate#mentionRule' });
-        break;
-      case 'following':
-        allow.push({ $type: 'app.bsky.feed.threadgate#followingRule' });
-        break;
-      case 'mention,following':
-        allow.push({ $type: 'app.bsky.feed.threadgate#followingRule' });
-        allow.push({ $type: 'app.bsky.feed.threadgate#mentionRule' });
-        break;
-      default: // Leave the array empty and this sets no one - nobody mode
-        break;
+    // If set to nobody leaves the list empty - nobody can reply
+    if (whoCanReplyGlobal === 'configurable' && whoCanReplyConfigurable) {
+      for (const whoCanReply of whoCanReplyConfigurable) {
+        switch (whoCanReply) {
+          case BlueskyWhoCanReply.Mention:
+            allow.push({ $type: 'app.bsky.feed.threadgate#mentionRule' });
+            break;
+          case BlueskyWhoCanReply.Following:
+            allow.push({ $type: 'app.bsky.feed.threadgate#followingRule' });
+            break;
+          case BlueskyWhoCanReply.Followers:
+            allow.push({ $type: 'app.bsky.feed.threadgate#followerRule' });
+            break;
+          default:
+            allow.push({
+              $type: 'app.bsky.feed.threadgate#listRule',
+              list: whoCanReply, // cid
+            });
+            break;
+        }
+      }
     }
 
     agent.app.bsky.feed.threadgate.create(
       { repo: agent.session.did, rkey: new AtUri(postUri).rkey },
       { post: postUri, createdAt: new Date().toISOString(), allow },
+    );
+  }
+
+  private createPostgate(agent: LoggedInAgent, postUri: string) {
+    agent.app.bsky.feed.postgate.create(
+      { repo: agent.session.did, rkey: new AtUri(postUri).rkey },
+      {
+        post: postUri,
+        createdAt: new Date().toISOString(),
+        embeddingRules: [{ $type: 'app.bsky.feed.postgate#disableRule' }],
+      },
     );
   }
 

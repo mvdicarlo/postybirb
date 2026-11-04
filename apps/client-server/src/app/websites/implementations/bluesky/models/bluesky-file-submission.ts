@@ -1,4 +1,5 @@
 import {
+  BooleanField,
   DescriptionField,
   SelectField,
   TagField,
@@ -10,8 +11,47 @@ import {
   DescriptionValue,
   TagValue,
 } from '@postybirb/types';
+import { sql } from 'drizzle-orm';
+import { MigrateWebsiteOptions } from '../../../decorators/migrate-website-options.decorator';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
 
+export enum BlueskyWhoCanReply {
+  Mention = 'mention',
+  Following = 'following',
+  Followers = 'followers',
+}
+
+@MigrateWebsiteOptions([
+  {
+    version: 1,
+    name: 'Convert reply permissions to array to allow more fine grained control',
+
+    where: ({ data }) => sql`json_type(${data}, '$.whoCanReply') = 'text'`,
+    migrate(raw) {
+      if (typeof raw.whoCanReply !== 'string') {
+        return { ...raw };
+      }
+
+      const { whoCanReply, ...data } = raw as {
+        whoCanReply: string;
+        whoCanReplyGlobal: string;
+        whoCanReplyConfigurable: string[];
+      };
+      data.whoCanReplyGlobal = !whoCanReply
+        ? ''
+        : whoCanReply === 'nobody'
+          ? 'nobody'
+          : 'configurable';
+
+      if (data.whoCanReplyGlobal === 'configurable') {
+        data.whoCanReplyConfigurable = [];
+        data.whoCanReplyConfigurable.push(...whoCanReply.split(','));
+      }
+
+      return data;
+    },
+  },
+])
 export class BlueskyFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
     descriptionType: DescriptionType.CUSTOM,
@@ -44,24 +84,41 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
   })
   labelRating: '' | 'sexual' | 'nudity' | 'porn';
 
-  // Note: in v3 it was threadgate
-  @SelectField({
+  @TextField({ label: 'replyToUrl', section: 'website', span: 6 })
+  replyToUrl?: string;
+
+  @TextField({ label: 'quotePostUrl', section: 'website', span: 6 })
+  quotePostUrl?: string;
+
+  @SelectField<BlueskyFileSubmission>({
     label: 'whoCanReply',
     section: 'website',
     span: 6,
     options: [
       { value: '', label: 'Everybody' },
       { value: 'nobody', label: 'Nobody' },
-      { value: 'mention', label: 'Mentioned Users' },
-      { value: 'following', label: 'Followed Users' },
-      { value: 'mention,following', label: 'Mentioned & Followed Users' },
+      { value: 'configurable', label: 'Configure' },
     ],
   })
-  whoCanReply?: '' | 'nobody' | 'mention' | 'following' | 'mention,following';
+  whoCanReplyGlobal?: '' | 'nobody' | 'configurable';
 
-  @TextField({ label: 'replyToUrl', section: 'website', span: 6 })
-  replyToUrl?: string;
+  @SelectField<BlueskyFileSubmission>({
+    label: 'whoCanReply',
+    section: 'website',
+    span: 6,
+    allowMultiple: true,
+    options: [],
+    derive: [
+      {
+        key: 'whoCanReplyConfigurable',
+        populate: 'options',
+      },
+    ],
+    minSelected: 1,
+    showWhen: [['whoCanReplyGlobal', ['configurable']]],
+  })
+  whoCanReplyConfigurable?: string[];
 
-  @TextField({ label: 'quotePostUrl', section: 'website', span: 6 })
-  quotePostUrl?: string;
+  @BooleanField({ label: 'allowQuotePosts', section: 'website', span: 8 })
+  allowQuotePosts = true;
 }
