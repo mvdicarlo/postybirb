@@ -1,3 +1,12 @@
+import { BadRequestException, ConflictException } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { Test, TestingModule } from '@nestjs/testing';
+import {
+  clearDatabase,
+  EntityNotFoundError,
+  PostRepository,
+} from '@postybirb/database';
+import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 import {
   CreateAccountDto,
   CreateSubmissionDto,
@@ -10,15 +19,6 @@ import {
   UpdateSubmissionDto,
   WebsiteOptionsDto,
 } from '@postybirb/types';
-import { BadRequestException, ConflictException } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { Test, TestingModule } from '@nestjs/testing';
-import {
-  clearDatabase,
-  EntityNotFoundError,
-  PostRepository,
-} from '@postybirb/database';
-import { PostyBirbDirectories, writeSync } from '@postybirb/fs';
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -38,6 +38,7 @@ import { PostingActivityModule } from '../../posting/posting-activity.module';
 import { PostingActivityService } from '../../posting/posting-activity.service';
 import { waitUntilPromised } from '../../utils/wait.util';
 import { ValidationService } from '../../validation/validation.service';
+import { WebsiteOptionsMigrationService } from '../../website-options/website-options-migration.service';
 import { WebsiteOptionsService } from '../../website-options/website-options.service';
 import { WebsiteImplProvider } from '../../websites/implementations/provider';
 import { WebsiteRegistryService } from '../../websites/website-registry.service';
@@ -88,6 +89,7 @@ describe('SubmissionService', () => {
           WebsiteRegistryService,
           ValidationService,
           WebsiteOptionsService,
+          WebsiteOptionsMigrationService,
           SubmissionEventPublisher,
           WebsiteImplProvider,
           FileConverterService,
@@ -603,6 +605,48 @@ describe('SubmissionService', () => {
     expect(nonDefault?.data.title).toEqual('Template Test');
     expect(nonDefault?.data.rating).toEqual(SubmissionRating.MATURE);
   });
+
+  it('should reject a template with a different submission type without changing options', async () => {
+    const templateDto = createSubmissionDto();
+    templateDto.type = SubmissionType.FILE;
+    templateDto.isTemplate = true;
+    const template = await service.create(templateDto);
+    const record = await service.create(createSubmissionDto());
+
+    await expect(
+      service.applyOverridingTemplate(record.id, template.id),
+    ).rejects.toThrow(BadRequestException);
+
+    const unchangedRecord = await service.findByIdOrThrow(record.id);
+    expect(unchangedRecord.options).toEqual(record.options);
+  });
+
+  it.each([true, false])(
+    'should reject mixed submission types before changing any options (merge=%s)',
+    async (merge) => {
+      const sourceDto = createSubmissionDto();
+      sourceDto.isMultiSubmission = true;
+      const source = await service.create(sourceDto);
+      const matching = await service.create(createSubmissionDto());
+      const mismatchedDto = createSubmissionDto();
+      mismatchedDto.type = SubmissionType.FILE;
+      mismatchedDto.isTemplate = true;
+      const mismatched = await service.create(mismatchedDto);
+
+      await expect(
+        service.applyMultiSubmission({
+          submissionToApply: source.id,
+          submissionIds: [matching.id, mismatched.id],
+          merge,
+        }),
+      ).rejects.toThrow(BadRequestException);
+
+      for (const record of [matching, mismatched]) {
+        const unchangedRecord = await service.findByIdOrThrow(record.id);
+        expect(unchangedRecord.options).toEqual(record.options);
+      }
+    },
+  );
 
   it('should apply multi submission merge', async () => {
     const account = await createAccount();

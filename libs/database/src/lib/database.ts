@@ -5,7 +5,10 @@ import { BetterSQLite3Database, drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { backupBeforePendingMigrations } from './migration-backup';
+import {
+    backupBeforeDataMigration,
+    backupBeforePendingMigrations,
+} from './migration-backup';
 import { RepositoryRegistry } from './repositories/base/repository-registry';
 import * as schema from './schemas';
 
@@ -14,7 +17,7 @@ export type PostyBirbDatabaseType = BetterSQLite3Database<typeof schema>;
 const migrationsFolder = IsTestEnvironment()
   ? join(__dirname.split('libs')[0], 'apps', 'postybirb', 'src', 'migrations')
   : join(__dirname, 'migrations');
-let db: PostyBirbDatabaseType | undefined;
+let db: (PostyBirbDatabaseType & { $client: Database.Database }) | undefined;
 
 /**
  * Apply pending migrations with foreign-key enforcement disabled on the
@@ -76,6 +79,13 @@ export function getDatabase() {
   }
 
   return db;
+}
+
+export function backupDatabaseBeforeDataMigration(): void {
+  if (!IsTestEnvironment()) {
+    const database = getDatabase();
+    backupBeforeDataMigration(database.$client, database.$client.name);
+  }
 }
 
 export function clearDatabase() {

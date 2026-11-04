@@ -1,18 +1,19 @@
-import {
-  CreateAccountDto,
-  CreateSubmissionDto,
-  CreateWebsiteOptionsDto,
-  DefaultDescriptionValue,
-  DefaultTagValue,
-  SubmissionRating,
-  SubmissionType,
-  TipTapNode,
-} from '@postybirb/types';
 import { ConflictException } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { clearDatabase, PostRepository } from '@postybirb/database';
+import { clearDatabase, PostRepository, WebsiteOptionsRepository } from '@postybirb/database';
+import {
+    CreateAccountDto,
+    CreateSubmissionDto,
+    CreateWebsiteOptionsDto,
+    DefaultDescriptionValue,
+    DefaultTagValue,
+    SubmissionRating,
+    SubmissionType,
+    TipTapNode,
+} from '@postybirb/types';
 
+import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountModule } from '../account/account.module';
 import { AccountService } from '../account/account.service';
 
@@ -36,6 +37,7 @@ import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { WebsitesModule } from '../websites/websites.module';
 
+import { WebsiteOptionsMigrationService } from './website-options-migration.service';
 import { WebsiteOptionsService } from './website-options.service';
 
 describe('WebsiteOptionsService', () => {
@@ -100,6 +102,7 @@ describe('WebsiteOptionsService', () => {
           WebsiteRegistryService,
           ValidationService,
           WebsiteOptionsService,
+          WebsiteOptionsMigrationService,
           {
             provide: SubmissionEventPublisher,
             useValue: { markChanged, markRemoved },
@@ -128,6 +131,122 @@ describe('WebsiteOptionsService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('baselines fresh data and copies outdated templates without blocking', async () => {
+    const account = await createAccount();
+    const templateDto = new CreateSubmissionDto();
+    templateDto.name = 'Versioned template';
+    templateDto.type = SubmissionType.FILE;
+    templateDto.isTemplate = true;
+    const template = await submissionService.create(templateDto);
+    const option = await service.create({
+      accountId: account.id,
+      submissionId: template.id,
+      data: {},
+    } as CreateWebsiteOptionsDto);
+    expect(option.migrationVersion).toBe(1);
+    expect(option.toDTO()).not.toHaveProperty('migrationVersion');
+    expect(await service.createOptionInsertObject(template, account.id, {}))
+      .toMatchObject({ migrationVersion: 1 });
+
+    const options = new WebsiteOptionsRepository();
+    const outdatedOption = await options.update(option.id, {
+      migrationVersion: 0,
+      data: { ...option.data, whoCanReply: 'mention' } as typeof option.data,
+    });
+    await submissionService.duplicate(template.id);
+    const copied = await options.findOne({
+      where: (entry, { and, eq, ne }) => and(
+        ne(entry.submissionId, template.id), eq(entry.accountId, account.id),
+      ),
+    });
+    expect(copied?.migrationVersion).toBe(0);
+
+    for (const sourceOptionId of [undefined, option.id]) {
+      const newDestination = await submissionService.create(templateDto);
+      const existingDestination = await submissionService.create(templateDto);
+      await service.create({
+        accountId: account.id,
+        submissionId: existingDestination.id,
+        data: {},
+      } as CreateWebsiteOptionsDto);
+      const applied = await submissionService.applyTemplateOptions({
+        targetSubmissionIds: [newDestination.id, existingDestination.id],
+        options: [{
+          accountId: account.id, sourceOptionId, data: outdatedOption.data,
+        }],
+        overrideTitle: false,
+        overrideDescription: false,
+      });
+      expect(applied).toMatchObject({ success: 2, failed: 0 });
+      for (const destination of [newDestination, existingDestination]) {
+        const copiedOption = await options.findOne({
+          where: (entry, { and, eq }) => and(
+            eq(entry.submissionId, destination.id), eq(entry.accountId, account.id),
+          ),
+        });
+        expect(copiedOption?.migrationVersion).toBe(outdatedOption.migrationVersion);
+      }
+    }
+
+    await accountService.update(account.id, {
+      name: account.name,
+      groups: account.groups,
+      defaultFileTemplateId: template.id,
+    });
+    expect(await module.get(AccountTemplateDefaultsService)
+      .resolveDefaults(account.id, SubmissionType.FILE))
+      .toMatchObject({ whoCanReply: 'mention' });
+
+    const target = await submissionService.create(templateDto);
+    await submissionService.applyOverridingTemplate(target.id, template.id);
+    const copiedRows = await options.find({
+      where: (entry, { eq }) => eq(entry.accountId, account.id),
+    });
+    expect(copiedRows).toHaveLength(7);
+    expect(copiedRows.every((entry) => entry.migrationVersion === 0)).toBe(true);
+
+    await service.onModuleInit();
+    for (const entry of await options.find({
+      where: (row, { eq }) => eq(row.accountId, account.id),
+    })) {
+      expect(entry).toMatchObject({
+        migrationVersion: 1, data: { whoCanReply: ['mention'] },
+      });
+    }
+
+    const currentSource = await options.findByIdOrThrow(option.id);
+    const olderDestination = await options.findOne({
+      where: (entry, { and, eq }) => and(
+        eq(entry.submissionId, target.id), eq(entry.accountId, account.id),
+      ),
+    });
+    await options.update(olderDestination!.id, { migrationVersion: 0 });
+    const freshDestination = await submissionService.create(templateDto);
+    expect(await submissionService.applyTemplateOptions({
+      targetSubmissionIds: [freshDestination.id, target.id],
+      options: [{
+        accountId: account.id,
+        sourceOptionId: option.id,
+        data: outdatedOption.data,
+      }],
+      overrideTitle: false,
+      overrideDescription: false,
+    })).toMatchObject({ success: 2, failed: 0 });
+    for (const [submissionId, migrationVersion] of [
+      [freshDestination.id, currentSource.migrationVersion],
+      [target.id, 0],
+    ] as const) {
+      const copiedOption = await options.findOne({
+        where: (entry, { and, eq }) => and(
+          eq(entry.submissionId, submissionId), eq(entry.accountId, account.id),
+        ),
+      });
+      expect(copiedOption).toMatchObject({
+        migrationVersion, data: { whoCanReply: ['mention'] },
+      });
+    }
   });
 
   it('should create entity', async () => {

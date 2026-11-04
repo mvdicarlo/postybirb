@@ -116,6 +116,78 @@ and `websiteDataStore` (in database).
 - [Description Parsing](./sections/description-parsing.md)
 - [Specifying User Input / UI Form Specification](./sections/defining-submission-data.md)
 
+## Migrating Stored Website Options
+
+Declare an append-only migration history on the concrete file or message option
+class when changing persisted field shapes. Migration metadata is server-only
+and separate from form-field decorators.
+
+```ts
+import { sql } from 'drizzle-orm';
+import { MigrateWebsiteOptions } from '../../../decorators/migrate-website-options.decorator';
+import { BaseWebsiteOptions } from '../../../models/base-website-options';
+
+@MigrateWebsiteOptions([
+  {
+    version: 1,
+    name: 'Convert reply permissions to an array',
+    where: ({ data }) => sql`json_type(${data}, '$.whoCanReply') = 'text'`,
+    migrate: (data) => {
+      if (typeof data.whoCanReply !== 'string') {
+        return { ...data };
+      }
+      return {
+        ...data,
+        whoCanReply: data.whoCanReply.split(',').filter(Boolean),
+      };
+    },
+  },
+])
+export class FooFileSubmission extends BaseWebsiteOptions {
+  whoCanReply: string[] = [];
+}
+```
+
+- Start at version `1` and append consecutive versions. Each bundle can change
+  any number of fields, including fields changed by earlier bundles. Never
+  reorder, remove, or repurpose a released version.
+- Return the complete next options object from a synchronous, pure `migrate`
+  function. Preserve unrelated fields and treat historical values as unknown;
+  do not fill in current model defaults or merge shared defaults here.
+- `where` is optional. It selects records needing a transformation; the runner
+  always adds website, submission-type, and previous-version restrictions.
+  Include every value needing conversion. Nonmatching records advance their
+  version directly in SQL without loading JSON or changing `updatedAt`.
+- Startup runs bundles in order and commits each record's data and version
+  together. A failed bundle leaves that record at its last successful version,
+  skips its later bundles, logs the failure, and retries next startup. Other
+  records and startup continue. Failed records are not blocked from posting.
+- Ordinary submissions, archived submissions, and templates are included.
+  Shared default options use `DefaultWebsiteOptions` and a separate null-account
+  scope. File and message model histories are independent.
+- Fresh options start at the current model version. Duplicates, server-side
+  template copies, and account defaults carry the source version without
+  blocking insertion. The template picker sends `sourceOptionId` so the server
+  copies stored data and its version together. Merges retain the lower source
+  or destination version; template payloads without a source ID start at zero.
+  Public create payloads are assumed to contain current-format client input;
+  runtime import normalization is not provided.
+- Migration histories are not implicitly inherited. Each concrete option class
+  owns its full history; explicitly reuse migration functions or bundle arrays
+  when several models need the same changes.
+- Model discovery calls existing model factories on uninitialized website
+  instances. Constructors and model factories must not require login, perform
+  I/O, or start background work; put lifecycle work in `onInitialize` instead.
+- Pending data migrations request a database backup using the existing backup
+  retention policy. Backup failures are logged without preventing startup.
+  Versions newer than the installed model are left untouched; there are no
+  downgrade migrations.
+
+`WebsiteOptionsMigrationService.runPendingMigrations()` is the reusable entry
+point. It returns counts of data updates, version-only advances, failures, and
+future-version records. Committed data changes use the existing submission
+projection notification, so connected clients receive refreshed options.
+
 ## Relevant Differences from V3 (PostyBirb+)
 
 - Each user account receives its own object instance so developers no longer

@@ -6,6 +6,7 @@ import { PostingActivityModule } from '../posting/posting-activity.module';
 import { SubmissionModule } from '../submission/submission.module';
 import { ValidationModule } from '../validation/validation.module';
 import { WebsitesModule } from '../websites/websites.module';
+import { WebsiteOptionsMigrationService } from './website-options-migration.service';
 import { WebsiteOptionsController } from './website-options.controller';
 import { WebsiteOptionsService } from './website-options.service';
 
@@ -19,8 +20,8 @@ import { WebsiteOptionsService } from './website-options.service';
     PostParsersModule,
     PostingActivityModule,
   ],
-  providers: [WebsiteOptionsService],
+  providers: [WebsiteOptionsService, WebsiteOptionsMigrationService],
   controllers: [WebsiteOptionsController],
-  exports: [WebsiteOptionsService],
+  exports: [WebsiteOptionsService, WebsiteOptionsMigrationService],
 })
 export class WebsiteOptionsModule {}

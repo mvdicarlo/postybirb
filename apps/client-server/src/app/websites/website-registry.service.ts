@@ -1,34 +1,40 @@
 import {
-  DynamicObject,
-  IAccount,
-  IAccountDto,
-  IWebsiteDefinitionDto,
-  OAuthRoutes,
-  OAuthWebsiteRequestDto,
-} from '@postybirb/types';
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleDestroy,
+    BadRequestException,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleDestroy,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  Account,
-  AccountRepository,
-  WebsiteDataRepository,
+    Account,
+    AccountRepository,
+    WebsiteDataRepository,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
+import {
+    DynamicObject,
+    IAccount,
+    IAccountDto,
+    IWebsiteDefinitionDto,
+    NULL_ACCOUNT_ID,
+    OAuthRoutes,
+    OAuthWebsiteRequestDto,
+    SubmissionType,
+} from '@postybirb/types';
 
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
 import { publishAccountStateChanged } from '../account/account.events';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import {
-  cloneWebsiteFileOptions,
-  validateWebsiteDecoratorProps,
+    getWebsiteOptionsMigrations,
+    WebsiteOptionsMigration,
+} from './decorators/migrate-website-options.decorator';
+import {
+    cloneWebsiteFileOptions,
+    validateWebsiteDecoratorProps,
 } from './decorators/website-decorator-props';
 
 import DefaultWebsite from './implementations/default/default.website';
@@ -38,6 +44,12 @@ import { OAuthWebsite } from './models/website-modifiers/oauth-website';
 import { UnknownWebsite } from './website';
 
 type WebsiteInstances = Record<string, Record<string, UnknownWebsite>>;
+
+export interface WebsiteOptionsModelDefinition {
+  readonly website: string;
+  readonly type: SubmissionType;
+  readonly migrations: readonly WebsiteOptionsMigration[];
+}
 
 /**
  * A registry that contains reference to all Websites.
@@ -51,6 +63,8 @@ export class WebsiteRegistryService implements OnModuleDestroy {
     {};
 
   private readonly websiteInstances: WebsiteInstances = {};
+
+  private optionModelDefinitions?: Promise<WebsiteOptionsModelDefinition[]>;
 
   private readonly accountRepository: AccountRepository;
 
@@ -338,6 +352,59 @@ export class WebsiteRegistryService implements OnModuleDestroy {
    */
   public getAvailableWebsites(): Class<UnknownWebsite>[] {
     return Object.values(this.availableWebsites);
+  }
+
+  public getOptionModelDefinitions(): Promise<WebsiteOptionsModelDefinition[]> {
+    this.optionModelDefinitions ??= this.discoverOptionModels();
+    return this.optionModelDefinitions;
+  }
+
+  public async getOptionModelVersion(
+    website: string,
+    type: SubmissionType,
+  ): Promise<number> {
+    const definitions = await this.getOptionModelDefinitions();
+    const definition = definitions.find(
+      (entry) => entry.website === website && entry.type === type,
+    );
+    if (!definition) {
+      throw new BadRequestException(
+        `Unable to discover ${type} option model for '${website}'`,
+      );
+    }
+    return definition.migrations.at(-1)?.version ?? 0;
+  }
+
+  private async discoverOptionModels(): Promise<WebsiteOptionsModelDefinition[]> {
+    const definitions: WebsiteOptionsModelDefinition[] = [];
+    for (const WebsiteCtor of [...this.getAvailableWebsites(), DefaultWebsite]) {
+      const website = WebsiteCtor === DefaultWebsite
+        ? NULL_ACCOUNT_ID
+        : WebsiteCtor.prototype.decoratedProps.metadata.name;
+      let instance: UnknownWebsite | undefined;
+      try {
+        instance = new WebsiteCtor(
+          new Account({ id: NULL_ACCOUNT_ID, name: 'Option models', website }),
+          this.platform,
+        );
+        for (const type of instance.getSupportedTypes()) {
+          definitions.push({
+            website,
+            type,
+            migrations: getWebsiteOptionsMigrations(
+              instance.getModelFor(type).constructor,
+            ),
+          });
+        }
+      } catch (error) {
+        this.logger.withError(error).error(
+          `Failed to discover option models for '${website}'`,
+        );
+      } finally {
+        await instance?.dispose();
+      }
+    }
+    return definitions;
   }
 
   public getWebsiteDefinitions(): IWebsiteDefinitionDto[] {

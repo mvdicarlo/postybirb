@@ -25,6 +25,7 @@ export const WebsiteOptionsSchema = sqliteTable('website-options', {
     }),
   data: text({ mode: 'json' }).notNull().$type<IWebsiteFormFields>(),
   isDefault: integer({ mode: 'boolean' }).notNull(),
+  migrationVersion: integer().notNull().default(0),
 });
 
 export const WebsiteOptionsRelations = relations(

@@ -43,6 +43,7 @@ import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { WebsitesModule } from '../websites/websites.module';
 
+import { WebsiteOptionsMigrationService } from './website-options-migration.service';
 import { WebsiteOptionsService } from './website-options.service';
 
 describe('Account default template association', () => {
@@ -93,6 +94,7 @@ describe('Account default template association', () => {
         WebsiteRegistryService,
         ValidationService,
         WebsiteOptionsService,
+        WebsiteOptionsMigrationService,
         SubmissionEventPublisher,
         WebsiteImplProvider,
         FileConverterService,
