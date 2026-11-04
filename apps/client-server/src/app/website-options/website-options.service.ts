@@ -63,6 +63,7 @@ import {
 import { ValidationService } from '../validation/validation.service';
 import { DefaultWebsiteOptions } from '../websites/models/default-website-options';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
+import { WebsiteOptionsMigrationService } from './website-options-migration.service';
 
 @Injectable()
 export class WebsiteOptionsService
@@ -82,12 +83,14 @@ export class WebsiteOptionsService
     private readonly websiteRegistry: WebsiteRegistryService,
     private readonly submissionEventPublisher: SubmissionEventPublisher,
     private readonly postingActivity: PostingActivityService,
+    private readonly websiteOptionsMigrationService: WebsiteOptionsMigrationService,
   ) {
     super(new WebsiteOptionsRepository());
   }
 
   async onModuleInit() {
     await this.migrateBlockNoteDescriptions();
+    await this.websiteOptionsMigrationService.runPendingMigrations();
   }
 
   @OnEvent(getEntityCrudEventNames(CUSTOM_SHORTCUT_EVENT_PREFIX).removed)
@@ -190,6 +193,7 @@ export class WebsiteOptionsService
     accountId: AccountId,
     data: DynamicObject,
     title?: string,
+    sourceVersion?: number,
   ): Promise<WebsiteOptions> {
     await this.postingActivity.assertSubmissionsMutable(submission.id);
     const option = await this.createOptionInsertObject(
@@ -197,6 +201,7 @@ export class WebsiteOptionsService
       accountId,
       data,
       title,
+      sourceVersion,
     );
     const result = await this.repository.insert(option);
     this.markChanged(submission.id);
@@ -216,13 +221,14 @@ export class WebsiteOptionsService
     accountId: AccountId,
     data: DynamicObject,
     title?: string,
+    sourceVersion?: number,
   ): Promise<Insert<'WebsiteOptionsSchema'>> {
     const account = await this.accountService.findByIdOrThrow(accountId);
     const isDefault = accountId === NULL_ACCOUNT_ID;
 
-    const userDefinedDefaultOptions = submission.isTemplate
+    const userDefinedDefaultOption = submission.isTemplate
       ? undefined
-      : await this.accountTemplateDefaultsService.resolveDefaults(
+      : await this.accountTemplateDefaultsService.resolveDefaultOption(
           accountId,
           submission.type,
         );
@@ -248,7 +254,7 @@ export class WebsiteOptionsService
     const mergedData: IWebsiteFormFields = {
       ...(isDefault ? new DefaultWebsiteOptions() : {}), // Only merge default options if this is the default option
       ...websiteData, // Merge default form fields
-      ...(userDefinedDefaultOptions ?? {}), // Merge template-sourced account defaults
+      ...(userDefinedDefaultOption?.data ?? {}), // Merge template-sourced account defaults
       ...data, // Merge user defined data
       title, // Override title (optional)
     };
@@ -264,6 +270,13 @@ export class WebsiteOptionsService
       accountId: account.id,
       data: mergedData,
       isDefault,
+      migrationVersion:
+        sourceVersion ??
+        userDefinedDefaultOption?.migrationVersion ??
+        (await this.websiteRegistry.getOptionModelVersion(
+          isDefault ? NULL_ACCOUNT_ID : account.website,
+          submission.type,
+        )),
     };
 
     return option;
@@ -325,6 +338,11 @@ export class WebsiteOptionsService
     };
 
     const isDefault = account.id === NULL_ACCOUNT_ID;
+    const defaultOption =
+      await this.accountTemplateDefaultsService.resolveDefaultOption(
+        account.id,
+        submission.type,
+      );
 
     // For non-default options, keep rating as undefined to represent
     // "inherit from default" mode unless explicitly provided in the DTO.
@@ -337,16 +355,29 @@ export class WebsiteOptionsService
       data: websiteData,
       accountId: account.id,
       isDefault,
+      migrationVersion:
+        defaultOption?.migrationVersion ??
+        (await this.websiteRegistry.getOptionModelVersion(
+          isDefault ? NULL_ACCOUNT_ID : account.website,
+          submission.type,
+        )),
     });
     this.markChanged(submission.id, true);
     return record;
   }
 
-  async update(id: EntityId, update: UpdateWebsiteOptionsDto) {
+  async update(
+    id: EntityId,
+    update: UpdateWebsiteOptionsDto,
+    sourceVersion?: number,
+  ) {
     this.logger.withMetadata(update).info(`Updating WebsiteOptions '${id}'`);
     const option = await this.repository.findByIdOrThrow(id);
     await this.postingActivity.assertSubmissionsMutable(option.submissionId);
-    const result = await this.repository.update(id, update);
+    const result = await this.repository.update(id, {
+      ...update,
+      ...(sourceVersion === undefined ? {} : { migrationVersion: sourceVersion }),
+    });
     this.markChanged(result.submissionId);
     return result;
   }
@@ -374,6 +405,10 @@ export class WebsiteOptionsService
       isDefault: true,
       submissionId: submission.id,
       accountId: NULL_ACCOUNT_ID,
+      migrationVersion: await this.websiteRegistry.getOptionModelVersion(
+        NULL_ACCOUNT_ID,
+        submission.type,
+      ),
       data: await this.populateDefaultWebsiteOptions(
         NULL_ACCOUNT_ID,
         submission.type,

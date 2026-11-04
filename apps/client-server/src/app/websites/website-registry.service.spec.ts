@@ -1,6 +1,7 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Account, AccountRepository, clearDatabase } from '@postybirb/database';
+import { NULL_ACCOUNT_ID, SubmissionType } from '@postybirb/types';
 import {
   ACCOUNT_STATE_CHANGED,
 } from '../account/account.events';
@@ -47,6 +48,25 @@ describe('WebsiteRegistryService', () => {
     const available = service.getAvailableWebsites();
     expect(available.length).toBeGreaterThanOrEqual(1);
     expect(available.filter((w) => w === TestWebsite)).toBeDefined();
+  });
+
+  it('discovers option models without initializing account instances', async () => {
+    const initialize = jest.spyOn(TestWebsite.prototype, 'onInitialize');
+    const login = jest.spyOn(TestWebsite.prototype, 'onLogin');
+    try {
+      const definitions = await service.getOptionModelDefinitions();
+      expect(definitions).toEqual(expect.arrayContaining([
+        expect.objectContaining({ website: 'test', type: SubmissionType.FILE }),
+        expect.objectContaining({ website: NULL_ACCOUNT_ID, type: SubmissionType.MESSAGE }),
+      ]));
+      expect(await service.getOptionModelDefinitions()).toBe(definitions);
+      expect(service.getAll()).toEqual([]);
+      expect(initialize).not.toHaveBeenCalled();
+      expect(login).not.toHaveBeenCalled();
+    } finally {
+      initialize.mockRestore();
+      login.mockRestore();
+    }
   });
 
   it('should successfully create website instance', async () => {

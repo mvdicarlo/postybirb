@@ -191,6 +191,9 @@ describe('migration integrity', () => {
       sqlite.prepare(`PRAGMA table_info("unit-of-work")`).all() as ColumnInfo[]
     ).map((column) => column.name);
     expect(unitOfWorkColumns).toContain('rateLimitedUntil');
+    expect(sqlite.prepare(
+      'SELECT migrationVersion FROM "website-options" WHERE id = ?',
+    ).get('wo1')).toEqual({ migrationVersion: 0 });
 
     sqlite.close();
   });

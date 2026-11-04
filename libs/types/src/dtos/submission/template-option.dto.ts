@@ -4,6 +4,7 @@ import { WebsiteFormFieldsSchema } from '../../schemas/website-form-fields.schem
 
 export const TemplateOptionSchema = z.object({
   accountId: z.string().min(1),
+  sourceOptionId: z.string().min(1).optional(),
   data: WebsiteFormFieldsSchema,
 });
 

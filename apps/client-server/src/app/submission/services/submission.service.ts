@@ -492,6 +492,12 @@ export class SubmissionService
       throw new BadRequestException('Template Id provided is not a template.');
     }
 
+    if (template.type !== submission.type) {
+      throw new BadRequestException(
+        'Cannot apply a template to a different submission type.',
+      );
+    }
+
     const defaultOption = submission.options.find(
       (option: WebsiteOptions) => option.accountId === NULL_ACCOUNT_ID,
     );
@@ -506,6 +512,7 @@ export class SubmissionService
             option.accountId,
             option.data,
             (option.isDefault ? defaultTitle : option?.data?.title) ?? '',
+            option.migrationVersion,
           ),
         ),
       );
@@ -720,6 +727,11 @@ export class SubmissionService
     const submissions = await this.repository.find({
       where: (submission, { inArray }) => inArray(submission.id, submissionIds),
     });
+    if (submissions.some((submission) => submission.type !== origin.type)) {
+      throw new BadRequestException(
+        'Cannot apply options to a different submission type.',
+      );
+    }
     await this.postingActivity.assertSubmissionsMutable(
       submissions.map((submission) => submission.id),
     );
@@ -733,15 +745,18 @@ export class SubmissionService
           if (existingOption) {
             // Don't overwrite set title
             const opts = { ...option.data, title: existingOption.data.title };
-            await this.websiteOptionsService.update(existingOption.id, {
-              data: opts,
-            });
+            await this.websiteOptionsService.update(
+              existingOption.id,
+              { data: opts },
+              option.migrationVersion,
+            );
           } else {
             await this.websiteOptionsService.createOption(
               submission,
               option.accountId,
               option.data,
               option.isDefault ? undefined : option.data.title,
+              option.migrationVersion,
             );
           }
         }
@@ -766,6 +781,7 @@ export class SubmissionService
             option.accountId,
             opts,
             option.isDefault ? defaultTitle : option.data.title,
+            option.migrationVersion,
           );
         }
       }
@@ -813,8 +829,22 @@ export class SubmissionService
             (o) => o.accountId === templateOption.accountId,
           );
 
-          // Prepare the data to apply
-          const dataToApply = { ...templateOption.data };
+          const sourceOption = templateOption.sourceOptionId
+            ? await this.websiteOptionsService.findByIdOrThrow(
+                templateOption.sourceOptionId,
+              )
+            : undefined;
+          if (
+            sourceOption &&
+            (sourceOption.accountId !== templateOption.accountId ||
+              sourceOption.submission.type !== submission.type)
+          ) {
+            throw new BadRequestException(
+              'Source options must match the account and submission type.',
+            );
+          }
+          const sourceVersion = sourceOption?.migrationVersion ?? 0;
+          const dataToApply = { ...(sourceOption?.data ?? templateOption.data) };
 
           // Handle title override: only replace if overrideTitle is true AND template has non-empty title
           if (!overrideTitle || !dataToApply.title?.trim()) {
@@ -835,9 +865,11 @@ export class SubmissionService
               ...existingOption.data,
               ...dataToApply,
             };
-            await this.websiteOptionsService.update(existingOption.id, {
-              data: mergedData,
-            });
+            await this.websiteOptionsService.update(
+              existingOption.id,
+              { data: mergedData },
+              Math.min(existingOption.migrationVersion, sourceVersion),
+            );
           } else {
             // Create new option - only pass title if it exists in dataToApply
             await this.websiteOptionsService.createOption(
@@ -845,6 +877,7 @@ export class SubmissionService
               templateOption.accountId,
               dataToApply,
               'title' in dataToApply ? dataToApply.title : undefined,
+              sourceVersion,
             );
           }
         }
@@ -916,6 +949,7 @@ export class SubmissionService
         ...option,
         id: undefined,
         submissionId: newSubmission.id,
+        migrationVersion: option.migrationVersion,
       }));
       await ctx.getDb().insert(WebsiteOptionsSchema).values(optionValues);
 

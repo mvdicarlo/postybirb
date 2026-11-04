@@ -220,6 +220,7 @@ export function TemplatePickerModal({
 
         return {
           accountId: opt.accountId as AccountId,
+          sourceOptionId: opt.id,
           data: data as IWebsiteFormFields,
         };
       });

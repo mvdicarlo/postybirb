@@ -37,6 +37,7 @@ import { TagConvertersService } from '../tag-converters/tag-converters.service';
 import { UserConvertersService } from '../user-converters/user-converters.service';
 import { ValidationService } from '../validation/validation.service';
 import { WebsiteOptionsService } from '../website-options/website-options.service';
+import { WebsiteOptionsMigrationService } from '../website-options/website-options-migration.service';
 import { WebsiteImplProvider } from '../websites/implementations/provider';
 import { WebsiteRegistryService } from '../websites/website-registry.service';
 import { FileService } from './file.service';
@@ -125,6 +126,7 @@ describe('FileService', () => {
         AccountService,
         WebsiteRegistryService,
         WebsiteOptionsService,
+        WebsiteOptionsMigrationService,
         SubmissionEventPublisher,
         WebsiteImplProvider,
         PostParsersService,
