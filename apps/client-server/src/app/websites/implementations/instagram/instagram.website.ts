@@ -11,7 +11,6 @@ import {
   SimpleValidationResult,
 } from '@postybirb/types';
 import { calculateImageResize } from '@postybirb/utils/file-type';
-import { v4 as uuidv4 } from 'uuid';
 import { CancellationToken } from '../../../posting/cancellation-token';
 import { PostingFile } from '../../../posting/models/posting-file';
 import FileSize from '../../../utils/filesize.util';
@@ -20,13 +19,9 @@ import { CustomLoginFlow } from '../../decorators/login-flow.decorator';
 import { SupportsFiles } from '../../decorators/supports-files.decorator';
 import { SupportsUsernameShortcut } from '../../decorators/supports-username-shortcut.decorator';
 import { WebsiteMetadata } from '../../decorators/website-metadata.decorator';
-import { DataPropertyAccessibility } from '../../models/data-property-accessibility';
 import { FileWebsite } from '../../models/website-modifiers/file-website';
 import { Website } from '../../website';
-import {
-  InstagramApiService,
-  retrieveOAuthCode,
-} from './instagram-api-service/instagram-api-service';
+import { InstagramApiService } from './instagram-api-service/instagram-api-service';
 import { InstagramBlobService } from './instagram-blob-service/instagram-blob-service';
 import { InstagramFileSubmission } from './models/instagram-file-submission';
 
@@ -66,19 +61,19 @@ export default class Instagram
 {
   protected BASE_URL = 'https://www.instagram.com';
 
-  public externallyAccessibleWebsiteDataProperties: DataPropertyAccessibility<InstagramAccountData> =
-    {
-      appId: true,
-      appSecret: true,
-      accessToken: false,
-      apiType: true,
-      tokenExpiry: true,
-      igUserId: false,
-      igUsername: true,
-    };
+  public externallyAccessibleWebsiteDataProperties = {
+    // Older accounts may still have these credentials stored.
+    appId: false,
+    appSecret: false,
+    accessToken: false,
+    apiType: true,
+    tokenExpiry: true,
+    igUserId: false,
+    igUsername: true,
+  };
 
   // ========================================================================
-  // OAuth Route Handlers
+  // Authentication Route Handlers
   // ========================================================================
 
   public onAuthRoute: OAuthRouteHandlers<InstagramOAuthRoutes> = {
@@ -105,9 +100,7 @@ export default class Instagram
         const igAccount =
           await InstagramApiService.getInstagramBusinessAccount(token);
 
-        const current = this.websiteDataStore.getData();
         const loginState = await this.login({
-          ...current,
           accessToken: token,
           apiType: igAccount.apiType,
           tokenExpiry: undefined,
@@ -130,110 +123,6 @@ export default class Instagram
           this.websiteDataStore.getData().accessToken,
         );
         this.logger.error('Instagram token login failed', error);
-        return {
-          success: false,
-          message: error.message,
-        };
-      }
-    },
-
-    setAppCredentials: async ({ appId, appSecret }) => {
-      const current = this.websiteDataStore.getData();
-      await this.setWebsiteData({
-        ...(current as InstagramAccountData),
-        appId,
-        appSecret,
-      });
-      return { success: true };
-    },
-
-    getAuthUrl: async ({ redirectUri }) => {
-      const { appId } = this.websiteDataStore.getData();
-      if (!appId) {
-        return {
-          success: false,
-          message: 'App ID must be set before generating auth URL',
-        };
-      }
-
-      const state = uuidv4();
-      const url = InstagramApiService.getAuthUrl(appId, redirectUri, state);
-      return { success: true, url, state };
-    },
-
-    retrieveCode: async ({ state }) => {
-      if (!state) {
-        return { success: false, message: 'State parameter is required' };
-      }
-
-      const code = retrieveOAuthCode(state);
-      if (code) {
-        return { success: true, code };
-      }
-
-      return { success: false, message: 'No code available yet' };
-    },
-
-    exchangeCode: async ({ code, redirectUri }) => {
-      const { appId, appSecret } = this.websiteDataStore.getData();
-      if (!appId || !appSecret) {
-        return { success: false, message: 'App credentials are not set' };
-      }
-      const secrets = [appSecret, code];
-
-      try {
-        // Step 1: Exchange code for short-lived token
-        const tokenResult = await InstagramApiService.exchangeCodeForToken(
-          appId,
-          appSecret,
-          code,
-          redirectUri,
-        );
-        secrets.push(tokenResult.accessToken);
-
-        // Step 2: Exchange for long-lived token
-        const longLived = await InstagramApiService.getLongLivedToken(
-          appSecret,
-          tokenResult.accessToken,
-        );
-        secrets.push(longLived.accessToken);
-
-        // Step 3: Discover Instagram Business account
-        const igAccount = await InstagramApiService.getInstagramBusinessAccount(
-          longLived.accessToken,
-        );
-
-        // Calculate token expiry
-        const tokenExpiry = new Date(
-          Date.now() + longLived.expiresIn * 1000,
-        ).toISOString();
-
-        // Store everything
-        const current = this.websiteDataStore.getData();
-        await this.setWebsiteData({
-          ...(current as InstagramAccountData),
-          accessToken: longLived.accessToken,
-          apiType: igAccount.apiType,
-          tokenExpiry,
-          igUserId: igAccount.igUserId,
-          igUsername: igAccount.igUsername,
-        });
-
-        await this.login();
-
-        return {
-          success: true,
-          igUsername: igAccount.igUsername,
-          igUserId: igAccount.igUserId,
-          tokenExpiry,
-        };
-      } catch (e) {
-        const error = InstagramApiService.sanitizeError(
-          e,
-          ...secrets,
-          this.websiteDataStore.getData().accessToken,
-        );
-        this.logger.error('Instagram OAuth exchange failed', error);
         return {
           success: false,
           message: error.message,
