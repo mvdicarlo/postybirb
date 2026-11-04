@@ -31,7 +31,6 @@ export class BlueskySubmissionPartTransformer extends BaseSubmissionPartTransfor
       contentWarning: this.convertContentWarning(legacyData.spoilerText),
       labelRating: legacyData.label_rating ?? '',
       replyToUrl: legacyData.replyToUrl,
-      whoCanReply: whoCanReply ?? '',
       whoCanReplyConfigurable,
       whoCanReplyGlobal,
     } satisfies Partial<BlueskyFileSubmission> as IWebsiteFormFields;
