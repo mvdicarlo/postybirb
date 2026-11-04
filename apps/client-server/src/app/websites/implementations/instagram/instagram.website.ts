@@ -93,6 +93,13 @@ export default class Instagram
       if (!token || /^Bearer$/i.test(token)) {
         return { success: false, message: 'An access token is required' };
       }
+      if (!/^[A-Za-z0-9._~+/-]+=*$/.test(token)) {
+        return {
+          success: false,
+          message:
+            'Access token contains invalid characters. Paste only the token, with or without the Bearer prefix.',
+        };
+      }
 
       try {
         const igAccount =
@@ -117,11 +124,15 @@ export default class Instagram
 
         return { success: true, ...igAccount };
       } catch (e) {
-        this.logger.error('Instagram token login failed', e);
+        const error = InstagramApiService.sanitizeError(
+          e,
+          token,
+          this.websiteDataStore.getData().accessToken,
+        );
+        this.logger.error('Instagram token login failed', error);
         return {
           success: false,
-          message:
-            e instanceof Error ? e.message : 'Failed to log in to Instagram',
+          message: error.message,
         };
       }
     },
@@ -168,6 +179,7 @@ export default class Instagram
       if (!appId || !appSecret) {
         return { success: false, message: 'App credentials are not set' };
       }
+      const secrets = [appSecret, code];
 
       try {
         // Step 1: Exchange code for short-lived token
@@ -177,12 +189,14 @@ export default class Instagram
           code,
           redirectUri,
         );
+        secrets.push(tokenResult.accessToken);
 
         // Step 2: Exchange for long-lived token
         const longLived = await InstagramApiService.getLongLivedToken(
           appSecret,
           tokenResult.accessToken,
         );
+        secrets.push(longLived.accessToken);
 
         // Step 3: Discover Instagram Business account
         const igAccount = await InstagramApiService.getInstagramBusinessAccount(
@@ -214,10 +228,15 @@ export default class Instagram
           tokenExpiry,
         };
       } catch (e) {
-        this.logger.error('Instagram OAuth exchange failed', e);
+        const error = InstagramApiService.sanitizeError(
+          e,
+          ...secrets,
+          this.websiteDataStore.getData().accessToken,
+        );
+        this.logger.error('Instagram OAuth exchange failed', error);
         return {
           success: false,
-          message: e instanceof Error ? e.message : 'Failed to complete OAuth',
+          message: error.message,
         };
       }
     },
@@ -234,10 +253,12 @@ export default class Instagram
             'Unified Login tokens cannot be refreshed with Instagram Login. Generate a replacement token in the Meta App Dashboard and log in again.',
         };
       }
+      let refreshedToken: string | undefined;
 
       try {
         const result =
           await InstagramApiService.refreshLongLivedToken(accessToken);
+        refreshedToken = result.accessToken;
         const tokenExpiry = new Date(
           Date.now() + result.expiresIn * 1000,
         ).toISOString();
@@ -251,10 +272,15 @@ export default class Instagram
 
         return { success: true, tokenExpiry };
       } catch (e) {
-        this.logger.error('Token refresh failed', e);
+        const error = InstagramApiService.sanitizeError(
+          e,
+          accessToken,
+          refreshedToken,
+        );
+        this.logger.error('Token refresh failed', error);
         return {
           success: false,
-          message: e instanceof Error ? e.message : 'Failed to refresh token',
+          message: error.message,
         };
       }
     },
@@ -288,7 +314,10 @@ export default class Instagram
         try {
           await this.onAuthRoute.refreshToken({} as never);
         } catch (e) {
-          this.logger.warn('Auto-refresh failed', e);
+          this.logger.warn(
+            'Auto-refresh failed',
+            InstagramApiService.sanitizeError(e, data.accessToken),
+          );
         }
       }
     }
@@ -442,10 +471,11 @@ export default class Instagram
         .withAdditionalInfo(publishResult)
         .withSourceUrl(permalink || `${this.BASE_URL}/p/${publishResult.id}/`);
     } catch (e) {
-      this.logger.error('Instagram post failed', e);
+      const error = InstagramApiService.sanitizeError(e, accessToken);
+      this.logger.error('Instagram post failed', error);
       return PostResponse.fromWebsite(this)
-        .withException(e)
-        .withAdditionalInfo(e);
+        .withException(error)
+        .withAdditionalInfo(error);
     }
   }
 

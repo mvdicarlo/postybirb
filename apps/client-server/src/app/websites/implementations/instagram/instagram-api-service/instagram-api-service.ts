@@ -101,6 +101,39 @@ export class InstagramApiService {
     return apiType === 'unified' ? UNIFIED_GRAPH_API_BASE : GRAPH_API_BASE;
   }
 
+  static sanitizeError(
+    error: unknown,
+    ...secrets: (string | undefined)[]
+  ): Error {
+    const values = secrets
+      .filter((secret): secret is string => !!secret)
+      .flatMap((secret) => [
+        secret,
+        encodeURIComponent(Buffer.from(secret).toString('utf8')),
+        new URLSearchParams({ token: secret })
+          .toString()
+          .slice('token='.length),
+      ])
+      .sort((a, b) => b.length - a.length);
+    const redact = (value: string) =>
+      values.reduce(
+        (text, secret) => text.split(secret).join('[REDACTED]'),
+        value,
+      );
+    const original =
+      error instanceof Error
+        ? error
+        : new Error(
+            typeof error === 'string' ? error : 'Instagram request failed',
+          );
+
+    // Do not copy causes or request metadata that may contain credentials.
+    const sanitized = new Error(redact(original.message));
+    sanitized.name = redact(original.name);
+    sanitized.stack = original.stack ? redact(original.stack) : undefined;
+    return sanitized;
+  }
+
   // ========================================================================
   // OAuth Flow
   // ========================================================================
@@ -157,10 +190,13 @@ export class InstagramApiService {
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
-      InstagramApiService.logger.error('Token exchange failed', data.error);
-      throw new Error(
-        data.error.message || 'Failed to exchange code for token',
+      const error = InstagramApiService.sanitizeError(
+        new Error(data.error.message || 'Failed to exchange code for token'),
+        appSecret,
+        code,
       );
+      InstagramApiService.logger.error('Token exchange failed', error);
+      throw error;
     }
 
     return {
@@ -188,11 +224,16 @@ export class InstagramApiService {
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
+      const error = InstagramApiService.sanitizeError(
+        new Error(data.error.message || 'Failed to get long-lived token'),
+        shortLivedToken,
+        appSecret,
+      );
       InstagramApiService.logger.error(
         'Long-lived token exchange failed',
-        data.error,
+        error,
       );
-      throw new Error(data.error.message || 'Failed to get long-lived token');
+      throw error;
     }
 
     return {
@@ -218,8 +259,12 @@ export class InstagramApiService {
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
-      InstagramApiService.logger.error('Token refresh failed', data.error);
-      throw new Error(data.error.message || 'Failed to refresh token');
+      const error = InstagramApiService.sanitizeError(
+        new Error(data.error.message || 'Failed to refresh token'),
+        accessToken,
+      );
+      InstagramApiService.logger.error('Token refresh failed', error);
+      throw error;
     }
 
     return {
@@ -371,11 +416,15 @@ export class InstagramApiService {
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
+      const error = InstagramApiService.sanitizeError(
+        new Error(data.error.message || 'Failed to create image container'),
+        accessToken,
+      );
       InstagramApiService.logger.error(
         'Failed to create image container',
-        data.error,
+        error,
       );
-      throw new Error(data.error.message || 'Failed to create image container');
+      throw error;
     }
 
     return { id: data.id };
@@ -410,13 +459,15 @@ export class InstagramApiService {
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
+      const error = InstagramApiService.sanitizeError(
+        new Error(data.error.message || 'Failed to create carousel container'),
+        accessToken,
+      );
       InstagramApiService.logger.error(
         'Failed to create carousel container',
-        data.error,
+        error,
       );
-      throw new Error(
-        data.error.message || 'Failed to create carousel container',
-      );
+      throw error;
     }
 
     return { id: data.id };
@@ -479,7 +530,11 @@ export class InstagramApiService {
           break;
         default:
           InstagramApiService.logger.warn(
-            `Unknown container status: ${status}`,
+            'Unknown container status',
+            InstagramApiService.sanitizeError(
+              new Error(String(status)),
+              accessToken,
+            ),
           );
       }
 
@@ -516,8 +571,12 @@ export class InstagramApiService {
     const data = (await response.json()) as DynamicObject;
 
     if (data.error) {
-      InstagramApiService.logger.error('Failed to publish media', data.error);
-      throw new Error(data.error.message || 'Failed to publish media');
+      const error = InstagramApiService.sanitizeError(
+        new Error(data.error.message || 'Failed to publish media'),
+        accessToken,
+      );
+      InstagramApiService.logger.error('Failed to publish media', error);
+      throw error;
     }
 
     return { id: data.id };
@@ -539,7 +598,10 @@ export class InstagramApiService {
       if (data.error) {
         InstagramApiService.logger.warn(
           'Failed to get media permalink',
-          data.error,
+          InstagramApiService.sanitizeError(
+            new Error(data.error.message || 'Failed to get media permalink'),
+            accessToken,
+          ),
         );
         return undefined;
       }
