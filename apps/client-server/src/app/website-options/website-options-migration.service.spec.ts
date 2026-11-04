@@ -1,28 +1,28 @@
 import {
-  Account,
-  AccountRepository,
-  clearDatabase,
-  getDatabase,
-  Submission,
-  SubmissionRepository,
-  WebsiteOptionsRepository,
-  WebsiteOptionsSchema,
+    Account,
+    AccountRepository,
+    clearDatabase,
+    getDatabase,
+    Submission,
+    SubmissionRepository,
+    WebsiteOptionsRepository,
+    WebsiteOptionsSchema,
 } from '@postybirb/database';
 import {
-  IWebsiteFormFields,
-  NULL_ACCOUNT_ID,
-  SubmissionType,
+    IWebsiteFormFields,
+    NULL_ACCOUNT_ID,
+    SubmissionType,
 } from '@postybirb/types';
 import { eq, sql } from 'drizzle-orm';
 import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import {
-  getWebsiteOptionsMigrations,
-  MigrateWebsiteOptions,
+    getWebsiteOptionsMigrations,
+    MigrateWebsiteOptions,
 } from '../websites/decorators/migrate-website-options.decorator';
 import { TestFileSubmission } from '../websites/implementations/test/models/test-file-submission';
 import {
-  WebsiteOptionsModelDefinition,
-  WebsiteRegistryService,
+    WebsiteOptionsModelDefinition,
+    WebsiteRegistryService,
 } from '../websites/website-registry.service';
 import { WebsiteOptionsMigrationService } from './website-options-migration.service';
 

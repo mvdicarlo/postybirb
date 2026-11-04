@@ -1,4 +1,23 @@
 import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import {
+  Account,
+  CustomShortcutSchema,
+  Insert,
+  Submission,
+  SubmissionRepository,
+  WebsiteOptions,
+  WebsiteOptionsRepository,
+  WebsiteOptionsSchema,
+} from '@postybirb/database';
+import {
   AccountId,
   CreateWebsiteOptionsDto,
   Description,
@@ -21,25 +40,6 @@ import {
   ValidateWebsiteOptionsDto,
   ValidationResult,
 } from '@postybirb/types';
-import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleInit,
-} from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import {
-  Account,
-  CustomShortcutSchema,
-  Insert,
-  Submission,
-  SubmissionRepository,
-  WebsiteOptions,
-  WebsiteOptionsRepository,
-  WebsiteOptionsSchema,
-} from '@postybirb/database';
 import { eq as equals, sql } from 'drizzle-orm';
 
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';

@@ -1,17 +1,17 @@
-import {
-  CreateAccountDto,
-  CreateSubmissionDto,
-  CreateWebsiteOptionsDto,
-  DefaultDescriptionValue,
-  DefaultTagValue,
-  SubmissionRating,
-  SubmissionType,
-  TipTapNode,
-} from '@postybirb/types';
 import { ConflictException } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { clearDatabase, PostRepository, WebsiteOptionsRepository } from '@postybirb/database';
+import {
+    CreateAccountDto,
+    CreateSubmissionDto,
+    CreateWebsiteOptionsDto,
+    DefaultDescriptionValue,
+    DefaultTagValue,
+    SubmissionRating,
+    SubmissionType,
+    TipTapNode,
+} from '@postybirb/types';
 
 import { AccountTemplateDefaultsService } from '../account/account-template-defaults.service';
 import { AccountModule } from '../account/account.module';

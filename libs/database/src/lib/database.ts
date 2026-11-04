@@ -6,8 +6,8 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import {
-  backupBeforeDataMigration,
-  backupBeforePendingMigrations,
+    backupBeforeDataMigration,
+    backupBeforePendingMigrations,
 } from './migration-backup';
 import { RepositoryRegistry } from './repositories/base/repository-registry';
 import * as schema from './schemas';

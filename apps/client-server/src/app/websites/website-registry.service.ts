@@ -1,41 +1,41 @@
 import {
-  DynamicObject,
-  IAccount,
-  IAccountDto,
-  IWebsiteDefinitionDto,
-  NULL_ACCOUNT_ID,
-  OAuthRoutes,
-  OAuthWebsiteRequestDto,
-  SubmissionType,
-} from '@postybirb/types';
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-  OnModuleDestroy,
+    BadRequestException,
+    Inject,
+    Injectable,
+    NotFoundException,
+    OnModuleDestroy,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  Account,
-  AccountRepository,
-  WebsiteDataRepository,
+    Account,
+    AccountRepository,
+    WebsiteDataRepository,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { PlatformService } from '@postybirb/platform';
+import {
+    DynamicObject,
+    IAccount,
+    IAccountDto,
+    IWebsiteDefinitionDto,
+    NULL_ACCOUNT_ID,
+    OAuthRoutes,
+    OAuthWebsiteRequestDto,
+    SubmissionType,
+} from '@postybirb/types';
 
 import { IsTestEnvironment } from '@postybirb/utils/common';
 import { Class } from 'type-fest';
 import { publishAccountStateChanged } from '../account/account.events';
 import { WEBSITE_IMPLEMENTATIONS } from '../constants';
 import {
-  cloneWebsiteFileOptions,
-  validateWebsiteDecoratorProps,
-} from './decorators/website-decorator-props';
-import {
-  getWebsiteOptionsMigrations,
-  WebsiteOptionsMigration,
+    getWebsiteOptionsMigrations,
+    WebsiteOptionsMigration,
 } from './decorators/migrate-website-options.decorator';
+import {
+    cloneWebsiteFileOptions,
+    validateWebsiteDecoratorProps,
+} from './decorators/website-decorator-props';
 
 import DefaultWebsite from './implementations/default/default.website';
 import { FileWebsiteKey } from './models/website-modifiers/file-website';

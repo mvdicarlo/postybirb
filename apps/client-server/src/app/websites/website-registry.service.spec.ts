@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Account, AccountRepository, clearDatabase } from '@postybirb/database';
 import { NULL_ACCOUNT_ID, SubmissionType } from '@postybirb/types';
 import {
-  ACCOUNT_STATE_CHANGED,
+    ACCOUNT_STATE_CHANGED,
 } from '../account/account.events';
 import { EntityUpdatedEvent } from '../common/events/entity-crud.events';
 import { noopPlatformProvider } from '../platform/testing/noop-platform-providers';

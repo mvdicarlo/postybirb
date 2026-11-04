@@ -1,31 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import {
-  AccountSchema,
-  backupDatabaseBeforeDataMigration,
-  getDatabase,
-  SubmissionSchema,
-  WebsiteOptionsSchema,
+    AccountSchema,
+    backupDatabaseBeforeDataMigration,
+    getDatabase,
+    SubmissionSchema,
+    WebsiteOptionsSchema,
 } from '@postybirb/database';
 import { Logger } from '@postybirb/logger';
 import { IWebsiteFormFields, NULL_ACCOUNT_ID } from '@postybirb/types';
 import {
-  and,
-  asc,
-  count,
-  eq,
-  gt,
-  inArray,
-  lt,
-  not,
-  SQL,
-  sql,
+    and,
+    asc,
+    count,
+    eq,
+    gt,
+    inArray,
+    lt,
+    not,
+    SQL,
+    sql,
 } from 'drizzle-orm';
 import { isPlainObject } from 'lodash';
 import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import { WebsiteOptionsMigration } from '../websites/decorators/migrate-website-options.decorator';
 import {
-  WebsiteOptionsModelDefinition,
-  WebsiteRegistryService,
+    WebsiteOptionsModelDefinition,
+    WebsiteRegistryService,
 } from '../websites/website-registry.service';
 
 export interface WebsiteOptionsMigrationSummary {
@@ -67,6 +67,7 @@ export class WebsiteOptionsMigrationService {
         return [];
       });
     for (const definition of definitions) {
+      // Undecorated models require no migration-related database queries.
       if (!definition.migrations.length) {
         continue;
       }
@@ -104,10 +105,13 @@ export class WebsiteOptionsMigrationService {
         if (!pending) {
           continue;
         }
+        // Request one backup before changes, shared across models and bundles.
         if (!this.backedUp) {
           backupDatabaseBeforeDataMigration();
           this.backedUp = true;
         }
+        // Finish each bundle, including version-only advances, before the next.
+        // Later predicates therefore see the data produced by earlier bundles.
         for (const migration of definition.migrations) {
           const result = this.runBundle(definition, migration, scope);
           summary.updated += result.updated;
@@ -132,6 +136,7 @@ export class WebsiteOptionsMigrationService {
   }
 
   private getScope(definition: WebsiteOptionsModelDefinition): SQL | undefined {
+    // Histories are separate per website/type; include templates and archives.
     const accountScope =
       definition.website === NULL_ACCOUNT_ID
         ? eq(WebsiteOptionsSchema.accountId, NULL_ACCOUNT_ID)
@@ -164,13 +169,17 @@ export class WebsiteOptionsMigrationService {
     scope: SQL | undefined,
   ): Pick<WebsiteOptionsMigrationSummary, 'updated' | 'advanced' | 'failed'> {
     const summary = { updated: 0, advanced: 0, failed: 0 };
+    // Requiring N - 1 prevents a record from skipping an earlier failed bundle.
     const previousVersion = eq(
       WebsiteOptionsSchema.migrationVersion,
       migration.version - 1,
     );
+    // SQL NULL counts as a nonmatch and takes the version-only path below.
     const predicate = migration.where
       ? sql`coalesce((${migration.where({ data: WebsiteOptionsSchema.data })}), 0)`
       : undefined;
+    // Use stable IDs: successful writes remove rows from the pending set,
+    // so offset pagination would skip records. The cursor also moves past failures.
     let cursor: string | undefined;
     let hasMore = true;
     while (hasMore) {
@@ -200,6 +209,7 @@ export class WebsiteOptionsMigrationService {
       for (const row of rows) {
         cursor = row.id;
         try {
+          // Commit data and progress together; a failure leaves both untouched.
           const result = this.db.transaction((tx) => {
             const original = JSON.stringify(row.data);
             const migrated = migration.migrate({
@@ -231,6 +241,7 @@ export class WebsiteOptionsMigrationService {
             }
           }
         } catch (error) {
+          // Keep the last successful stamp for retry on the next startup.
           summary.failed++;
           this.logger
             .withError(error)
@@ -239,11 +250,14 @@ export class WebsiteOptionsMigrationService {
             );
         }
       }
+      // Refresh clients only for committed data changes, not stamp-only updates.
       if (changedSubmissions.size) {
         this.submissionEventPublisher.markChanged([...changedSubmissions]);
       }
     }
     if (predicate) {
+      // Nonmatches also complete this bundle, without loading their JSON.
+      // The previous-version check still prevents bypassing any earlier bundle.
       summary.advanced += this.db
         .update(WebsiteOptionsSchema)
         .set({
