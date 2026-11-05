@@ -114,7 +114,6 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
         populate: 'options',
       },
     ],
-    minSelected: 1,
     showWhen: [['whoCanReplyGlobal', ['configurable']]],
   })
   whoCanReplyConfigurable?: string[];
