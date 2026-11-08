@@ -41,6 +41,10 @@ interface SofurrySubmissionResponse {
   publishedAt: string | null;
 }
 
+interface SofurryThumbnailResponse {
+  url: string;
+}
+
 interface SofurryUserResponse {
   handle: string;
   username: string;
@@ -301,8 +305,7 @@ export default class Sofurry
     cancellationToken.throwIfAborted();
     const finalizeRes = await new PostBuilder(this, cancellationToken)
       .asJson()
-      .withHeader('Authorization', `Bearer ${token}`)
-      .withHeader('Accept', 'application/json')
+      .withHeaders(this.getAuthHeaders(token))
       .setField('title', postData.options.title)
       .setField('category', category)
       .setField('type', type)
@@ -326,6 +329,23 @@ export default class Sofurry
       return PostResponse.fromWebsite(this)
         .withException(new Error('Failed to finalize submission'))
         .withAdditionalInfo(JSON.stringify(finalizeRes.body));
+    }
+
+    const thumbnail = files[0].thumbnailToPostFormat();
+    if (thumbnail) {
+      const setThumbnail = await new PostBuilder(this, cancellationToken)
+        .asMultipart()
+        .withHeaders(this.getAuthHeaders(token))
+        .addFile('file', thumbnail)
+        .send<
+          SofurryThumbnailResponse | SofurryErrorResponse
+        >(`${this.BASE_URL}/v1/submission/${submissionId}/thumbnail`);
+
+      if (setThumbnail.statusCode >= 400) {
+        return PostResponse.fromWebsite(this)
+          .withException(new Error('Failed to set thumbnail'))
+          .withAdditionalInfo(JSON.stringify(finalizeRes.body));
+      }
     }
 
     // Step 4: Insert submission into each selected folder.
