@@ -204,7 +204,11 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
   if (!selectedId) {
     return (
       <Box>
-        <AccountHeader websiteName={<Trans>Accounts</Trans>} accountName="" onClose={onClose} />
+        <AccountHeader
+          websiteName={<Trans>Accounts</Trans>}
+          accountName=""
+          onClose={onClose}
+        />
         <EmptyState
           preset="no-selection"
           message={<Trans>Select an account to log in</Trans>}
@@ -260,7 +264,11 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
   // Fallback for unknown login type
   return (
     <Box>
-      <AccountHeader websiteName="" accountName="" onClose={onClose} />
+      <AccountHeader
+        websiteName={<Trans>Accounts</Trans>}
+        accountName=""
+        onClose={onClose}
+      />
       <EmptyState
         preset="no-records"
         message={<Trans>Unknown login type</Trans>}
