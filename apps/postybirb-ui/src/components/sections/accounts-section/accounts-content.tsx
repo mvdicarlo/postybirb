@@ -15,9 +15,17 @@ import {
   Title,
 } from '@mantine/core';
 import type { CustomLoginType, UserLoginType } from '@postybirb/types';
-import { IconWorld, IconX } from '@tabler/icons-react';
-import { useCallback } from 'react';
-import { useNavigationStore } from '../../../stores';
+import {
+  IconLayoutSidebarLeftCollapse,
+  IconLayoutSidebarLeftExpand,
+  IconX,
+} from '@tabler/icons-react';
+import React, { useCallback } from 'react';
+import {
+  useNavigationStore,
+  useSubNavVisible,
+  useToggleSectionPanel,
+} from '../../../stores';
 import { useAccount } from '../../../stores/entity/account-store';
 import { useWebsite } from '../../../stores/entity/website-store';
 import { isAccountsViewState, type ViewState } from '../../../types/view-state';
@@ -34,7 +42,7 @@ interface AccountsContentProps {
  * Header component showing website and account info.
  */
 interface AccountHeaderProps {
-  websiteName: string;
+  websiteName: React.ReactNode;
   accountName: string;
   onClose: () => void;
 }
@@ -44,6 +52,9 @@ function AccountHeader({
   accountName,
   onClose,
 }: AccountHeaderProps) {
+  const { visible: isSectionPanelVisible } = useSubNavVisible();
+  const toggleSectionPanel = useToggleSectionPanel();
+
   return (
     <Box
       p="md"
@@ -59,7 +70,19 @@ function AccountHeader({
         }}
       >
         <Group>
-          <IconWorld size={24} stroke={1.5} />
+          <ActionIcon
+            c="dimmed"
+            variant="transparent"
+            onClick={toggleSectionPanel}
+            // eslint-disable-next-line lingui/no-unlocalized-strings
+            aria-label="Toggle section panel"
+          >
+            {isSectionPanelVisible ? (
+              <IconLayoutSidebarLeftCollapse size={18} />
+            ) : (
+              <IconLayoutSidebarLeftExpand size={18} />
+            )}
+          </ActionIcon>
           <Box>
             <Title order={4} lh={1.2}>
               {websiteName}
@@ -180,12 +203,17 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
   // No account selected
   if (!selectedId) {
     return (
-      <EmptyState
-        preset="no-selection"
-        message={<Trans>Select an account to log in</Trans>}
-        description={<Trans>Choose an account from the list on the left</Trans>}
-        size="lg"
-      />
+      <Box>
+        <AccountHeader websiteName={<Trans>Accounts</Trans>} accountName="" onClose={onClose} />
+        <EmptyState
+          preset="no-selection"
+          message={<Trans>Select an account to log in</Trans>}
+          description={
+            <Trans>Choose an account from the list on the left</Trans>
+          }
+          size="lg"
+        />
+      </Box>
     );
   }
 
@@ -231,13 +259,16 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
 
   // Fallback for unknown login type
   return (
-    <EmptyState
-      preset="no-records"
-      message={<Trans>Unknown login type</Trans>}
-      description={
-        <Trans>This website has an unsupported login configuration</Trans>
-      }
-      size="lg"
-    />
+    <Box>
+      <AccountHeader websiteName="" accountName="" onClose={onClose} />
+      <EmptyState
+        preset="no-records"
+        message={<Trans>Unknown login type</Trans>}
+        description={
+          <Trans>This website has an unsupported login configuration</Trans>
+        }
+        size="lg"
+      />
+    </Box>
   );
 }
