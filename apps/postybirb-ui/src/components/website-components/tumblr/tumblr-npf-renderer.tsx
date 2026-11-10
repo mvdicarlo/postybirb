@@ -1,10 +1,10 @@
 /* eslint-disable lingui/no-unlocalized-strings */
 import { Box, Image, Stack, Text, Title } from '@mantine/core';
 import {
-    NPFContentBlock,
-    NPFImageBlock,
-    NPFLinkBlock,
-    NPFTextBlock,
+  NPFContentBlock,
+  NPFImageBlock,
+  NPFLinkBlock,
+  NPFTextBlock,
 } from '@postybirb/types';
 import { descriptionPreviewRendererByWebsite } from '../../sections/submissions-section/submission-edit-card/account-selection/form/fields/description-preview-panel';
 import { SafeHtml } from '../../shared/safe-html/safe-html';
@@ -58,9 +58,9 @@ function renderTextBlock(block: NPFTextBlock): React.ReactNode {
   // Apply formatting in reverse order to preserve indices
   const sortedFormatting = [...formatting].sort((a, b) => b.start - a.start);
   for (const fmt of sortedFormatting) {
-    const before = text.slice(0, fmt.start);
-    const formattedText = text.slice(fmt.start, fmt.end);
-    const after = text.slice(fmt.end);
+    const before = sliceByCodePoints(text, 0, fmt.start);
+    const formattedText = sliceByCodePoints(text, fmt.start, fmt.end);
+    const after = sliceByCodePoints(text, fmt.end);
 
     let wrapped = formattedText;
     switch (fmt.type) {
@@ -234,4 +234,12 @@ function renderOtherBlock(block: NPFContentBlock): React.ReactNode {
     );
   }
   return null;
+}
+
+/**
+ * Tumblr NPF formatting indices are measured in Unicode code points,
+ * not UTF-16 code units (JS `.slice`). This slices by code points.
+ */
+function sliceByCodePoints(text: string, start: number, end?: number): string {
+  return Array.from(text).slice(start, end).join('');
 }

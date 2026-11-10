@@ -38,7 +38,7 @@ import {
 
 import { toError } from '@postybirb/utils/common';
 import { Mutex } from 'async-mutex';
-import { eq } from 'drizzle-orm';
+import { and, eq, notInArray, or } from 'drizzle-orm';
 import * as path from 'path';
 import { PostyBirbService } from '../../common/service/postybirb-service';
 import { MulterFileInfo } from '../../file/models/multer-file-info';
@@ -106,17 +106,22 @@ export class SubmissionService
    * re-authenticated.
    */
   private async recreateMissingDefaultOptions() {
-    const submissions = await this.repository.findAll();
+    const defaultSubmissionIds = this.repository.db
+      .select({ submissionId: WebsiteOptionsSchema.submissionId })
+      .from(WebsiteOptionsSchema)
+      .where(
+        or(
+          eq(WebsiteOptionsSchema.isDefault, true),
+          eq(WebsiteOptionsSchema.accountId, NULL_ACCOUNT_ID),
+        ),
+      );
+    const submissions = await this.repository.find({
+      where: notInArray(SubmissionSchema.id, defaultSubmissionIds),
+      with: { options: true, files: true },
+    });
     let recreated = 0;
 
     for (const submission of submissions) {
-      const hasDefault = (submission.options ?? []).some(
-        (option) => option.isDefault || option.accountId === NULL_ACCOUNT_ID,
-      );
-      if (hasDefault) {
-        continue;
-      }
-
       try {
         // eslint-disable-next-line no-await-in-loop
         await this.websiteOptionsService.createDefaultSubmissionOptions(
@@ -170,18 +175,42 @@ export class SubmissionService
    */
   private async normalizeOrders() {
     this.logger.info('Normalizing submission orders');
+    const rows = await this.repository.db
+      .select({
+        id: SubmissionSchema.id,
+        type: SubmissionSchema.type,
+        order: SubmissionSchema.order,
+      })
+      .from(SubmissionSchema)
+      .where(
+        and(
+          eq(SubmissionSchema.isTemplate, false),
+          eq(SubmissionSchema.isMultiSubmission, false),
+        ),
+      );
+    const updates: { id: SubmissionId; order: number }[] = [];
 
     for (const type of [SubmissionType.FILE, SubmissionType.MESSAGE]) {
-      const submissions = (await this.repository.findAll())
-        .filter((s) => s.type === type && !s.isTemplate && !s.isMultiSubmission)
+      const submissions = rows
+        .filter((submission) => submission.type === type)
         .sort((a, b) => a.order - b.order);
 
       for (let i = 0; i < submissions.length; i++) {
         if (submissions[i].order !== i) {
-          // eslint-disable-next-line no-await-in-loop
-          await this.repository.update(submissions[i].id, { order: i });
+          updates.push({ id: submissions[i].id, order: i });
         }
       }
+    }
+
+    if (updates.length > 0) {
+      this.repository.db.transaction((tx) => {
+        for (const { id, order } of updates) {
+          tx.update(SubmissionSchema)
+            .set({ order })
+            .where(eq(SubmissionSchema.id, id))
+            .run();
+        }
+      });
     }
 
     this.logger.info('Order normalization complete');
@@ -192,11 +221,10 @@ export class SubmissionService
    * (e.g., from a crash during creation).
    */
   private async cleanupUninitializedSubmissions() {
-    const all = await this.repository.find({
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      where: (submission, { eq }) => eq(submission.isInitialized, false),
-    });
-    const uninitialized = all.filter((s) => !s.isInitialized);
+    const uninitialized = await this.repository.db
+      .select({ id: SubmissionSchema.id })
+      .from(SubmissionSchema)
+      .where(eq(SubmissionSchema.isInitialized, false));
     if (uninitialized.length > 0) {
       const ids = uninitialized.map((s) => s.id);
       this.logger
@@ -286,13 +314,16 @@ export class SubmissionService
   }
 
   private async populateMultiSubmission(type: SubmissionType) {
-    const existing = await this.repository.findOne({
-      where: (submission, { eq: equals, and }) =>
+    const [existing] = await this.repository.db
+      .select({ id: SubmissionSchema.id })
+      .from(SubmissionSchema)
+      .where(
         and(
-          eq(submission.type, type),
-          equals(submission.isMultiSubmission, true),
+          eq(SubmissionSchema.type, type),
+          eq(SubmissionSchema.isMultiSubmission, true),
         ),
-    });
+      )
+      .limit(1);
     if (existing) {
       return;
     }
@@ -461,6 +492,12 @@ export class SubmissionService
       throw new BadRequestException('Template Id provided is not a template.');
     }
 
+    if (template.type !== submission.type) {
+      throw new BadRequestException(
+        'Cannot apply a template to a different submission type.',
+      );
+    }
+
     const defaultOption = submission.options.find(
       (option: WebsiteOptions) => option.accountId === NULL_ACCOUNT_ID,
     );
@@ -475,6 +512,7 @@ export class SubmissionService
             option.accountId,
             option.data,
             (option.isDefault ? defaultTitle : option?.data?.title) ?? '',
+            option.migrationVersion,
           ),
         ),
       );
@@ -689,6 +727,11 @@ export class SubmissionService
     const submissions = await this.repository.find({
       where: (submission, { inArray }) => inArray(submission.id, submissionIds),
     });
+    if (submissions.some((submission) => submission.type !== origin.type)) {
+      throw new BadRequestException(
+        'Cannot apply options to a different submission type.',
+      );
+    }
     await this.postingActivity.assertSubmissionsMutable(
       submissions.map((submission) => submission.id),
     );
@@ -702,15 +745,18 @@ export class SubmissionService
           if (existingOption) {
             // Don't overwrite set title
             const opts = { ...option.data, title: existingOption.data.title };
-            await this.websiteOptionsService.update(existingOption.id, {
-              data: opts,
-            });
+            await this.websiteOptionsService.update(
+              existingOption.id,
+              { data: opts },
+              option.migrationVersion,
+            );
           } else {
             await this.websiteOptionsService.createOption(
               submission,
               option.accountId,
               option.data,
               option.isDefault ? undefined : option.data.title,
+              option.migrationVersion,
             );
           }
         }
@@ -735,6 +781,7 @@ export class SubmissionService
             option.accountId,
             opts,
             option.isDefault ? defaultTitle : option.data.title,
+            option.migrationVersion,
           );
         }
       }
@@ -782,8 +829,22 @@ export class SubmissionService
             (o) => o.accountId === templateOption.accountId,
           );
 
-          // Prepare the data to apply
-          const dataToApply = { ...templateOption.data };
+          const sourceOption = templateOption.sourceOptionId
+            ? await this.websiteOptionsService.findByIdOrThrow(
+                templateOption.sourceOptionId,
+              )
+            : undefined;
+          if (
+            sourceOption &&
+            (sourceOption.accountId !== templateOption.accountId ||
+              sourceOption.submission.type !== submission.type)
+          ) {
+            throw new BadRequestException(
+              'Source options must match the account and submission type.',
+            );
+          }
+          const sourceVersion = sourceOption?.migrationVersion ?? 0;
+          const dataToApply = { ...(sourceOption?.data ?? templateOption.data) };
 
           // Handle title override: only replace if overrideTitle is true AND template has non-empty title
           if (!overrideTitle || !dataToApply.title?.trim()) {
@@ -804,9 +865,11 @@ export class SubmissionService
               ...existingOption.data,
               ...dataToApply,
             };
-            await this.websiteOptionsService.update(existingOption.id, {
-              data: mergedData,
-            });
+            await this.websiteOptionsService.update(
+              existingOption.id,
+              { data: mergedData },
+              Math.min(existingOption.migrationVersion, sourceVersion),
+            );
           } else {
             // Create new option - only pass title if it exists in dataToApply
             await this.websiteOptionsService.createOption(
@@ -814,6 +877,7 @@ export class SubmissionService
               templateOption.accountId,
               dataToApply,
               'title' in dataToApply ? dataToApply.title : undefined,
+              sourceVersion,
             );
           }
         }
@@ -885,6 +949,7 @@ export class SubmissionService
         ...option,
         id: undefined,
         submissionId: newSubmission.id,
+        migrationVersion: option.migrationVersion,
       }));
       await ctx.getDb().insert(WebsiteOptionsSchema).values(optionValues);
 

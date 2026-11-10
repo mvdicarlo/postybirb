@@ -1,44 +1,26 @@
-/* eslint-disable lingui/no-unlocalized-strings */
 import { Trans } from '@lingui/react/macro';
 import {
-    Alert,
-    Box,
-    Button,
-    Group,
-    Loader,
-    Paper,
-    PasswordInput,
-    Stack,
-    Stepper,
-    Text,
-    TextInput,
-    Title,
+  Alert,
+  Button,
+  PasswordInput,
+  Stack,
+  Text,
+  Title,
 } from '@mantine/core';
 import { InstagramAccountData, InstagramOAuthRoutes } from '@postybirb/types';
-import {
-    IconArrowLeft,
-    IconCheck,
-    IconKey,
-    IconLogin,
-    IconRefresh,
-} from '@tabler/icons-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { IconCheck } from '@tabler/icons-react';
+import { useEffect, useRef, useState } from 'react';
+import accountApi from '../../../api/account.api';
 import websitesApi from '../../../api/websites.api';
-import { showErrorNotification, showSuccessNotification } from '../../../utils';
-import type { WebviewTag } from '../../sections/accounts-section/webview-tag';
+import { showSuccessNotification } from '../../../utils';
 import {
-    createLoginHttpErrorHandler,
-    notifyLoginFailed,
-    notifyLoginSuccess,
+  createLoginHttpErrorHandler,
+  notifyLoginFailed,
+  notifyLoginSuccess,
 } from '../helpers';
 import { LoginViewContainer } from '../login-view-container';
 import type { LoginViewProps } from '../types';
-import {
-    getInstagramRedirectUri,
-    getInstagramRedirectUriError,
-    instagramCallbackPath,
-    InstagramSetupGuide,
-} from './instagram-setup-guide';
+import { InstagramSetupGuide } from './instagram-setup-guide';
 
 export default function InstagramLoginView(
   props: LoginViewProps<InstagramAccountData>,
@@ -46,179 +28,33 @@ export default function InstagramLoginView(
   const { account, data } = props;
   const { id } = account;
 
-  const [appId, setAppId] = useState(data?.appId ?? '');
-  const [appSecret, setAppSecret] = useState(data?.appSecret ?? '');
-  const [authUrl, setAuthUrl] = useState<string | undefined>(undefined);
-  const [isStoringKeys, setIsStoringKeys] = useState(false);
-  const [isGettingAuthUrl, setIsGettingAuthUrl] = useState(false);
-  const [isExchangingCode, setIsExchangingCode] = useState(false);
+  const [accessToken, setAccessToken] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [loggedInAs, setLoggedInAs] = useState<string | undefined>(undefined);
-  const [tokenExpiry, setTokenExpiry] = useState<string | undefined>(
-    data?.tokenExpiry,
-  );
-  const [keysStored, setKeysStored] = useState(false);
-  const [activeStep, setActiveStep] = useState(0);
-  const webviewRef = useRef<WebviewTag | null>(null);
-  const codeHandledRef = useRef(false);
-
-  const keysReady = appId.trim().length > 0 && appSecret.trim().length > 0;
-
-  const redirectUri = getInstagramRedirectUri();
-
-  // Reset all state when switching between accounts
+  const [isForgetting, setIsForgetting] = useState(false);
+  const [loggedInAs, setLoggedInAs] = useState(data?.igUsername);
+  const [tokenExpiry, setTokenExpiry] = useState(data?.tokenExpiry);
+  const [apiType, setApiType] = useState(data?.apiType);
   const prevIdRef = useRef(id);
+
   useEffect(() => {
     if (prevIdRef.current !== id) {
       prevIdRef.current = id;
-      setAppId(data?.appId ?? '');
-      setAppSecret(data?.appSecret ?? '');
-      setAuthUrl(undefined);
-      setIsStoringKeys(false);
-      setIsGettingAuthUrl(false);
-      setIsExchangingCode(false);
+      setAccessToken('');
+      setIsSubmitting(false);
       setIsRefreshing(false);
-      setLoggedInAs(data?.igUsername ? `@${data.igUsername}` : undefined);
+      setIsForgetting(false);
+      setLoggedInAs(data?.igUsername);
       setTokenExpiry(data?.tokenExpiry);
-      setKeysStored(!!(data?.appId && data?.appSecret));
-      setActiveStep(0);
-      webviewRef.current = null;
-      codeHandledRef.current = false;
+      setApiType(data?.apiType);
     }
   }, [id, data]);
 
-  // Sync from incoming data (e.g. after server-side changes)
   useEffect(() => {
-    if (data?.igUsername && !loggedInAs) {
-      setLoggedInAs(`@${data.igUsername}`);
-    }
-    if (data?.appId && data?.appSecret && !keysStored) {
-      setKeysStored(true);
-    }
-    if (data?.tokenExpiry) {
-      setTokenExpiry(data.tokenExpiry);
-    }
-  }, [
-    data?.igUsername,
-    data?.appId,
-    data?.appSecret,
-    data?.tokenExpiry,
-    loggedInAs,
-    keysStored,
-  ]);
-
-  const handleGoBack = () => {
-    if (activeStep === 2) {
-      setAuthUrl(undefined);
-      codeHandledRef.current = false;
-      setActiveStep(1);
-    } else if (activeStep === 1) {
-      setAuthUrl(undefined);
-      codeHandledRef.current = false;
-      setKeysStored(false);
-      setActiveStep(0);
-    }
-  };
-
-  const handleStartOver = () => {
-    setKeysStored(false);
-    setAuthUrl(undefined);
-    codeHandledRef.current = false;
-    setLoggedInAs(undefined);
-    setTokenExpiry(undefined);
-    setActiveStep(0);
-  };
-
-  // Exchange the authorization code for tokens
-  const doExchangeCode = useCallback(
-    (code: string) => {
-      if (!redirectUri) {
-        showErrorNotification(getInstagramRedirectUriError());
-        return;
-      }
-
-      if (isExchangingCode) return;
-      setIsExchangingCode(true);
-      websitesApi
-        .performOAuthStep<InstagramOAuthRoutes, 'exchangeCode'>(
-          id,
-          'exchangeCode',
-          { code, redirectUri },
-        )
-        .then((res) => {
-          if (res.success) {
-            notifyLoginSuccess(account);
-            setAuthUrl(undefined);
-            setActiveStep(3);
-            if (res.igUsername) {
-              setLoggedInAs(`@${res.igUsername}`);
-            }
-            if (res.tokenExpiry) {
-              setTokenExpiry(res.tokenExpiry);
-            }
-          } else {
-            notifyLoginFailed(res.message);
-            // Allow retrying
-            codeHandledRef.current = false;
-          }
-        })
-        .catch(
-          createLoginHttpErrorHandler(
-            <Trans>Failed to complete authorization</Trans>,
-          ),
-        )
-        .finally(() => setIsExchangingCode(false));
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [id, account, isExchangingCode],
-  );
-
-  // Listen for webview navigation to the callback URL to capture the code
-  useEffect(() => {
-    const webview = webviewRef.current;
-    if (!webview || !authUrl) return undefined;
-
-    const handleNavigate = (event: Electron.DidNavigateEvent) => {
-      if (codeHandledRef.current) return;
-
-      let url;
-      try {
-        url = new URL(event.url);
-      } catch {
-        // Not a valid URL, ignore
-      }
-
-      if (url?.pathname === instagramCallbackPath) {
-        const code = url.searchParams.get('code');
-        const error = url.searchParams.get('error');
-
-        if (code) {
-          codeHandledRef.current = true;
-          doExchangeCode(code);
-        } else if (error) {
-          const desc = url.searchParams.get('error_description') || error;
-          notifyLoginFailed(desc);
-        }
-      }
-    };
-
-    webview.addEventListener('did-navigate', handleNavigate);
-    return () => {
-      webview.removeEventListener('did-navigate', handleNavigate);
-    };
-  }, [authUrl, doExchangeCode]);
-
-  const formatExpiry = (iso: string) => {
-    try {
-      return new Date(iso).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    } catch {
-      return iso;
-    }
-  };
+    setLoggedInAs(data?.igUsername);
+    setTokenExpiry(data?.tokenExpiry);
+    setApiType(data?.apiType);
+  }, [data?.igUsername, data?.tokenExpiry, data?.apiType]);
 
   return (
     <LoginViewContainer>
@@ -227,273 +63,172 @@ export default function InstagramLoginView(
           <Trans>Instagram Authentication</Trans>
         </Title>
 
-        {loggedInAs && (
+        {account.isLoggedIn && loggedInAs && (
           <Alert color="green" icon={<IconCheck size={16} />}>
             <Stack gap="xs">
-              <Group justify="space-between">
-                <Text>
-                  <Trans>Successfully logged in as {loggedInAs}</Trans>
+              <Text>
+                <Trans>Successfully logged in as @{loggedInAs}</Trans>
+              </Text>
+              {tokenExpiry && (
+                <Text size="xs" c="dimmed">
+                  <Trans>
+                    Token expires:{' '}
+                    {new Date(tokenExpiry).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </Trans>
                 </Text>
+              )}
+              {apiType === 'unified' ? (
+                <Text size="xs" c="dimmed">
+                  <Trans>
+                    To renew this Unified Login token, repeat Step 4: Generate
+                    and copy your token in the setup guide below. Paste the new
+                    access token into the Bearer Token field and click Log In.
+                  </Trans>
+                </Text>
+              ) : (
                 <Button
                   variant="light"
                   size="compact-sm"
-                  leftSection={<IconRefresh size={14} />}
-                  onClick={handleStartOver}
-                >
-                  <Trans>Start Over</Trans>
-                </Button>
-              </Group>
-              {tokenExpiry && (
-                <Text size="xs" c="dimmed">
-                  <Trans>Token expires: {formatExpiry(tokenExpiry)}</Trans>
-                </Text>
-              )}
-              <Button
-                variant="light"
-                size="compact-sm"
-                color="blue"
-                loading={isRefreshing}
-                onClick={() => {
-                  setIsRefreshing(true);
-                  websitesApi
-                    .performOAuthStep<InstagramOAuthRoutes, 'refreshToken'>(
-                      id,
-                      'refreshToken',
-                      {},
-                    )
-                    .then((res) => {
-                      if (res.success) {
-                        if (res.tokenExpiry) setTokenExpiry(res.tokenExpiry);
-                        showSuccessNotification(
-                          <Trans>Token refreshed successfully</Trans>,
-                        );
-                      } else {
-                        notifyLoginFailed(res.message);
-                      }
-                    })
-                    .catch(
-                      createLoginHttpErrorHandler(
-                        <Trans>Failed to refresh token</Trans>,
-                      ),
-                    )
-                    .finally(() => setIsRefreshing(false));
-                }}
-              >
-                <Trans>Refresh Token</Trans>
-              </Button>
-            </Stack>
-          </Alert>
-        )}
-
-        {!redirectUri && (
-          <Alert color="red">
-            <Stack>
-              <Text>{getInstagramRedirectUriError()}</Text>
-            </Stack>
-          </Alert>
-        )}
-
-        <Stepper
-          active={activeStep}
-          orientation="vertical"
-          size="sm"
-          completedIcon={<IconCheck size={16} />}
-        >
-          {/* Step 0: Configure App Credentials */}
-          <Stepper.Step
-            label={<Trans>Configure Meta App</Trans>}
-            description={<Trans>Enter your app credentials</Trans>}
-            icon={<IconKey size={16} />}
-          >
-            <Paper p="md" withBorder>
-              <Stack gap="md">
-                <InstagramSetupGuide />
-
-                <TextInput
-                  label={<Trans>App ID</Trans>}
-                  placeholder="Enter your Meta App ID"
-                  required
-                  value={appId}
-                  onChange={(e) => setAppId(e.currentTarget.value.trim())}
-                />
-
-                <PasswordInput
-                  label={<Trans>App Secret</Trans>}
-                  placeholder="Enter your Meta App Secret"
-                  required
-                  value={appSecret}
-                  onChange={(e) => setAppSecret(e.currentTarget.value.trim())}
-                  description={
-                    <Trans>Keep this secret and never share it publicly</Trans>
-                  }
-                />
-
-                <Group>
-                  <Button
-                    disabled={!keysReady}
-                    loading={isStoringKeys}
-                    onClick={() => {
-                      setIsStoringKeys(true);
-                      websitesApi
-                        .performOAuthStep<InstagramOAuthRoutes>(
-                          id,
-                          'setAppCredentials',
-                          { appId, appSecret },
-                        )
-                        .then(() => {
-                          setKeysStored(true);
-                          setActiveStep(1);
+                  color="blue"
+                  loading={isRefreshing}
+                  disabled={isSubmitting || isForgetting}
+                  onClick={() => {
+                    setIsRefreshing(true);
+                    websitesApi
+                      .performOAuthStep<InstagramOAuthRoutes, 'refreshToken'>(
+                        id,
+                        'refreshToken',
+                        {},
+                      )
+                      .then((res) => {
+                        if (res.success) {
+                          if (res.tokenExpiry) setTokenExpiry(res.tokenExpiry);
                           showSuccessNotification(
-                            <Trans>App credentials saved</Trans>,
+                            <Trans>Token refreshed successfully</Trans>,
                           );
-                        })
-                        .catch(
-                          createLoginHttpErrorHandler(
-                            <Trans>Failed to store app credentials</Trans>,
-                          ),
-                        )
-                        .finally(() => setIsStoringKeys(false));
-                    }}
-                  >
-                    {keysStored ? (
-                      <Trans>Update Credentials</Trans>
-                    ) : (
-                      <Trans>Save Credentials</Trans>
-                    )}
-                  </Button>
-
-                  {keysStored && (
-                    <Button variant="light" onClick={() => setActiveStep(1)}>
-                      <Trans>Proceed to Authorization</Trans>
-                    </Button>
-                  )}
-                </Group>
-              </Stack>
-            </Paper>
-          </Stepper.Step>
-
-          {/* Step 1: Authorize via embedded webview */}
-          <Stepper.Step
-            label={<Trans>Authorize</Trans>}
-            description={<Trans>Log in to Instagram to grant access</Trans>}
-            icon={<IconLogin size={16} />}
-          >
-            <Stack gap="md">
-              {!authUrl && (
-                <Paper p="md" withBorder>
-                  <Stack gap="md">
-                    <Alert color="blue" variant="light">
-                      <Text size="sm">
-                        <Trans>
-                          Click below to start authorization. An Instagram login
-                          window will appear — log in and grant permissions. The
-                          code will be captured automatically.
-                        </Trans>
-                      </Text>
-                    </Alert>
-
-                    <Button
-                      loading={isGettingAuthUrl}
-                      leftSection={<IconLogin size={16} />}
-                      onClick={() => {
-                        if (!redirectUri) {
-                          showErrorNotification(getInstagramRedirectUriError());
-                          return;
+                        } else {
+                          notifyLoginFailed(res.message);
                         }
-                        setIsGettingAuthUrl(true);
-                        codeHandledRef.current = false;
-                        websitesApi
-                          .performOAuthStep<InstagramOAuthRoutes, 'getAuthUrl'>(
-                            id,
-                            'getAuthUrl',
-                            { redirectUri },
-                          )
-                          .then((res) => {
-                            if (res.success && res.url) {
-                              setAuthUrl(res.url);
-                            } else {
-                              notifyLoginFailed(res.message);
-                            }
-                          })
-                          .catch(
-                            createLoginHttpErrorHandler(
-                              <Trans>Failed to generate authorization URL</Trans>,
-                            ),
-                          )
-                          .finally(() => setIsGettingAuthUrl(false));
-                      }}
-                    >
-                      <Trans>Start Instagram Authorization</Trans>
-                    </Button>
-                  </Stack>
-                </Paper>
-              )}
-
-              {authUrl && (
-                <Box
-                  style={{
-                    height: 500,
-                    borderRadius: 8,
-                    overflow: 'hidden',
-                    border: '1px solid var(--mantine-color-default-border)',
-                    position: 'relative',
+                      })
+                      .catch(
+                        createLoginHttpErrorHandler(
+                          <Trans>Failed to refresh token</Trans>,
+                        ),
+                      )
+                      .finally(() => setIsRefreshing(false));
                   }}
                 >
-                  {isExchangingCode && (
-                    <Box
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'rgba(255,255,255,0.85)',
-                        zIndex: 10,
-                      }}
-                    >
-                      <Stack align="center" gap="sm">
-                        <Loader size="lg" />
-                        <Text size="sm">
-                          <Trans>Completing authorization...</Trans>
-                        </Text>
-                      </Stack>
-                    </Box>
-                  )}
-                  <webview
-                    src={authUrl}
-                    ref={(ref) => {
-                      webviewRef.current = ref as WebviewTag;
-                    }}
-                    style={{ width: '100%', height: '100%' }}
-                    // eslint-disable-next-line react/no-unknown-property
-                    partition={`persist:instagram-oauth-${id}`}
-                  />
-                </Box>
+                  <Trans>Refresh Token</Trans>
+                </Button>
               )}
             </Stack>
-          </Stepper.Step>
-        </Stepper>
+          </Alert>
+        )}
 
-        {/* Navigation Controls */}
-        <Group justify="space-between" mt="md">
-          <Button
-            variant="light"
-            leftSection={<IconArrowLeft size={16} />}
-            onClick={handleGoBack}
-            disabled={activeStep === 0}
-          >
-            <Trans>Back</Trans>
-          </Button>
+        {account.isLoggedIn && (
+          <Stack gap="xs">
+            <Button
+              color="red"
+              variant="light"
+              loading={isForgetting}
+              disabled={isSubmitting || isRefreshing || account.isPending}
+              onClick={() => {
+                setIsForgetting(true);
+                accountApi
+                  .clear(account.accountId)
+                  .then(() => {
+                    setAccessToken('');
+                    setLoggedInAs(undefined);
+                    setTokenExpiry(undefined);
+                    setApiType(undefined);
+                    showSuccessNotification(
+                      <Trans>Instagram token forgotten</Trans>,
+                    );
+                  })
+                  .catch(
+                    createLoginHttpErrorHandler(
+                      <Trans>Failed to forget token</Trans>,
+                    ),
+                  )
+                  .finally(() => setIsForgetting(false));
+              }}
+            >
+              <Trans>Forget Token</Trans>
+            </Button>
+            <Text size="xs" c="dimmed">
+              <Trans>
+                This removes the token from PostyBirb. It does not revoke it at
+                Meta.
+              </Trans>
+            </Text>
+          </Stack>
+        )}
 
-          <Button
-            leftSection={<IconRefresh size={16} />}
-            onClick={handleStartOver}
-            color="red"
-            variant="light"
-          >
-            <Trans>Start Over</Trans>
-          </Button>
-        </Group>
+        <InstagramSetupGuide />
+
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            setIsSubmitting(true);
+            websitesApi
+              .performOAuthStep<InstagramOAuthRoutes, 'setAccessToken'>(
+                id,
+                'setAccessToken',
+                { accessToken },
+              )
+              .then((res) => {
+                if (res.success) {
+                  setAccessToken('');
+                  setLoggedInAs(res.igUsername);
+                  setTokenExpiry(undefined);
+                  setApiType(res.apiType);
+                  notifyLoginSuccess(account);
+                } else {
+                  notifyLoginFailed(res.message);
+                }
+              })
+              .catch(
+                createLoginHttpErrorHandler(
+                  <Trans>Failed to log in to Instagram</Trans>,
+                ),
+              )
+              .finally(() => setIsSubmitting(false));
+          }}
+        >
+          <Stack gap="md">
+            <Text size="sm">
+              <Trans>
+                Enter an Instagram bearer token for a Business or Creator
+                account. This token will be stored and used for all Instagram
+                features.
+              </Trans>
+            </Text>
+            <PasswordInput
+              label={<Trans>Bearer Token</Trans>}
+              description={
+                <Trans>
+                  Paste the token with or without the Bearer prefix.
+                </Trans>
+              }
+              autoComplete="off"
+              required
+              disabled={isForgetting}
+              value={accessToken}
+              onChange={(event) => setAccessToken(event.currentTarget.value)}
+            />
+            <Button
+              type="submit"
+              loading={isSubmitting}
+              disabled={!accessToken.trim() || isRefreshing || isForgetting}
+            >
+              <Trans>Log In</Trans>
+            </Button>
+          </Stack>
+        </form>
       </Stack>
     </LoginViewContainer>
   );

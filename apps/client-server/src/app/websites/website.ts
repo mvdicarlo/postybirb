@@ -402,22 +402,24 @@ export abstract class Website<
    * check runs at a time per instance:
    * - The first caller runs the full lifecycle (onBeforeLogin -> onLogin) and
    *   applies the result.
-   * - Concurrent callers await the in-flight check and receive its result.
+   * - Concurrent callers without new website data await the in-flight check.
+   * - Calls with new website data save it under the mutex and run a fresh check.
    *
    * There are no automatic retries — exactly one check runs per invocation.
    * A transient failure leaves the previous state intact (see
    * {@link executeLogin}); fresh checks are driven by newer triggers (cookie
    * changes and navigation events).
    *
+   * @param {D} websiteData Optional data to save before running a fresh check.
    * @returns {Promise<ILoginState>} The login state after the check completes.
    */
-  public async login(): Promise<ILoginState> {
+  public async login(websiteData?: D): Promise<ILoginState> {
     if (this.isDisposed) {
       return this.getLoginState();
     }
     // If a check is already running, await it and return its result rather than
     // starting a redundant concurrent check.
-    if (this.loginMutex.isLocked()) {
+    if (websiteData === undefined && this.loginMutex.isLocked()) {
       this.logger.debug(
         `Login already in progress for ${this.id}, awaiting result...`,
       );
@@ -428,6 +430,9 @@ export abstract class Website<
     return this.loginMutex.runExclusive(async () => {
       if (this.isDisposed) {
         return this.getLoginState();
+      }
+      if (websiteData !== undefined) {
+        await this.setWebsiteData(websiteData);
       }
       const previous = this.loginState;
       this.loginState = this.loginState.beginCheck();

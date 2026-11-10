@@ -17,6 +17,13 @@ const config = {
       plugins: ['testing-library'],
       extends: ['plugin:testing-library/react', 'airbnb/hooks'],
     },
+    {
+      files: ['src/lib/field-translations.ts'],
+      plugins: ['@typescript-eslint'],
+      rules: {
+        'sort-keys': ['error', 'asc', { caseSensitive: true, natural: false }],
+      },
+    },
   ],
   rules: {
     '@nx/enforce-module-boundaries': [
