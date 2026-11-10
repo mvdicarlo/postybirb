@@ -9,7 +9,7 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import { chunk, uniqBy } from 'lodash';
-import { Rettiwt } from 'rettiwt-api';
+import { Rettiwt, SensitiveWarning } from 'rettiwt-api';
 import { extractMentions, parseTweet } from 'twitter-text';
 import { CancellationToken } from '../../../posting/cancellation-token';
 import { PostingFile } from '../../../posting/models/posting-file';
@@ -29,17 +29,11 @@ import {
   TwitterUnofficialFileSubmission,
 } from './models/twitter-unofficial-file-submission';
 import { TwitterUnofficialMessageSubmission } from './models/twitter-unofficial-message-submission';
-import {
-  SensitiveMediaWarning,
-  setMediaMetadata,
-} from './twitter-unofficial-media-metadata';
+import { SensitiveMediaWarning } from './twitter-unofficial-media-metadata';
 
 type RettiwtSession = {
   rettiwt: Rettiwt;
   userId: string;
-  /** Raw cookie header + csrf token, only needed for media metadata */
-  cookieHeader: string;
-  ct0: string;
 };
 
 type ThreadOptions = {
@@ -137,8 +131,6 @@ export default class TwitterUnofficial
     return {
       rettiwt: new Rettiwt({ apiKey }),
       userId,
-      cookieHeader: `auth_token=${authToken}; ct0=${ct0}; twid=${twid}`,
-      ct0,
     };
   }
 
@@ -209,7 +201,7 @@ export default class TwitterUnofficial
     if (!blur) {
       return undefined;
     }
-    return [blur === 'graphical_violence' ? 'graphic_violence' : blur];
+    return [blur];
   }
 
   /**
@@ -271,17 +263,21 @@ export default class TwitterUnofficial
       throw new Error(`Failed to upload ${file.fileName ?? 'file'}`);
     }
 
-    // Non-fatal: the post is still valid without the metadata
-    try {
-      await setMediaMetadata(session, id, {
-        altText: file.metadata?.altText?.trim() || undefined,
-        sensitiveMediaWarning: TwitterUnofficial.toMediaWarnings(
-          options.contentBlur,
-        ),
+    const altText = file.metadata?.altText?.trim() || undefined;
+    if (altText || options.contentBlur || options.blockGrokEdit) {
+      session.rettiwt.tweet.setMediaMetadata(id, {
+        altText,
+        sensitiveWarning: options.contentBlur
+          ? [
+              SensitiveWarning.ADULT_CONTENT === options.contentBlur
+                ? SensitiveWarning.ADULT_CONTENT
+                : SensitiveWarning.GRAPHIC_VIOLENCE === options.contentBlur
+                  ? SensitiveWarning.GRAPHIC_VIOLENCE
+                  : SensitiveWarning.OTHER,
+            ]
+          : [],
         blockGrokEdit: options.blockGrokEdit,
       });
-    } catch (e) {
-      this.logger.withError(e).warn(`Failed to set metadata for media ${id}`);
     }
 
     return id;

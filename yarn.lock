@@ -11128,27 +11128,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.11.0, axios@npm:^1.12.0, axios@npm:^1.16.1":
-  version: 1.16.1
-  resolution: "axios@npm:1.16.1"
+"axios@npm:^1.11.0, axios@npm:^1.12.0, axios@npm:^1.16.1, axios@npm:^1.8.4":
+  version: 1.21.1
+  resolution: "axios@npm:1.21.1"
   dependencies:
-    follow-redirects: "npm:^1.16.0"
-    form-data: "npm:^4.0.5"
-    https-proxy-agent: "npm:^5.0.1"
-    proxy-from-env: "npm:^2.1.0"
-  checksum: 10c0/2f77e37e6552bbff8a772d058fb09500198e9188c6b20dc799d82dbe12a8cb506f6eed4e4e62a9ba612a35cbab496faa26d68f9bff14a53af6d15c3e136391a7
-  languageName: node
-  linkType: hard
-
-"axios@npm:^1.8.4":
-  version: 1.20.0
-  resolution: "axios@npm:1.20.0"
-  dependencies:
-    follow-redirects: "npm:^1.16.0"
+    follow-redirects: "npm:^1.16.2"
     form-data: "npm:^4.0.6"
     https-proxy-agent: "npm:^5.0.1"
     proxy-from-env: "npm:^2.1.0"
-  checksum: 10c0/976088acf532286356f4c2e65df1ef47ba7da3936d83e928d0d64357bbf5370456abd3eb5826c15df322335fcb1fe200d4a84b4fcf20ffccdd63b40d80fa495c
+  checksum: 10c0/8f0375ff53f1a8edfaadf6259559bb1d8b03daeeb2c4faf550752dac203508803f2430ff8cfe9bfcecbc22d2b8a9ae7a4021f3fc0307c571cbd3177dc5f127eb
   languageName: node
   linkType: hard
 
@@ -15649,13 +15637,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.15.6, follow-redirects@npm:^1.16.0":
+"follow-redirects@npm:^1.0.0":
   version: 1.16.0
   resolution: "follow-redirects@npm:1.16.0"
   peerDependenciesMeta:
     debug:
       optional: true
   checksum: 10c0/a1e2900163e6f1b4d1ed5c221b607f41decbab65534c63fe7e287e40a5d552a6496e7d9d7d976fa4ba77b4c51c11e5e9f683f10b43011ea11e442ff128d0e181
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.15.6, follow-redirects@npm:^1.16.2":
+  version: 1.16.3
+  resolution: "follow-redirects@npm:1.16.3"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: 10c0/0ad440d1d921ce8d7e8cbb3a2f25a15e682086209eb49a84cf2f1d5960d0f238b697d5613893f72e7deb9c915f0bc4c7924f04a0e0c5544b8b7d3b797af5121d
   languageName: node
   linkType: hard
 
@@ -21774,7 +21772,7 @@ __metadata:
     react-use: "npm:^17.5.1"
     reflect-metadata: "npm:^0.1.13"
     regenerator-runtime: "npm:^0.13.9"
-    rettiwt-api: "npm:^7.1.5"
+    rettiwt-api: "npm:^7.2.0"
     rimraf: "npm:^6.1.3"
     rxjs: "npm:^7.3.0"
     sanitize-html: "npm:^2.13.0"
@@ -23042,9 +23040,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rettiwt-api@npm:^7.1.5":
-  version: 7.1.5
-  resolution: "rettiwt-api@npm:7.1.5"
+"rettiwt-api@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "rettiwt-api@npm:7.2.0"
   dependencies:
     axios: "npm:^1.8.4"
     chalk: "npm:^5.4.1"
@@ -23055,10 +23053,19 @@ __metadata:
     linkedom: "npm:^0.18.12"
     node-html-parser: "npm:^7.0.1"
     socks-proxy-agent: "npm:^8.0.5"
+    tweetnacl: "npm:^1.0.3"
     x-client-transaction-id: "npm:^0.3.2"
+  peerDependencies:
+    "@xdevplatform/chat-xdk": ^0.5.0
+    juicebox-sdk: ^0.3.7
+  peerDependenciesMeta:
+    "@xdevplatform/chat-xdk":
+      optional: true
+    juicebox-sdk:
+      optional: true
   bin:
     rettiwt: dist/cli.js
-  checksum: 10c0/472dc1fc32e588e358e10d28badfc4ab1b3fdf2acedc803c2c70e26a568e8dd7a0d886fd27f9f9d3879c2d1a77957327a61b514d86030e920851890dcbe27d76
+  checksum: 10c0/4473f657ce997ea40b52f71d6efed749003f31600c9473f3df50577304a5560f4859b05715c2cbd5d63cc3f726e1510939395e9e96ad412be0fa88ec93ff00d0
   languageName: node
   linkType: hard
 
@@ -25335,6 +25342,13 @@ __metadata:
   version: 0.14.5
   resolution: "tweetnacl@npm:0.14.5"
   checksum: 10c0/4612772653512c7bc19e61923fbf42903f5e0389ec76a4a1f17195859d114671ea4aa3b734c2029ce7e1fa7e5cc8b80580f67b071ecf0b46b5636d030a0102a2
+  languageName: node
+  linkType: hard
+
+"tweetnacl@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "tweetnacl@npm:1.0.3"
+  checksum: 10c0/069d9df51e8ad4a89fbe6f9806c68e06c65be3c7d42f0701cc43dba5f0d6064686b238bbff206c5addef8854e3ce00c643bff59432ea2f2c639feab0ee1a93f9
   languageName: node
   linkType: hard
 

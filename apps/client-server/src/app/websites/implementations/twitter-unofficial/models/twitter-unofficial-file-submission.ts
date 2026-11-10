@@ -7,7 +7,6 @@ export type ContentBlurValue =
   | 'other'
   | 'adult_content'
   | 'graphic_violence'
-  | 'graphical_violence';
 
 export class TwitterUnofficialFileSubmission extends TwitterUnofficialMessageSubmission {
   @RadioField({
