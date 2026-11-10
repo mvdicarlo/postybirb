@@ -175,6 +175,7 @@
     "reflect-metadata": "^0.1.13",
     "regenerator-runtime": "^0.13.9",
     "request": "^2.88.2",
+    "rettiwt-api": "^7.2.0",
     "rxjs": "^7.3.0",
     "sanitize-html": "^2.13.0",
     "socket.io": "^4.8.0",

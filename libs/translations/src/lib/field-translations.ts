@@ -20,6 +20,7 @@ export const FieldLabelTranslations = {
   authorizedViewers: msg`Authorized viewers`,
   blockGuests: msg`Block guests`,
   blog: msg`Blog`,
+  blockGrokEdit: msg`Block Grok edit`,
   category: msg`Category`,
   channel: msg`Channel`,
   characters: msg`Characters`,

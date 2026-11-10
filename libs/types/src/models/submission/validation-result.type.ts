@@ -194,18 +194,22 @@ export interface ValidationMessages {
     rating: string;
   };
 
+  'validation.replyurl.invalid-reply-url': { error: string };
+  
+  'validation.quoteurl.invalid-quote-url': { error: string };
+
   // ----------- Website specific validation messages --------------
   'validation.file.itaku.must-share-feed': object;
+
+  'validation.file.twitter-unofficial.rating-matches-default': object;
+
+  'validation.description.twitter-unofficial.invalid-mentions': { mentions: string[] };
 
   'validation.file.bluesky.unsupported-combination-of-files': object;
 
   'validation.file.bluesky.gif-conversion': object;
 
-  'validation.file.bluesky.invalid-reply-url': object;
-
   'validation.file.bluesky.rating-matches-default': object;
-
-  'validation.file.bluesky.invalid-quote-url': { error: string };
 
   'validation.description.bluesky.invalid-mentions': { mentions: string[] };
 
