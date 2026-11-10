@@ -29,7 +29,6 @@ import {
   TwitterUnofficialFileSubmission,
 } from './models/twitter-unofficial-file-submission';
 import { TwitterUnofficialMessageSubmission } from './models/twitter-unofficial-message-submission';
-import { SensitiveMediaWarning } from './twitter-unofficial-media-metadata';
 
 type RettiwtSession = {
   rettiwt: Rettiwt;
@@ -193,15 +192,6 @@ export default class TwitterUnofficial
     return trimmed.match(
       /(?:x|twitter)\.com\/(?:[^/?#]+|i\/web)\/status(?:es)?\/(\d+)/i,
     )?.[1];
-  }
-
-  private static toMediaWarnings(
-    blur?: ContentBlurValue,
-  ): SensitiveMediaWarning[] | undefined {
-    if (!blur) {
-      return undefined;
-    }
-    return [blur];
   }
 
   /**
