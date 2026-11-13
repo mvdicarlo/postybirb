@@ -253,9 +253,9 @@ export default class TwitterUnofficial
       throw new Error(`Failed to upload ${file.fileName ?? 'file'}`);
     }
 
-    const altText = file.metadata?.altText?.trim() || undefined;
+    const altText = file.metadata?.altText?.trim().slice(0) || undefined;
     if (altText || options.contentBlur || options.blockGrokEdit) {
-      session.rettiwt.tweet.setMediaMetadata(id, {
+      await session.rettiwt.tweet.setMediaMetadata(id, {
         altText,
         sensitiveWarning: options.contentBlur
           ? [
@@ -379,8 +379,7 @@ export default class TwitterUnofficial
 
     return this.postThread(
       {
-        // Length is enforced by validation, never split text on media posts
-        textChunks: [options.description ?? ''],
+        textChunks: TwitterUnofficial.splitText(options.description ?? ''),
         files,
         replyToId: TwitterUnofficial.parseTweetId(options.replyToUrl),
         quoteId: TwitterUnofficial.parseTweetId(options.quotePostUrl),
@@ -396,7 +395,6 @@ export default class TwitterUnofficial
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<TwitterUnofficialFileSubmission>();
 
-    this.validateDescriptionLength(postData, validator);
     this.validateRating(postData, validator);
     this.validateReplyToUrl(postData, validator);
     await this.validateQuotePostUrl(postData, validator);
@@ -437,7 +435,6 @@ export default class TwitterUnofficial
     const validator =
       this.createValidator<TwitterUnofficialMessageSubmission>();
 
-    // No length limit: long text is split into a thread
     this.validateReplyToUrl(postData, validator);
     await this.validateQuotePostUrl(postData, validator);
     await this.validateMentions(postData, validator);
@@ -464,23 +461,6 @@ export default class TwitterUnofficial
       expires: Date.now() + TwitterUnofficial.LOOKUP_TTL_MS,
     });
     return value;
-  }
-
-  private validateDescriptionLength(
-    postData: PostData<TwitterUnofficialFileSubmission>,
-    validator: SubmissionValidator<TwitterUnofficialFileSubmission>,
-  ): void {
-    const { weightedLength } = parseTweet(postData.options.description ?? '');
-    if (weightedLength > TwitterUnofficial.MAX_TWEET_LENGTH) {
-      validator.error(
-        'validation.description.max-length',
-        {
-          maxLength: TwitterUnofficial.MAX_TWEET_LENGTH,
-          currentLength: weightedLength,
-        },
-        'description',
-      );
-    }
   }
 
   /**
