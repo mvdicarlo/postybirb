@@ -570,10 +570,6 @@ export default class TwitterUnofficial
     }
   }
 
-  /**
-   * twitter-text only extracts real mentions, so things like "@/someone",
-   * emails or a lone "@" are ignored and never reported.
-   */
   private async validateMentions(
     postData: PostData<
       TwitterUnofficialMessageSubmission | TwitterUnofficialFileSubmission
