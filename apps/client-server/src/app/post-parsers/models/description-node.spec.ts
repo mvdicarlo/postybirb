@@ -1,4 +1,5 @@
 import { TipTapNode } from '@postybirb/types';
+import E621 from '../../websites/implementations/e621/e621.website';
 import { DescriptionNodeTree } from './description-node/description-node-tree';
 import { ConversionContext } from './description-node/description-node.base';
 
@@ -119,6 +120,187 @@ describe('DescriptionNode', () => {
       '<div>First paragraph.</div><div>Second paragraph.</div>',
     );
     expect(tree.toBBCode()).toBe('First paragraph.\nSecond paragraph.');
+  });
+
+  it.each([
+    { format: 'plain', marks: [], label: 'Inkbunny' },
+    { format: 'bold', marks: [{ type: 'bold' }], label: '[b]Inkbunny[/b]' },
+    { format: 'italic', marks: [{ type: 'italic' }], label: '[i]Inkbunny[/i]' },
+    { format: 'underline', marks: [{ type: 'underline' }], label: '[u]Inkbunny[/u]' },
+    { format: 'strike', marks: [{ type: 'strike' }], label: '[s]Inkbunny[/s]' },
+    {
+      format: 'nested',
+      marks: [{ type: 'bold' }, { type: 'italic' }],
+      label: '[b][i]Inkbunny[/i][/b]',
+    },
+  ])('should convert $format e621 links to DText', ({ marks, label }) => {
+    const context: ConversionContext = {
+      website: 'e621',
+      shortcuts: {},
+      customShortcuts: new Map(),
+      defaultDescription: [],
+    };
+    const nodes: TipTapNode[] = [
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: 'Inkbunny',
+            marks: [
+              { type: 'link', attrs: { href: 'https://inkbunny.net/JunglePack' } },
+              ...marks,
+            ],
+          },
+        ],
+      },
+    ];
+
+    expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
+      `"${label}":[https://inkbunny.net/JunglePack]`,
+    );
+    expect(
+      new DescriptionNodeTree(context, nodes, { insertAd: false }).toBBCode(),
+    ).toBe(`[url=https://inkbunny.net/JunglePack]${label}[/url]`);
+  });
+
+  it('should preserve formatted e621 username shortcuts without nested links', () => {
+    const context: ConversionContext = {
+      website: 'e621',
+      shortcuts: {
+        ib: { id: 'ib', url: 'https://inkbunny.net/$1' },
+      },
+      customShortcuts: new Map(),
+      defaultDescription: [],
+    };
+    const nodes: TipTapNode[] = [
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'username',
+            attrs: { shortcut: 'ib', username: 'TribalDragon' },
+            marks: [
+              { type: 'bold' },
+              { type: 'link', attrs: { href: 'https://example.com' } },
+            ],
+          },
+        ],
+      },
+    ];
+
+    expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
+      '[b]"TribalDragon":[https://inkbunny.net/TribalDragon][/b]',
+    );
+  });
+
+  it.each(['defaultShortcut', 'customShortcut'])(
+    'should render e621 links inside %s nodes',
+    (type) => {
+      const shortcut: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: 'Store',
+              marks: [
+                { type: 'bold' },
+                { type: 'link', attrs: { href: 'https://example.com/shop_(pack)' } },
+              ],
+            },
+          ],
+        },
+      ];
+      const context: ConversionContext = {
+        website: 'e621',
+        shortcuts: {},
+        customShortcuts: new Map([['support', shortcut]]),
+        defaultDescription: shortcut,
+      };
+      const nodes: TipTapNode[] = [
+        { type: 'paragraph', content: [{ type, attrs: { id: 'support' } }] },
+      ];
+
+      expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
+        '"[b]Store[/b]":[https://example.com/shop_(pack)]',
+      );
+    },
+  );
+
+  it('should preserve the reported e621 description layout and formatting', () => {
+    const links = [
+      { text: 'Inkbunny', href: 'https://inkbunny.net/JunglePack' },
+      { text: 'Subscribestar', href: 'https://subscribestar.art/tribaldragon' },
+      { text: 'Ko-Fi', href: 'https://ko-fi.com/junglepackteam' },
+      {
+        text: 'Store',
+        href: 'https://www.stickypawsprinting.com/shop/jungle-pack/672INVL7NAP5KYPKYRGUT52F',
+      },
+      { text: 'Discord', href: 'https://discord.gg/VaKjPrHjBW' },
+    ];
+    const context: ConversionContext = {
+      website: 'e621',
+      shortcuts: {},
+      customShortcuts: new Map(),
+      defaultDescription: [],
+    };
+    const nodes: TipTapNode[] = [
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: 'Originally published on April 2026',
+            marks: [{ type: 'italic' }],
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'Artwork by ' },
+          {
+            type: 'text',
+            text: 'TribalDragon',
+            marks: [
+              { type: 'link', attrs: { href: 'https://inkbunny.net/TribalDragon' } },
+            ],
+          },
+          { type: 'text', text: '  ' },
+        ],
+      },
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: 'Support the Jungle Pack team for more rewards!',
+            marks: [{ type: 'italic' }],
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        content: links.flatMap(({ text, href }, index) => [
+          ...(index ? [{ type: 'text', text: ' | ', marks: [{ type: 'bold' }] }] : []),
+          {
+            type: 'text',
+            text,
+            marks: [{ type: 'bold' }, { type: 'link', attrs: { href } }],
+          },
+        ]),
+      },
+    ];
+
+    expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
+      [
+        '[i]Originally published on April 2026[/i]',
+        'Artwork by "TribalDragon":[https://inkbunny.net/TribalDragon]  ',
+        '[i]Support the Jungle Pack team for more rewards![/i]',
+        '"[b]Inkbunny[/b]":[https://inkbunny.net/JunglePack][b] | [/b]"[b]Subscribestar[/b]":[https://subscribestar.art/tribaldragon][b] | [/b]"[b]Ko-Fi[/b]":[https://ko-fi.com/junglepackteam][b] | [/b]"[b]Store[/b]":[https://www.stickypawsprinting.com/shop/jungle-pack/672INVL7NAP5KYPKYRGUT52F][b] | [/b]"[b]Discord[/b]":[https://discord.gg/VaKjPrHjBW]',
+      ].join('\n'),
+    );
   });
 
   describe('findUsernames', () => {
