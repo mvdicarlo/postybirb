@@ -123,15 +123,15 @@ describe('DescriptionNode', () => {
   });
 
   it.each([
-    { format: 'plain', marks: [], label: 'Inkbunny' },
-    { format: 'bold', marks: [{ type: 'bold' }], label: '[b]Inkbunny[/b]' },
-    { format: 'italic', marks: [{ type: 'italic' }], label: '[i]Inkbunny[/i]' },
-    { format: 'underline', marks: [{ type: 'underline' }], label: '[u]Inkbunny[/u]' },
-    { format: 'strike', marks: [{ type: 'strike' }], label: '[s]Inkbunny[/s]' },
+    { format: 'plain', marks: [], label: 'Gallery' },
+    { format: 'bold', marks: [{ type: 'bold' }], label: '[b]Gallery[/b]' },
+    { format: 'italic', marks: [{ type: 'italic' }], label: '[i]Gallery[/i]' },
+    { format: 'underline', marks: [{ type: 'underline' }], label: '[u]Gallery[/u]' },
+    { format: 'strike', marks: [{ type: 'strike' }], label: '[s]Gallery[/s]' },
     {
       format: 'nested',
       marks: [{ type: 'bold' }, { type: 'italic' }],
-      label: '[b][i]Inkbunny[/i][/b]',
+      label: '[b][i]Gallery[/i][/b]',
     },
   ])('should convert $format e621 links to DText', ({ marks, label }) => {
     const context: ConversionContext = {
@@ -146,9 +146,9 @@ describe('DescriptionNode', () => {
         content: [
           {
             type: 'text',
-            text: 'Inkbunny',
+            text: 'Gallery',
             marks: [
-              { type: 'link', attrs: { href: 'https://inkbunny.net/JunglePack' } },
+              { type: 'link', attrs: { href: 'https://example.com/gallery' } },
               ...marks,
             ],
           },
@@ -157,18 +157,18 @@ describe('DescriptionNode', () => {
     ];
 
     expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
-      `"${label}":[https://inkbunny.net/JunglePack]`,
+      `"${label}":[https://example.com/gallery]`,
     );
     expect(
       new DescriptionNodeTree(context, nodes, { insertAd: false }).toBBCode(),
-    ).toBe(`[url=https://inkbunny.net/JunglePack]${label}[/url]`);
+    ).toBe(`[url=https://example.com/gallery]${label}[/url]`);
   });
 
   it('should preserve formatted e621 username shortcuts without nested links', () => {
     const context: ConversionContext = {
       website: 'e621',
       shortcuts: {
-        ib: { id: 'ib', url: 'https://inkbunny.net/$1' },
+        test: { id: 'test', url: 'https://example.com/users/$1' },
       },
       customShortcuts: new Map(),
       defaultDescription: [],
@@ -179,7 +179,7 @@ describe('DescriptionNode', () => {
         content: [
           {
             type: 'username',
-            attrs: { shortcut: 'ib', username: 'TribalDragon' },
+            attrs: { shortcut: 'test', username: 'TestArtist' },
             marks: [
               { type: 'bold' },
               { type: 'link', attrs: { href: 'https://example.com' } },
@@ -190,7 +190,7 @@ describe('DescriptionNode', () => {
     ];
 
     expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
-      '[b]"TribalDragon":[https://inkbunny.net/TribalDragon][/b]',
+      '[b]"TestArtist":[https://example.com/users/TestArtist][/b]',
     );
   });
 
@@ -206,7 +206,7 @@ describe('DescriptionNode', () => {
               text: 'Store',
               marks: [
                 { type: 'bold' },
-                { type: 'link', attrs: { href: 'https://example.com/shop_(pack)' } },
+                { type: 'link', attrs: { href: 'https://example.com/shop_(item)' } },
               ],
             },
           ],
@@ -223,21 +223,21 @@ describe('DescriptionNode', () => {
       ];
 
       expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
-        '"[b]Store[/b]":[https://example.com/shop_(pack)]',
+        '"[b]Store[/b]":[https://example.com/shop_(item)]',
       );
     },
   );
 
-  it('should preserve the reported e621 description layout and formatting', () => {
+  it('should preserve e621 description layout and formatting', () => {
     const links = [
-      { text: 'Inkbunny', href: 'https://inkbunny.net/JunglePack' },
-      { text: 'Subscribestar', href: 'https://subscribestar.art/tribaldragon' },
-      { text: 'Ko-Fi', href: 'https://ko-fi.com/junglepackteam' },
+      { text: 'Gallery', href: 'https://example.com/gallery' },
+      { text: 'Membership', href: 'https://example.com/membership' },
+      { text: 'Donate', href: 'https://example.com/donate' },
       {
         text: 'Store',
-        href: 'https://www.stickypawsprinting.com/shop/jungle-pack/672INVL7NAP5KYPKYRGUT52F',
+        href: 'https://example.com/shop/sample-project/ITEM123',
       },
-      { text: 'Discord', href: 'https://discord.gg/VaKjPrHjBW' },
+      { text: 'Community', href: 'https://example.com/community' },
     ];
     const context: ConversionContext = {
       website: 'e621',
@@ -251,7 +251,7 @@ describe('DescriptionNode', () => {
         content: [
           {
             type: 'text',
-            text: 'Originally published on April 2026',
+            text: 'First published in January 2000',
             marks: [{ type: 'italic' }],
           },
         ],
@@ -262,9 +262,9 @@ describe('DescriptionNode', () => {
           { type: 'text', text: 'Artwork by ' },
           {
             type: 'text',
-            text: 'TribalDragon',
+            text: 'TestArtist',
             marks: [
-              { type: 'link', attrs: { href: 'https://inkbunny.net/TribalDragon' } },
+              { type: 'link', attrs: { href: 'https://example.com/users/TestArtist' } },
             ],
           },
           { type: 'text', text: '  ' },
@@ -275,7 +275,7 @@ describe('DescriptionNode', () => {
         content: [
           {
             type: 'text',
-            text: 'Support the Jungle Pack team for more rewards!',
+            text: 'Follow the project for updates!',
             marks: [{ type: 'italic' }],
           },
         ],
@@ -295,10 +295,10 @@ describe('DescriptionNode', () => {
 
     expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
       [
-        '[i]Originally published on April 2026[/i]',
-        'Artwork by "TribalDragon":[https://inkbunny.net/TribalDragon]  ',
-        '[i]Support the Jungle Pack team for more rewards![/i]',
-        '"[b]Inkbunny[/b]":[https://inkbunny.net/JunglePack][b] | [/b]"[b]Subscribestar[/b]":[https://subscribestar.art/tribaldragon][b] | [/b]"[b]Ko-Fi[/b]":[https://ko-fi.com/junglepackteam][b] | [/b]"[b]Store[/b]":[https://www.stickypawsprinting.com/shop/jungle-pack/672INVL7NAP5KYPKYRGUT52F][b] | [/b]"[b]Discord[/b]":[https://discord.gg/VaKjPrHjBW]',
+        '[i]First published in January 2000[/i]',
+        'Artwork by "TestArtist":[https://example.com/users/TestArtist]  ',
+        '[i]Follow the project for updates![/i]',
+        '"[b]Gallery[/b]":[https://example.com/gallery][b] | [/b]"[b]Membership[/b]":[https://example.com/membership][b] | [/b]"[b]Donate[/b]":[https://example.com/donate][b] | [/b]"[b]Store[/b]":[https://example.com/shop/sample-project/ITEM123][b] | [/b]"[b]Community[/b]":[https://example.com/community]',
       ].join('\n'),
     );
   });
