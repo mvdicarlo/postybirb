@@ -1,4 +1,5 @@
 import { TipTapNode } from '@postybirb/types';
+import E621 from '../../websites/implementations/e621/e621.website';
 import { DescriptionNodeTree } from './description-node/description-node-tree';
 import { ConversionContext } from './description-node/description-node.base';
 
@@ -119,6 +120,187 @@ describe('DescriptionNode', () => {
       '<div>First paragraph.</div><div>Second paragraph.</div>',
     );
     expect(tree.toBBCode()).toBe('First paragraph.\nSecond paragraph.');
+  });
+
+  it.each([
+    { format: 'plain', marks: [], label: 'Gallery' },
+    { format: 'bold', marks: [{ type: 'bold' }], label: '[b]Gallery[/b]' },
+    { format: 'italic', marks: [{ type: 'italic' }], label: '[i]Gallery[/i]' },
+    { format: 'underline', marks: [{ type: 'underline' }], label: '[u]Gallery[/u]' },
+    { format: 'strike', marks: [{ type: 'strike' }], label: '[s]Gallery[/s]' },
+    {
+      format: 'nested',
+      marks: [{ type: 'bold' }, { type: 'italic' }],
+      label: '[b][i]Gallery[/i][/b]',
+    },
+  ])('should convert $format e621 links to DText', ({ marks, label }) => {
+    const context: ConversionContext = {
+      website: 'e621',
+      shortcuts: {},
+      customShortcuts: new Map(),
+      defaultDescription: [],
+    };
+    const nodes: TipTapNode[] = [
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: 'Gallery',
+            marks: [
+              { type: 'link', attrs: { href: 'https://example.com/gallery' } },
+              ...marks,
+            ],
+          },
+        ],
+      },
+    ];
+
+    expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
+      `"${label}":[https://example.com/gallery]`,
+    );
+    expect(
+      new DescriptionNodeTree(context, nodes, { insertAd: false }).toBBCode(),
+    ).toBe(`[url=https://example.com/gallery]${label}[/url]`);
+  });
+
+  it('should preserve formatted e621 username shortcuts without nested links', () => {
+    const context: ConversionContext = {
+      website: 'e621',
+      shortcuts: {
+        test: { id: 'test', url: 'https://example.com/users/$1' },
+      },
+      customShortcuts: new Map(),
+      defaultDescription: [],
+    };
+    const nodes: TipTapNode[] = [
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'username',
+            attrs: { shortcut: 'test', username: 'TestArtist' },
+            marks: [
+              { type: 'bold' },
+              { type: 'link', attrs: { href: 'https://example.com' } },
+            ],
+          },
+        ],
+      },
+    ];
+
+    expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
+      '[b]"TestArtist":[https://example.com/users/TestArtist][/b]',
+    );
+  });
+
+  it.each(['defaultShortcut', 'customShortcut'])(
+    'should render e621 links inside %s nodes',
+    (type) => {
+      const shortcut: TipTapNode[] = [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: 'Store',
+              marks: [
+                { type: 'bold' },
+                { type: 'link', attrs: { href: 'https://example.com/shop_(item)' } },
+              ],
+            },
+          ],
+        },
+      ];
+      const context: ConversionContext = {
+        website: 'e621',
+        shortcuts: {},
+        customShortcuts: new Map([['support', shortcut]]),
+        defaultDescription: shortcut,
+      };
+      const nodes: TipTapNode[] = [
+        { type: 'paragraph', content: [{ type, attrs: { id: 'support' } }] },
+      ];
+
+      expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
+        '"[b]Store[/b]":[https://example.com/shop_(item)]',
+      );
+    },
+  );
+
+  it('should preserve e621 description layout and formatting', () => {
+    const links = [
+      { text: 'Gallery', href: 'https://example.com/gallery' },
+      { text: 'Membership', href: 'https://example.com/membership' },
+      { text: 'Donate', href: 'https://example.com/donate' },
+      {
+        text: 'Store',
+        href: 'https://example.com/shop/sample-project/ITEM123',
+      },
+      { text: 'Community', href: 'https://example.com/community' },
+    ];
+    const context: ConversionContext = {
+      website: 'e621',
+      shortcuts: {},
+      customShortcuts: new Map(),
+      defaultDescription: [],
+    };
+    const nodes: TipTapNode[] = [
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: 'First published in January 2000',
+            marks: [{ type: 'italic' }],
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'Artwork by ' },
+          {
+            type: 'text',
+            text: 'TestArtist',
+            marks: [
+              { type: 'link', attrs: { href: 'https://example.com/users/TestArtist' } },
+            ],
+          },
+          { type: 'text', text: '  ' },
+        ],
+      },
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text: 'Follow the project for updates!',
+            marks: [{ type: 'italic' }],
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        content: links.flatMap(({ text, href }, index) => [
+          ...(index ? [{ type: 'text', text: ' | ', marks: [{ type: 'bold' }] }] : []),
+          {
+            type: 'text',
+            text,
+            marks: [{ type: 'bold' }, { type: 'link', attrs: { href } }],
+          },
+        ]),
+      },
+    ];
+
+    expect(E621.prototype.getDescriptionConverter().convert(nodes, context)).toBe(
+      [
+        '[i]First published in January 2000[/i]',
+        'Artwork by "TestArtist":[https://example.com/users/TestArtist]  ',
+        '[i]Follow the project for updates![/i]',
+        '"[b]Gallery[/b]":[https://example.com/gallery][b] | [/b]"[b]Membership[/b]":[https://example.com/membership][b] | [/b]"[b]Donate[/b]":[https://example.com/donate][b] | [/b]"[b]Store[/b]":[https://example.com/shop/sample-project/ITEM123][b] | [/b]"[b]Community[/b]":[https://example.com/community]',
+      ].join('\n'),
+    );
   });
 
   describe('findUsernames', () => {

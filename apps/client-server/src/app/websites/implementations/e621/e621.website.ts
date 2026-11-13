@@ -386,6 +386,10 @@ export default class E621
 
 // Spec: https://e621.net/help/dtext
 class E621Converter extends BBCodeConverter {
+  protected renderLink(text: string, href: string): string {
+    return `"${text}":[${href}]`;
+  }
+
   convertBlockNode(node: TipTapNode, context: ConversionContext): string {
     const attrs = node.attrs ?? {};
 
@@ -398,9 +402,7 @@ class E621Converter extends BBCodeConverter {
   convert(nodes: TipTapNode[], context: ConversionContext): string {
     const text = super.convert(nodes, context);
 
-    return text
-      .replace(/\[url=([^\]]*)\]([^[]*)\[\/url\]/g, '"$2":[$1]')
-      .replace(/\[h(\d)](.+)\[\/h\d]/g, 'h$1. $2');
+    return text.replace(/\[h(\d)](.+)\[\/h\d]/g, 'h$1. $2');
   }
 }
 
