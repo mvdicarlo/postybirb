@@ -23,7 +23,7 @@ descriptionPreviewRendererByWebsite.set('bluesky', ({ description }) => {
 
   text = text.replaceAll(
     /#(\w+)/g,
-    '<span style="color: var(--mantine-primary-color-filled)">#$1<span/>',
+    '<span style="color: var(--mantine-primary-color-filled)">#$1</span>',
   );
 
   return <SafeHtml html={text} />;
