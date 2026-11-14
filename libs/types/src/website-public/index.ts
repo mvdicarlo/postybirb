@@ -13,3 +13,4 @@ export * from './sofurry-account-data';
 export * from './tailspace-account-data';
 export * from './telegram-account-data';
 export * from './twitter-account-data';
+export * from './yiff-party-account-data';
