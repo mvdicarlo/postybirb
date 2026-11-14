@@ -8,8 +8,9 @@ import {
   SimpleValidationResult,
   SubmissionRating,
 } from '@postybirb/types';
+import { isAxiosError } from 'axios';
 import { chunk, uniqBy } from 'lodash';
-import { Rettiwt, SensitiveWarning } from 'rettiwt-api';
+import { Rettiwt, SensitiveWarning, TwitterError } from 'rettiwt-api';
 import { extractMentions, parseTweet } from 'twitter-text';
 import { CancellationToken } from '../../../posting/cancellation-token';
 import { PostingFile } from '../../../posting/models/posting-file';
@@ -29,21 +30,30 @@ import {
   TwitterUnofficialFileSubmission,
 } from './models/twitter-unofficial-file-submission';
 import { TwitterUnofficialMessageSubmission } from './models/twitter-unofficial-message-submission';
+import { uploadMedia } from './twitter-unofficial-media-upload';
 
 type RettiwtSession = {
   rettiwt: Rettiwt;
   userId: string;
+  /** Raw cookies + csrf token, for the media upload */
+  cookieHeader: string;
+  ct0: string;
 };
 
 type ThreadOptions = {
-  /** One entry per tweet, in order */
-  textChunks: string[];
+  text: string;
   files: PostingFile[];
   replyToId?: string;
   quoteId?: string;
   contentBlur?: ContentBlurValue;
   blockGrokEdit?: boolean;
 };
+
+type Validator =
+  | SubmissionValidator<TwitterUnofficialFileSubmission>
+  | SubmissionValidator<TwitterUnofficialMessageSubmission>;
+
+const MAX_ALT_TEXT_LENGTH = 1000;
 
 @WebsiteMetadata({
   name: 'twitter-unofficial',
@@ -63,9 +73,9 @@ type ThreadOptions = {
   acceptedFileSizes: {
     'image/gif': FileSize.megabytes(15),
     [FileType.IMAGE]: FileSize.megabytes(5),
-    [FileType.VIDEO]: FileSize.megabytes(15),
+    [FileType.VIDEO]: FileSize.megabytes(512),
   },
-  maxAltTextLength: 1000,
+  maxAltTextLength: MAX_ALT_TEXT_LENGTH,
 })
 @DisableAds()
 export default class TwitterUnofficial
@@ -76,12 +86,13 @@ export default class TwitterUnofficial
 {
   protected BASE_URL = 'https://x.com';
 
-  private static readonly MAX_FILES_PER_TWEET = 4;
+  /** X allows up to 20 photos / videos / GIFs per post, in any mix */
+  private readonly MAX_MEDIA_PER_TWEET = 20;
 
-  private static readonly MAX_TWEET_LENGTH = 280;
+  private readonly MAX_TWEET_LENGTH = 280;
 
   /** Validation runs often, so remote lookups (mentions, quoted posts) are cached */
-  private static readonly LOOKUP_TTL_MS = 5 * 60 * 1000;
+  private readonly LOOKUP_TTL_MS = 5 * 60 * 1000;
 
   private readonly lookupCache = new Map<
     string,
@@ -128,8 +139,24 @@ export default class TwitterUnofficial
     ).toString('base64');
 
     return {
-      rettiwt: new Rettiwt({ apiKey }),
+      rettiwt: new Rettiwt({
+        apiKey,
+        logging: true,
+        errorHandler: {
+          // Rettiwt's default handler it treats ANY non axios error as Unknown error
+          // Some services inside Rettiwt throw TwitterError which also gets converted to 
+          // Unknown error leaving vital information behind. 
+          handle(error) {
+            if (isAxiosError(error)) {
+              throw new TwitterError(error);
+            }
+            throw error;
+          },
+        },
+      }),
       userId,
+      cookieHeader: `auth_token=${authToken}; ct0=${ct0}; twid=${twid}`,
+      ct0,
     };
   }
 
@@ -181,7 +208,7 @@ export default class TwitterUnofficial
   }
 
   /** Accepts a tweet URL (x.com / twitter.com) or a bare numeric id. */
-  private static parseTweetId(url?: string): string | undefined {
+  private parseTweetId(url?: string): string | undefined {
     const trimmed = url?.trim();
     if (!trimmed) {
       return undefined;
@@ -194,47 +221,19 @@ export default class TwitterUnofficial
     )?.[1];
   }
 
-  /**
-   * Splits text into chunks that each fit in one tweet.
-   *
-   * Intentionally makes no assumptions about the language: it only cuts at the
-   * largest grapheme boundary where the chunk still fits, using Twitter's own
-   * weighted length (so URLs, emoji, CJK etc. are counted like Twitter does).
-   */
-  private static splitText(text: string): string[] {
-    const max = TwitterUnofficial.MAX_TWEET_LENGTH;
-    const fits = (s: string) => parseTweet(s).weightedLength <= max;
-
-    const segmenter = new Intl.Segmenter(undefined, {
-      granularity: 'grapheme',
-    });
-    let graphemes = Array.from(
-      segmenter.segment(text.trim()),
-      (s) => s.segment,
-    );
-
-    const chunks: string[] = [];
-    while (graphemes.length) {
-      // Binary search for the longest prefix that still fits
-      let lo = 1;
-      let hi = graphemes.length;
-      while (lo < hi) {
-        const mid = Math.ceil((lo + hi) / 2);
-        if (fits(graphemes.slice(0, mid).join(''))) {
-          lo = mid;
-        } else {
-          hi = mid - 1;
-        }
-      }
-
-      const piece = graphemes.slice(0, lo).join('');
-      if (piece.trim().length) {
-        chunks.push(piece);
-      }
-      graphemes = graphemes.slice(lo);
+  private toSensitiveWarning(
+    blur?: ContentBlurValue,
+  ): SensitiveWarning[] | undefined {
+    switch (blur) {
+      case 'adult_content':
+        return [SensitiveWarning.ADULT_CONTENT];
+      case 'graphic_violence':
+        return [SensitiveWarning.GRAPHIC_VIOLENCE];
+      case 'other':
+        return [SensitiveWarning.OTHER];
+      default:
+        return undefined;
     }
-
-    return chunks.length ? chunks : [''];
   }
 
   private async uploadFile(
@@ -242,42 +241,32 @@ export default class TwitterUnofficial
     file: PostingFile,
     options: Pick<ThreadOptions, 'contentBlur' | 'blockGrokEdit'>,
   ): Promise<string> {
-    const { buffer } = file;
-    const arrayBuffer = buffer.buffer.slice(
-      buffer.byteOffset,
-      buffer.byteOffset + buffer.byteLength,
-    ) as ArrayBuffer;
+    const id = await uploadMedia(session, file.buffer, file.mimeType);
 
-    const id = await session.rettiwt.tweet.upload(arrayBuffer);
-    if (!id) {
-      throw new Error(`Failed to upload ${file.fileName ?? 'file'}`);
-    }
-
-    const altText = file.metadata?.altText?.trim().slice(0) || undefined;
-    if (altText || options.contentBlur || options.blockGrokEdit) {
-      await session.rettiwt.tweet.setMediaMetadata(id, {
-        altText,
-        sensitiveWarning: options.contentBlur
-          ? [
-              SensitiveWarning.ADULT_CONTENT === options.contentBlur
-                ? SensitiveWarning.ADULT_CONTENT
-                : SensitiveWarning.GRAPHIC_VIOLENCE === options.contentBlur
-                  ? SensitiveWarning.GRAPHIC_VIOLENCE
-                  : SensitiveWarning.OTHER,
-            ]
-          : [],
-        blockGrokEdit: options.blockGrokEdit,
-      });
+    // Non-fatal: the post is still valid without the metadata
+    const altText =
+      file.metadata?.altText?.trim().slice(0, MAX_ALT_TEXT_LENGTH) || undefined;
+    const sensitiveWarning = this.toSensitiveWarning(options.contentBlur);
+    if (altText || sensitiveWarning || options.blockGrokEdit) {
+      try {
+        await session.rettiwt.tweet.setMediaMetadata(id, {
+          altText,
+          sensitiveWarning,
+          blockGrokEdit: options.blockGrokEdit,
+        });
+      } catch (e) {
+        this.logger.withError(e).warn(`Failed to set metadata for media ${id}`);
+      }
     }
 
     return id;
   }
 
   /**
-   * Posts a thread. Tweet i carries text chunk i and file batch i (4 files max).
-   * If there are more text chunks than file batches the remaining tweets are
-   * text-only, and vice versa. The first tweet replies to / quotes the requested
-   * post, every following tweet replies to the previous one.
+   * Posts the text with the files. Files go in batches of MAX_MEDIA_PER_TWEET
+   * (any mix of images, videos and GIFs): the first tweet carries the text and
+   * replies to / quotes the requested post, extra batches are posted as
+   * media-only replies to the previous tweet.
    */
   private async postThread(
     options: ThreadOptions,
@@ -286,25 +275,26 @@ export default class TwitterUnofficial
     const session = await this.requireSession();
     const { rettiwt } = session;
 
-    const fileBatches = chunk(
-      options.files,
-      TwitterUnofficial.MAX_FILES_PER_TWEET,
-    );
-    const total = Math.max(options.textChunks.length, fileBatches.length);
+    const fileBatches = chunk(options.files, this.MAX_MEDIA_PER_TWEET);
+    const total = Math.max(fileBatches.length, 1);
     const tweetIds: string[] = [];
+    let stage = 'initializing';
 
     try {
       for (let i = 0; i < total; i++) {
         cancellationToken.throwIfAborted();
 
+        const batch = fileBatches[i] ?? [];
         const media: Array<{ id: string }> = [];
-        for (const file of fileBatches[i] ?? []) {
+        for (const [fileI, file] of batch.entries()) {
           cancellationToken.throwIfAborted();
+          stage = `uploading file ${fileI + 1}/${batch.length} (${file.fileName}, tweet ${i + 1}/${total})`;
           media.push({ id: await this.uploadFile(session, file, options) });
         }
 
+        stage = `creating tweet ${i + 1}/${total}`;
         const tweetId = await rettiwt.tweet.post({
-          text: options.textChunks[i] ?? '',
+          text: i === 0 ? options.text : '',
           media: media.length ? media : undefined,
           replyTo: i === 0 ? options.replyToId : tweetIds[i - 1],
           quote: i === 0 ? options.quoteId : undefined,
@@ -319,13 +309,24 @@ export default class TwitterUnofficial
       const cleanupSuccess = await this.cleanUpFailedPost(rettiwt, tweetIds);
       return PostResponse.fromWebsite(this)
         .withMessage(
-          `Post failed${
+          `Post failed at ${stage}${
             cleanupSuccess
               ? ''
               : ' and was unable to delete partially created tweets (manual cleanup needed)'
           }`,
         )
-        .withAdditionalInfo({ tweetIds })
+        .withAdditionalInfo({
+          tweetIds,
+          details:
+            err instanceof TwitterError
+              ? err.details.map((e) => ({
+                  code: e.code,
+                  message: e.message,
+                  name: e.name,
+                  type: e.type,
+                }))
+              : [],
+        })
         .withException(err instanceof Error ? err : new Error(String(err)));
     }
 
@@ -379,10 +380,10 @@ export default class TwitterUnofficial
 
     return this.postThread(
       {
-        textChunks: TwitterUnofficial.splitText(options.description ?? ''),
+        text: options.description ?? '',
         files,
-        replyToId: TwitterUnofficial.parseTweetId(options.replyToUrl),
-        quoteId: TwitterUnofficial.parseTweetId(options.quotePostUrl),
+        replyToId: this.parseTweetId(options.replyToUrl),
+        quoteId: this.parseTweetId(options.quotePostUrl),
         contentBlur: options.contentBlur,
         blockGrokEdit: options.blockGrokEdit,
       },
@@ -395,6 +396,7 @@ export default class TwitterUnofficial
   ): Promise<SimpleValidationResult> {
     const validator = this.createValidator<TwitterUnofficialFileSubmission>();
 
+    this.validateDescriptionLength(postData, validator);
     this.validateRating(postData, validator);
     this.validateReplyToUrl(postData, validator);
     await this.validateQuotePostUrl(postData, validator);
@@ -420,10 +422,10 @@ export default class TwitterUnofficial
 
     return this.postThread(
       {
-        textChunks: TwitterUnofficial.splitText(options.description ?? ''),
+        text: options.description ?? '',
         files: [],
-        replyToId: TwitterUnofficial.parseTweetId(options.replyToUrl),
-        quoteId: TwitterUnofficial.parseTweetId(options.quotePostUrl),
+        replyToId: this.parseTweetId(options.replyToUrl),
+        quoteId: this.parseTweetId(options.quotePostUrl),
       },
       cancellationToken,
     );
@@ -435,6 +437,7 @@ export default class TwitterUnofficial
     const validator =
       this.createValidator<TwitterUnofficialMessageSubmission>();
 
+    this.validateDescriptionLength(postData, validator);
     this.validateReplyToUrl(postData, validator);
     await this.validateQuotePostUrl(postData, validator);
     await this.validateMentions(postData, validator);
@@ -458,9 +461,26 @@ export default class TwitterUnofficial
     const value = await lookup();
     this.lookupCache.set(key, {
       value,
-      expires: Date.now() + TwitterUnofficial.LOOKUP_TTL_MS,
+      expires: Date.now() + this.LOOKUP_TTL_MS,
     });
     return value;
+  }
+
+  private validateDescriptionLength(
+    postData: PostData<TwitterUnofficialMessageSubmission>,
+    validator: Validator,
+  ): void {
+    const { weightedLength } = parseTweet(postData.options.description ?? '');
+    if (weightedLength > this.MAX_TWEET_LENGTH) {
+      validator.error(
+        'validation.description.max-length',
+        {
+          maxLength: this.MAX_TWEET_LENGTH,
+          currentLength: weightedLength,
+        },
+        'description',
+      );
+    }
   }
 
   /**
@@ -483,15 +503,11 @@ export default class TwitterUnofficial
   }
 
   private validateReplyToUrl(
-    postData: PostData<
-      TwitterUnofficialMessageSubmission | TwitterUnofficialFileSubmission
-    >,
-    validator:
-      | SubmissionValidator<TwitterUnofficialMessageSubmission>
-      | SubmissionValidator<TwitterUnofficialFileSubmission>,
+    postData: PostData<TwitterUnofficialMessageSubmission>,
+    validator: Validator,
   ): void {
     const url = postData.options.replyToUrl;
-    if (url?.trim() && !TwitterUnofficial.parseTweetId(url)) {
+    if (url?.trim() && !this.parseTweetId(url)) {
       validator.error(
         'validation.replyurl.invalid-reply-url',
         { error: '' },
@@ -501,19 +517,15 @@ export default class TwitterUnofficial
   }
 
   private async validateQuotePostUrl(
-    postData: PostData<
-      TwitterUnofficialMessageSubmission | TwitterUnofficialFileSubmission
-    >,
-    validator:
-      | SubmissionValidator<TwitterUnofficialMessageSubmission>
-      | SubmissionValidator<TwitterUnofficialFileSubmission>,
+    postData: PostData<TwitterUnofficialMessageSubmission>,
+    validator: Validator,
   ): Promise<void> {
     const url = postData.options.quotePostUrl;
     if (!url?.trim()) {
       return;
     }
 
-    const tweetId = TwitterUnofficial.parseTweetId(url);
+    const tweetId = this.parseTweetId(url);
     if (!tweetId) {
       validator.error(
         'validation.quoteurl.invalid-quote-url',
@@ -550,13 +562,13 @@ export default class TwitterUnofficial
     }
   }
 
+  /**
+   * twitter-text only extracts real mentions, so things like "@/someone",
+   * emails or a lone "@" are ignored and never reported.
+   */
   private async validateMentions(
-    postData: PostData<
-      TwitterUnofficialMessageSubmission | TwitterUnofficialFileSubmission
-    >,
-    validator:
-      | SubmissionValidator<TwitterUnofficialMessageSubmission>
-      | SubmissionValidator<TwitterUnofficialFileSubmission>,
+    postData: PostData<TwitterUnofficialMessageSubmission>,
+    validator: Validator,
   ): Promise<void> {
     const mentions = uniqBy(
       extractMentions(postData.options.description ?? ''),
