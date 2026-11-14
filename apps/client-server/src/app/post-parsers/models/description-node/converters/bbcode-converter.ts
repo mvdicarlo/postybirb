@@ -108,7 +108,7 @@ export class BBCodeConverter extends BaseConverter {
       if (!this.shouldRenderShortcut(node, context)) return '';
       const sc = this.getUsernameShortcutLink(node, context);
       if (sc?.url.startsWith('http')) {
-        return `[url=${sc.url}]${sc.username}[/url]`;
+        return this.renderLink(sc.username, sc.url);
       }
       return sc ? `${sc.url ?? sc.username}` : '';
     }
@@ -152,6 +152,10 @@ export class BBCodeConverter extends BaseConverter {
     return this.renderTextWithMarks(node.text, node.marks ?? []);
   }
 
+  protected renderLink(text: string, href: string): string {
+    return `[url=${href}]${text}[/url]`;
+  }
+
   /**
    * Renders text with BBCode formatting marks applied.
    */
@@ -192,7 +196,7 @@ export class BBCodeConverter extends BaseConverter {
     const linkMark = marks.find((m) => m.type === 'link');
     if (linkMark) {
       const href = linkMark.attrs?.href ?? '';
-      segmentedText = `[url=${href}]${segmentedText}[/url]`;
+      segmentedText = this.renderLink(segmentedText, href);
     }
 
     return segmentedText;
