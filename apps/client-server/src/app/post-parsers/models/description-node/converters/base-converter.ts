@@ -73,7 +73,7 @@ export abstract class BaseConverter {
 
     try {
       const results = nodes.map((node) => this.convertBlockNode(node, context));
-      return results.join(this.getBlockSeparator());
+      return this.joinBlocks(nodes, results);
     } finally {
       if (isDefaultDescription) {
         this.processingDefaultDescription = false;
@@ -85,6 +85,13 @@ export abstract class BaseConverter {
    * Returns the string used to separate block-level nodes in the final output.
    */
   protected abstract getBlockSeparator(): string;
+
+  /**
+   * Joins converted top-level blocks. `results[i]` is the output of `nodes[i]`.
+   */
+  protected joinBlocks(nodes: TipTapNode[], results: string[]): string {
+    return results.join(this.getBlockSeparator());
+  }
 
   /**
    * Converts the inline content of a block node.

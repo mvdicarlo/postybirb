@@ -56,8 +56,11 @@ export class DescriptionParserService {
     skipTruncation = false,
   ): Promise<string | undefined> {
     const mergedOptions = websiteOptions.mergeDefaults(defaultOptions);
-    const { descriptionType, hidden, maxDescriptionLength } =
-      mergedOptions.getFormFieldFor('description', instance.getFormProperties());
+    const { descriptionType, hidden, maxDescriptionLength, paragraphSpacing } =
+      mergedOptions.getFormFieldFor(
+        'description',
+        instance.getFormProperties(),
+      );
 
     if (descriptionType === DescriptionType.NONE || hidden) {
       return undefined;
@@ -156,6 +159,7 @@ export class DescriptionParserService {
       skipTruncation
         ? Number.MAX_SAFE_INTEGER
         : (maxDescriptionLength ?? Number.MAX_SAFE_INTEGER),
+      paragraphSpacing,
     );
   }
 
@@ -164,6 +168,7 @@ export class DescriptionParserService {
     descriptionType: DescriptionType,
     tree: DescriptionNodeTree,
     maxDescriptionLength: number,
+    paragraphSpacing?: boolean,
   ): string {
     switch (descriptionType) {
       case DescriptionType.MARKDOWN:
@@ -174,7 +179,7 @@ export class DescriptionParserService {
         // Truncate the description if it exceeds the maximum length
         // Generally plaintext descriptions are more likely to have length limits.
         // This is a bit of a blunt truncation, but it's the most straightforward way to enforce the limit.
-        const plainText = tree.toPlainText();
+        const plainText = tree.toPlainText({ paragraphSpacing });
         if (
           maxDescriptionLength &&
           maxDescriptionLength > 0 &&

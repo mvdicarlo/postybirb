@@ -151,6 +151,39 @@ describe('DescriptionParserService', () => {
     `);
   });
 
+  it('should space plaintext paragraphs when the field asks for it', async () => {
+    const instance = {
+      getFormProperties: () => ({}),
+      decoratedProps: {
+        allowAd: true,
+        metadata: {
+          name: 'Test',
+        },
+      },
+    };
+
+    class SpacedPlaintextWebsiteOptions extends BaseWebsiteOptions {
+      @DescriptionField({
+        descriptionType: DescriptionType.PLAINTEXT,
+        paragraphSpacing: true,
+      })
+      declare description: DescriptionValue;
+    }
+
+    const defaultOptions = createWebsiteOptions(testDescription);
+    const websiteOptions = createWebsiteOptions(undefined);
+    const description = await service.parse(
+      instance as unknown as UnknownWebsite,
+      new DefaultWebsiteOptions(defaultOptions.data),
+      new SpacedPlaintextWebsiteOptions(websiteOptions.data),
+      [],
+      '',
+    );
+    expect(description).toBe(
+      'Hello, World!\r\n\r\nA link: https://postybirb.com',
+    );
+  });
+
   it('should parse html description', async () => {
     const instance = {
       getFormProperties: () => ({}),

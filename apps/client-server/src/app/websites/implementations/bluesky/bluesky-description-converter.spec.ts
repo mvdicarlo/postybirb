@@ -26,4 +26,37 @@ describe('BlueskyDescriptionConverter', () => {
       ]
     `);
   });
+
+  it('should separate paragraphs with a blank line and keep link positions', () => {
+    const { text, links } = JSON.parse(
+      new BlueskyConverter({ paragraphSpacing: true }).convert(
+        [
+          { type: 'paragraph', content: [{ type: 'text', text: 'Hey!' }] },
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'My site',
+                marks: [
+                  { type: 'link', attrs: { href: 'https://postybirb.com' } },
+                ],
+              },
+            ],
+          },
+        ],
+        {
+          website: 'bluesky',
+          shortcuts: {},
+          customShortcuts: new Map(),
+          defaultDescription: [],
+        },
+      ),
+    );
+
+    expect(text).toBe('Hey!\r\n\r\nMy site');
+    expect(links).toEqual([
+      { start: 8, end: 15, href: 'https://postybirb.com' },
+    ]);
+  });
 });
