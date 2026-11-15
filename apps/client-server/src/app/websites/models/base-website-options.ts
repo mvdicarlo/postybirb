@@ -24,6 +24,7 @@ import {
 import { uniq } from 'lodash';
 import { Class } from 'type-fest';
 import { DefaultWebsiteOptions } from './default-website-options';
+import { applyTagCase, TagCase } from './tag-case';
 
 export class BaseWebsiteOptions implements IWebsiteFormFields {
   @RatingField({
@@ -66,6 +67,11 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
     hidden: true, // Keep hidden unless overridden
   })
   contentWarning = '';
+
+  /**
+   * Only set by websites that let the user choose it, see `TagCaseField`.
+   */
+  declare tagCase?: TagCase;
 
   constructor(options: Partial<BaseWebsiteOptions | IWebsiteFormFields> = {}) {
     Object.assign(this, options);
@@ -162,6 +168,7 @@ export class BaseWebsiteOptions implements IWebsiteFormFields {
             .map((tag) => additionalProcessor?.(tag) ?? Promise.resolve(tag)), // Mostly for tag converter insert
         )
       )
+        .map((tag) => applyTagCase(tag, this.tagCase))
         .map((tag) =>
           tagsField.spaceReplacer
             ? tag.replace(/\s/g, tagsField.spaceReplacer)

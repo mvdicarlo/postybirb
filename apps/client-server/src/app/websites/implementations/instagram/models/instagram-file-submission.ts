@@ -11,6 +11,7 @@ import {
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { TagCase, TagCaseField } from '../../../models/tag-case';
 
 export class InstagramFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
@@ -25,6 +26,9 @@ export class InstagramFileSubmission extends BaseWebsiteOptions {
     maxTags: 30,
   })
   tags: TagValue = DefaultTagValue();
+
+  @TagCaseField()
+  tagCase: TagCase = 'snake';
 
   @RatingField({
     options: [

@@ -5,6 +5,7 @@ import {
   SubmissionRating,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { TagCase, TagCaseField } from '../../../models/tag-case';
 
 export class TwitterMessageSubmission extends BaseWebsiteOptions {
   @DescriptionField({
@@ -13,6 +14,9 @@ export class TwitterMessageSubmission extends BaseWebsiteOptions {
     expectsInlineTitle: true,
   })
   declare description: DescriptionValue;
+
+  @TagCaseField()
+  tagCase: TagCase = 'snake';
 
   @RatingField({
     options: [

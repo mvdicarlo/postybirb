@@ -14,6 +14,7 @@ import {
 import { sql } from 'drizzle-orm';
 import { MigrateWebsiteOptions } from '../../../decorators/migrate-website-options.decorator';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { TagCase, TagCaseField } from '../../../models/tag-case';
 
 export enum BlueskyWhoCanReply {
   Mention = 'mention',
@@ -83,6 +84,9 @@ export class BlueskyFileSubmission extends BaseWebsiteOptions {
     span: 6,
   })
   labelRating: '' | 'sexual' | 'nudity' | 'porn';
+
+  @TagCaseField({ section: 'website' })
+  tagCase: TagCase = 'snake';
 
   @TextField({ label: 'replyToUrl', section: 'website', span: 6 })
   replyToUrl?: string;
