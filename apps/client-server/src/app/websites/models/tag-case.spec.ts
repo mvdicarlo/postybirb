@@ -25,7 +25,16 @@ describe('applyTagCase', () => {
     expect(applyTagCase('élan vital', 'pascal')).toBe('ÉlanVital');
   });
 
-  it('should never lower what was typed in upper case', () => {
+  it('should join the words in lower case', () => {
+    expect(applyTagCase('blue sky fox', 'lower')).toBe('blueskyfox');
+    expect(applyTagCase('blue   sky\tfox', 'lower')).toBe('blueskyfox');
+    expect(applyTagCase('Furry Art', 'lower')).toBe('furryart');
+    expect(applyTagCase('my OC', 'lower')).toBe('myoc');
+    expect(applyTagCase('Élan Vital', 'lower')).toBe('élanvital');
+    expect(applyTagCase('top 10 art', 'lower')).toBe('top10art');
+  });
+
+  it('should never lower what was typed in upper case in camel and pascal case', () => {
     expect(applyTagCase('my OC', 'camel')).toBe('myOC');
     expect(applyTagCase('my OC', 'pascal')).toBe('MyOC');
     expect(applyTagCase('OC', 'camel')).toBe('OC');
@@ -52,6 +61,14 @@ describe('tag case option', () => {
 
     expect(field.formField).toBe('select');
     expect(field.defaultValue).toBe('snake');
+    expect(field).toMatchObject({
+      options: [
+        { value: 'snake' },
+        { value: 'camel' },
+        { value: 'pascal' },
+        { value: 'lower' },
+      ],
+    });
     expect(await options.getProcessedTags()).toEqual(['blue_sky_fox', 'furry']);
   });
 
@@ -72,8 +89,14 @@ describe('tag case option', () => {
       tagCase: 'pascal',
     });
 
+    const lower = Object.assign(new TwitterFileSubmission(), {
+      tags: { overrideDefault: true, tags: ['Furry Art', 'furry'] },
+      tagCase: 'lower',
+    });
+
     expect(await camel.getProcessedTags()).toEqual(['blueSkyFox', 'furry']);
     expect(await pascal.getProcessedTags()).toEqual(['BlueSkyFox', 'Furry']);
+    expect(await lower.getProcessedTags()).toEqual(['furryart', 'furry']);
   });
 
   it('should apply the case to the output of a tag converter', async () => {
