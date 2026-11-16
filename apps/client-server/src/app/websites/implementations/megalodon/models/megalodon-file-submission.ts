@@ -14,6 +14,7 @@ import {
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { TagCase, TagCaseField } from '../../../models/tag-case';
 
 export class MegalodonFileSubmission extends BaseWebsiteOptions {
   @DescriptionField<MegalodonAccountData>({
@@ -44,6 +45,9 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
   override processTag(tag: string) {
     return `${tag.replaceAll(/\s+/g, '_')}`;
   }
+
+  @TagCaseField()
+  tagCase: TagCase = 'snake';
 
   @SelectField({
     label: 'visibility',

@@ -88,6 +88,7 @@ export const FieldLabelTranslations = {
   species: msg`Species`,
   spoiler: msg`Spoiler`,
   spoilers: msg`Spoilers`,
+  tagCase: msg`Tag case`,
   tagPermissions: msg`Tag permissions`,
   tags: msg`Tags`,
   teaser: msg`Teaser`,

@@ -12,6 +12,7 @@ import {
   TagValue,
 } from '@postybirb/types';
 import { BaseWebsiteOptions } from '../../../models/base-website-options';
+import { TagCase, TagCaseField } from '../../../models/tag-case';
 
 export class MisskeyFileSubmission extends BaseWebsiteOptions {
   @DescriptionField({
@@ -29,6 +30,9 @@ export class MisskeyFileSubmission extends BaseWebsiteOptions {
   override processTag(tag: string) {
     return `${tag.replaceAll(/\s+/g, '_')}`;
   }
+
+  @TagCaseField()
+  tagCase: TagCase = 'snake';
 
   @SelectField({
     label: 'visibility',
