@@ -238,10 +238,9 @@ async function resizeImage(inputBuffer, width, height, animated) {
  *   - Old linear approach: 11 encodes, 9.5 seconds
  *   - Adaptive secant:      2-3 encodes, 2.1 seconds
  *
- * @param {Buffer} inputBuffer - The current buffer (may already be resized/converted)
- * @param {Buffer} originalBuffer - The original unmodified input buffer
- * @param {number} originalWidth - Original image width
- * @param {number} originalHeight - Original image height
+ * @param {Buffer} inputBuffer - The baseline buffer after dimensional resize/conversion
+ * @param {number} baseWidth - Baseline image width
+ * @param {number} baseHeight - Baseline image height
  * @param {number} maxBytes - Maximum allowed file size in bytes
  * @param {string} mimeType - The output MIME type (for choosing encoder)
  * @returns {Promise<{buffer: Buffer, width: number, height: number, format: string}>}
@@ -249,9 +248,8 @@ async function resizeImage(inputBuffer, width, height, animated) {
  */
 async function scaleDownImage(
   inputBuffer,
-  originalBuffer,
-  originalWidth,
-  originalHeight,
+  baseWidth,
+  baseHeight,
   maxBytes,
   mimeType,
   animated,
@@ -264,15 +262,15 @@ async function scaleDownImage(
   if (mimeType === 'image/png') {
     result = {
       buffer: inputBuffer,
-      width: originalWidth,
-      height: originalHeight,
+      width: baseWidth,
+      height: baseHeight,
       format: 'png',
     };
   } else {
     result = await encodeAtScale(
-      originalBuffer,
-      originalWidth,
-      originalHeight,
+      inputBuffer,
+      baseWidth,
+      baseHeight,
       1.0,
       mimeType,
       animated,
@@ -301,10 +299,10 @@ async function scaleDownImage(
   }
   scale = Math.max(scale, 0.1);
 
-  let currentBuffer = await encodeAtScale(
-    originalBuffer,
-    originalWidth,
-    originalHeight,
+  const currentBuffer = await encodeAtScale(
+    inputBuffer,
+    baseWidth,
+    baseHeight,
     scale,
     mimeType,
     animated,
@@ -315,6 +313,8 @@ async function scaleDownImage(
   let prevBytes = fullSize;
   let currScale = scale;
   let currBytes = currentBuffer.buffer.length;
+  let bestFit = currBytes <= maxBytes ? currentBuffer : undefined;
+  let bestFitScale = bestFit ? currScale : 0;
 
   // Step 3: Secant refinement — use two-point interpolation to converge.
   // The secant method models scale² → bytes as locally linear and
@@ -346,9 +346,9 @@ async function scaleDownImage(
     if (Math.abs(nextScale - currScale) < 0.005) break;
 
     const nextResult = await encodeAtScale(
-      originalBuffer,
-      originalWidth,
-      originalHeight,
+      inputBuffer,
+      baseWidth,
+      baseHeight,
       nextScale,
       mimeType,
       animated,
@@ -358,16 +358,19 @@ async function scaleDownImage(
     prevBytes = currBytes;
     currScale = nextScale;
     currBytes = nextResult.buffer.length;
-    currentBuffer = nextResult;
+    if (currBytes <= maxBytes && currScale > bestFitScale) {
+      bestFit = nextResult;
+      bestFitScale = currScale;
+    }
   }
 
-  if (currentBuffer.buffer.length > maxBytes) {
+  if (!bestFit) {
     throw new Error(
       'Image is still too large after scaling down. Try scaling down the image manually.',
     );
   }
 
-  return currentBuffer;
+  return bestFit;
 }
 
 /**
@@ -624,18 +627,17 @@ async function processImage(input) {
       if (resize.maxBytes && input.buffer.length > resize.maxBytes) {
         if (buffer.length > resize.maxBytes) {
           modified = true;
-          let origWidth = input.fileWidth;
-          let origHeight = input.fileHeight;
-          if (!origWidth || !origHeight) {
-            const origMeta = await load(input.buffer).metadata();
-            origWidth = origWidth || origMeta.width;
-            origHeight = origHeight || origMeta.height;
+          let baseWidth = finalWidth;
+          let baseHeight = finalHeight;
+          if (!baseWidth || !baseHeight) {
+            const baseMeta = await load(buffer).metadata();
+            baseWidth = baseWidth || baseMeta.width;
+            baseHeight = baseHeight || baseMeta.height;
           }
           const scaleResult = await scaleDownImage(
             buffer,
-            input.buffer,
-            origWidth,
-            origHeight,
+            baseWidth,
+            baseHeight,
             resize.maxBytes,
             resize.outputMimeType || input.mimeType,
             keepAnimated,

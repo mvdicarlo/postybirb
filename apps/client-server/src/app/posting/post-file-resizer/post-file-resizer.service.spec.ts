@@ -136,6 +136,46 @@ describe('PostFileResizerService', () => {
     expect(resized.thumbnail?.fileName).toBe('thumbnail_test.png');
   });
 
+  it('keeps a fitting PNG when later size refinement overshoots', async () => {
+    const pngFile = readFileSync(
+      join(__dirname, '../../../test-files/png_no_alpha.png'),
+    );
+    const tf = createFile('test.png', 'image/png', 600, 600, pngFile);
+    const maxBytes = 253;
+
+    const resized = await service.resize({
+      file: tf,
+      resize: { maxBytes },
+    });
+
+    expect(resized.buffer.length).toBeLessThanOrEqual(maxBytes);
+    expect(resized.mimeType).toBe('image/png');
+  });
+
+  it('respects PNG dimension and byte limits simultaneously', async () => {
+    const pngFile = readFileSync(
+      join(__dirname, '../../../test-files/png_no_alpha.png'),
+    );
+    const tf = createFile('test.png', 'image/png', 600, 600, pngFile);
+    const maxDimension = 300;
+    const maxBytes = 500;
+
+    const resized = await service.resize({
+      file: tf,
+      resize: {
+        width: maxDimension,
+        height: maxDimension,
+        maxBytes,
+      },
+    });
+    const metadata = await sharpManager.getMetadata(resized.buffer);
+
+    expect(metadata.width).toBeLessThanOrEqual(maxDimension);
+    expect(metadata.height).toBeLessThanOrEqual(maxDimension);
+    expect(resized.buffer.length).toBeLessThanOrEqual(maxBytes);
+    expect(resized.mimeType).toBe('image/png');
+  });
+
   it('uses generated metadata for a custom thumbnail whose format changes', async () => {
     const pngFile = readFileSync(
       join(__dirname, '../../../test-files/png_with_alpha.png'),
@@ -175,10 +215,6 @@ describe('PostFileResizerService', () => {
     // resize from Step 2. With JPEG, MozJPEG re-encoding is so effective that
     // scaleDownImage could fit the file under 2MB WITHOUT reducing dimensions
     // below 1500px — e.g. returning 1824x1596 at 1.9MB.
-    //
-    // This does NOT reproduce with PNG because PNG is lossless: the only way
-    // to reduce file size is to reduce dimensions, so both constraints end up
-    // satisfied through the secant loop regardless.
     const MAX_DIMENSION = 1500;
     const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
 
