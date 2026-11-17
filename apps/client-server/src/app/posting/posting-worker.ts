@@ -804,7 +804,30 @@ export class PostingWorker {
         ),
     });
 
-    return uniqueUrls(sourceUnits.map((unit) => unit.url));
+    const sourceAccountIds = [
+      ...new Set(sourceUnits.map((unit) => unit.accountId)),
+    ];
+    if (sourceAccountIds.length === 0) {
+      return [];
+    }
+
+    const sourceAccounts = await this.accountRepository.find({
+      where: (account, { inArray }) => inArray(account.id, sourceAccountIds),
+    });
+    const excludedAccountIds = new Set(
+      sourceAccounts
+        .filter(
+          (account) =>
+            account.website === 'discord' || account.website === 'telegram',
+        )
+        .map((account) => account.id),
+    );
+
+    return uniqueUrls(
+      sourceUnits
+        .filter((unit) => !excludedAccountIds.has(unit.accountId))
+        .map((unit) => unit.url),
+    );
   }
 
   private getResponseData(response: IPostResponse): Record<string, unknown> {
