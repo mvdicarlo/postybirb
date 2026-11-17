@@ -6,7 +6,10 @@ import {
 } from './converters/custom-converter';
 import { HtmlConverter } from './converters/html-converter';
 import { MarkdownConverter } from './converters/markdown-converter';
-import { PlainTextConverter } from './converters/plaintext-converter';
+import {
+  PlainTextConverter,
+  PlainTextConverterOptions,
+} from './converters/plaintext-converter';
 import { ConversionContext } from './description-node.base';
 import { TipTapNode } from './description-node.types';
 
@@ -61,8 +64,8 @@ export class DescriptionNodeTree {
     return converter.convert(this.withInsertions(), this.context);
   }
 
-  toPlainText(): string {
-    const converter = new PlainTextConverter();
+  toPlainText(options?: PlainTextConverterOptions): string {
+    const converter = new PlainTextConverter(options);
     return converter.convert(this.withInsertions(), this.context);
   }
 

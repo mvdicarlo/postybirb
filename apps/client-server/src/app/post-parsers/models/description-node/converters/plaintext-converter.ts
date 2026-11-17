@@ -2,9 +2,42 @@ import { ConversionContext } from '../description-node.base';
 import { TipTapNode } from '../description-node.types';
 import { BaseConverter } from './base-converter';
 
+export type PlainTextConverterOptions = {
+  /**
+   * Separates consecutive paragraphs with a blank line, the way websites
+   * that accept HTML render them.
+   */
+  paragraphSpacing?: boolean;
+};
+
 export class PlainTextConverter extends BaseConverter {
+  constructor(private readonly options: PlainTextConverterOptions = {}) {
+    super();
+  }
+
   protected getBlockSeparator(): string {
     return '\r\n';
+  }
+
+  protected joinBlocks(nodes: TipTapNode[], results: string[]): string {
+    if (!this.options.paragraphSpacing) {
+      return super.joinBlocks(nodes, results);
+    }
+
+    const separator = this.getBlockSeparator();
+    // An empty paragraph already acts as a blank line, so only paragraphs
+    // that produced text are spaced.
+    const isFilledParagraph = (index: number) =>
+      nodes[index].type === 'paragraph' && results[index].trim().length > 0;
+
+    return results.reduce((output, result, index) => {
+      if (index === 0) return result;
+      const spacing =
+        isFilledParagraph(index - 1) && isFilledParagraph(index)
+          ? separator
+          : '';
+      return `${output}${separator}${spacing}${result}`;
+    }, '');
   }
 
   convertBlockNode(node: TipTapNode, context: ConversionContext): string {

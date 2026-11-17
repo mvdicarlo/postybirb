@@ -24,6 +24,13 @@ type DescriptionExtraFields = {
    * If disabled it will produce a warning if tags were included.
    */
   expectsInlineTags?: boolean;
+
+  /**
+   * Whenether consecutive paragraphs are separated by a blank line.
+   * Only applies to plaintext descriptions. Meant for websites that show the text as is (e.g. microblogs),
+   * so paragraphs look the same as on websites that render HTML.
+   */
+  paragraphSpacing?: boolean;
 };
 
 export const DescriptionField = createFieldDecorator<

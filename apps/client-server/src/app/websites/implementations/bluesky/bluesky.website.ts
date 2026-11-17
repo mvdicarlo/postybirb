@@ -187,7 +187,7 @@ export default class Bluesky
   }
 
   getDescriptionConverter(): BaseConverter {
-    return new BlueskyConverter();
+    return new BlueskyConverter({ paragraphSpacing: true });
   }
 
   async onPostFileSubmission(
