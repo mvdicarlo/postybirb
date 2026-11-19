@@ -21,6 +21,18 @@ msgstr "({fileName}) Alt text length is greater then maximum ({currentLength} / 
 msgid "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
 msgstr "({fileSizeString}) is too large (max {maxFileSizeString}) and an attempt will be made to reduce size when posting"
 
+#: apps/postybirb-ui/src/i18n/validation-translation.tsx
+msgid "Add your Yiff Party API key in the account settings."
+msgstr "Add your Yiff Party API key in the account settings."
+
+#: apps/postybirb-ui/src/components/website-login-views/yiff-party/yiff-party-login-view.tsx
+msgid "Apply for a Yiff Party artist API key"
+msgstr "Apply for a Yiff Party artist API key"
+
+#: apps/postybirb-ui/src/i18n/validation-translation.tsx
+msgid "Yiff Party adds your artist tag by itself, remove these tags"
+msgstr "Yiff Party adds your artist tag by itself, remove these tags"
+
 #. placeholder {0}: tag.post_count
 #: apps/postybirb-ui/src/components/website-components/e621/e621-tag-search-provider.tsx
 msgid "{0, plural, one {# post} other {# posts}}"
@@ -141,6 +153,10 @@ msgstr "{expectedUnitCount} unit(s) will be staged"
 #: apps/postybirb-ui/src/components/sections/submissions-section/post-confirm-modal/bulk-post-preview-modal.tsx
 msgid "{expectedUnitCount} units"
 msgstr "{expectedUnitCount} units"
+
+#: apps/postybirb-ui/src/i18n/validation-translation.tsx
+msgid "{fileName} is too small for Yiff Party (minimum {minWidth} by {minHeight} pixels)"
+msgstr "{fileName} is too small for Yiff Party (minimum {minWidth} by {minHeight} pixels)"
 
 #: apps/postybirb-ui/src/components/sections/submissions-section/submission-card/submission-schedule-badge.tsx
 msgid "{formattedNextPostAt} (scheduling is off)"
@@ -436,6 +452,7 @@ msgstr "and {remainingCount} more"
 #: apps/postybirb-ui/src/components/website-login-views/philomena/philomena-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/tailspace/tailspace-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/yiff-party/yiff-party-login-view.tsx
 msgid "API Key"
 msgstr "API Key"
 
@@ -2385,6 +2402,7 @@ msgstr "Login Status Filter"
 
 #: apps/postybirb-ui/src/components/website-login-views/subscribe-star-adult/subscribe-star-adult-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/tailspace/tailspace-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/yiff-party/yiff-party-login-view.tsx
 msgid "Login verified"
 msgstr "Login verified"
 
@@ -3398,6 +3416,7 @@ msgstr "Russian"
 #: apps/postybirb-ui/src/components/website-login-views/prometheus/prometheus-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/sofurry/sofurry-login-view.tsx
 #: apps/postybirb-ui/src/components/website-login-views/tailspace/tailspace-login-view.tsx
+#: apps/postybirb-ui/src/components/website-login-views/yiff-party/yiff-party-login-view.tsx
 msgid "Save"
 msgstr "Save"
 

@@ -19,6 +19,7 @@ import { SubscribeStarAdultLoginView } from './subscribe-star-adult';
 import { TailspaceLoginView } from './tailspace';
 import { TelegramLoginView } from './telegram';
 import { TwitterLoginView } from './twitter';
+import { YiffPartyLoginView } from './yiff-party';
 import type { LoginViewComponent } from './types';
 
 // Re-export types and helpers
@@ -56,6 +57,7 @@ const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
   Tailspace: TailspaceLoginView,
   Telegram: TelegramLoginView,
   Twitter: TwitterLoginView,
+  YiffParty: YiffPartyLoginView,
   e621: E621LoginView,
 };
 
