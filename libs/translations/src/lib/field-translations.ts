@@ -18,6 +18,7 @@ export const FieldLabelTranslations = {
   artistName: msg`Artist name`,
   audience: msg`Audience`,
   authorizedViewers: msg`Authorized viewers`,
+  blockGrokEdit: msg`Block Grok edit`,
   blockGuests: msg`Block guests`,
   blog: msg`Blog`,
   category: msg`Category`,

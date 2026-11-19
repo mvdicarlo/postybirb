@@ -289,6 +289,45 @@ export const TranslationMessages: TranslationsMap = {
     );
   },
 
+  
+
+  'validation.replyurl.invalid-reply-url': ({ error }) => {
+    // eslint-disable-next-line no-param-reassign, lingui/no-unlocalized-strings
+    error = error.replace('Invalid post URL to reply to', '');
+    return (
+      <>
+        <Trans>Invalid post URL to reply to.</Trans>
+        {error ? ` ${error}` : ''}
+      </>
+    );
+  },
+
+  'validation.quoteurl.invalid-quote-url': ({ error }) => {
+    // eslint-disable-next-line no-param-reassign, lingui/no-unlocalized-strings
+    error = error.replace('Invalid post URL to quote', '');
+    return (
+      <>
+        <Trans>Invalid post URL to quote.</Trans>
+        {error ? ` ${error}` : ''}
+      </>
+    );
+  },
+
+  'validation.file.twitter-unofficial.rating-matches-default': () => (
+    <Trans>
+      Make sure that the default rating matches Twitter / X blur content field.
+    </Trans>
+  ),
+
+  'validation.description.twitter-unofficial.invalid-mentions': ({ mentions }) => {
+    const mentionsList = mentions.join(', ');
+    return (
+      <Trans>
+        These mentioned users don't exist: {mentionsList}
+      </Trans>
+    );
+  },
+
   'validation.file.bluesky.unsupported-combination-of-files': () => (
     <Trans>
       Supports either a set of images, a single video, or a single GIF.
@@ -297,15 +336,6 @@ export const TranslationMessages: TranslationsMap = {
 
   'validation.file.bluesky.gif-conversion': () => (
     <Trans>Bluesky automatically converts GIFs to videos.</Trans>
-  ),
-
-  'validation.file.bluesky.invalid-reply-url': () => (
-    <Trans>Invalid post URL to reply to.</Trans>
-  ),
-
-  'validation.file.bluesky.invalid-quote-url': ({ error }) => (
-    // eslint-disable-next-line lingui/no-unlocalized-strings
-    <Trans>Invalid quote post URL: {error.replace("Invalid quote post url", "")}</Trans>
   ),
 
   'validation.file.bluesky.rating-matches-default': () => (
