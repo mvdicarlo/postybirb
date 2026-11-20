@@ -7,14 +7,16 @@ import {
   UpdateAltFileDto,
 } from '@postybirb/types';
 /* eslint-disable no-param-reassign */
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import {
   FileBufferRepository,
   SubmissionFile,
   SubmissionFileRepository,
+  withTransactionContext,
 } from '@postybirb/database';
 import { read } from '@postybirb/fs';
 import { Logger } from '@postybirb/logger';
+import { and, asc, eq, gt, isNull, like, or } from 'drizzle-orm';
 
 import type { queueAsPromised } from 'fastq';
 import fastq from 'fastq';
@@ -32,7 +34,7 @@ import { UpdateFileService } from './services/update-file.service';
  * @todo text encoding parsing and file name conversion (no periods)
  */
 @Injectable()
-export class FileService {
+export class FileService implements OnModuleInit {
   private readonly logger = Logger();
 
   private readonly queue: queueAsPromised<Task, SubmissionFile> = fastq.promise<
@@ -48,6 +50,66 @@ export class FileService {
     private readonly createFileService: CreateFileService,
     private readonly updateFileService: UpdateFileService,
   ) {}
+
+  async onModuleInit(): Promise<void> {
+    const { table } = this.fileRepository;
+    let lastId: EntityId | undefined;
+    let hasMore = true;
+
+    while (hasMore) {
+      const files = await this.fileRepository.find({
+        where: and(
+          like(table.mimeType, 'image/%'),
+          or(eq(table.hasThumbnail, false), isNull(table.thumbnailId)),
+          lastId ? gt(table.id, lastId) : undefined,
+        ),
+        orderBy: asc(table.id),
+        limit: 100,
+      });
+
+      for (const file of files) {
+        try {
+          await this.ensureThumbnail(file.id);
+        } catch (error) {
+          this.logger
+            .withError(error)
+            .error(`Failed to generate missing thumbnail for file '${file.id}'`);
+        }
+      }
+
+      lastId = files.at(-1)?.id;
+      hasMore = files.length === 100;
+    }
+  }
+
+  public async ensureThumbnail(id: EntityId): Promise<void> {
+    const file = await this.findFile(id);
+    if (!file.mimeType.startsWith('image/')) return;
+
+    if (file.thumbnailId) {
+      if (!file.hasThumbnail) {
+        await this.fileRepository.update(id, { hasThumbnail: true });
+      }
+      return;
+    }
+
+    const source = await this.fileBufferRepository.findByIdOrThrow(
+      file.primaryFileId,
+    );
+    await withTransactionContext(this.fileRepository.db, async (ctx) => {
+      const thumbnail = await this.createFileService.createFileThumbnail(
+        ctx,
+        file,
+        { mimetype: file.mimeType },
+        source.buffer,
+      );
+      await ctx
+        .getDb()
+        .update(this.fileRepository.table)
+        .set({ thumbnailId: thumbnail.id, hasThumbnail: true })
+        .where(eq(this.fileRepository.table.id, id));
+    });
+  }
 
   /**
    * Deletes a file.

@@ -4,6 +4,11 @@ import { NULL_ACCOUNT_ID, NullAccount, SubmissionRating, SubmissionType } from '
 import { copyFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
+import { FileService } from '../../file/file.service';
+import { CreateFileService } from '../../file/services/create-file.service';
+import { UpdateFileService } from '../../file/services/update-file.service';
+import { SharpInstanceManager } from '../../image-processing/sharp-instance-manager';
+import { NoopPlatformService } from '../../platform/testing/noop-platform-providers';
 import { LegacySubmissionConverter } from './legacy-submission.converter';
 
 describe('LegacySubmissionConverter', () => {
@@ -15,6 +20,8 @@ describe('LegacySubmissionConverter', () => {
   let submissionFileRepository: SubmissionFileRepository;
   let fileBufferRepository: FileBufferRepository;
   let accountRepository: AccountRepository;
+  let fileService: FileService;
+  let sharpInstanceManager: SharpInstanceManager;
   const ts = Date.now();
 
   /**
@@ -107,8 +114,14 @@ describe('LegacySubmissionConverter', () => {
     // Replace file path placeholders with actual paths
     prepareSubmissionData(testDataDir);
 
-    converter = new LegacySubmissionConverter(testDataPath, false);
-    templateConverter = new LegacySubmissionConverter(testDataPath, true);
+    sharpInstanceManager = new SharpInstanceManager(new NoopPlatformService());
+    const createFileService = new CreateFileService(sharpInstanceManager);
+    fileService = new FileService(
+      createFileService,
+      new UpdateFileService(createFileService, sharpInstanceManager),
+    );
+    converter = new LegacySubmissionConverter(testDataPath, fileService, false);
+    templateConverter = new LegacySubmissionConverter(testDataPath, fileService, true);
     submissionRepository = new SubmissionRepository();
     websiteOptionsRepository = new WebsiteOptionsRepository();
     submissionFileRepository = new SubmissionFileRepository();
@@ -117,6 +130,11 @@ describe('LegacySubmissionConverter', () => {
 
     // Pre-populate accounts (FK dependency)
     await createTestAccounts();
+  });
+
+  afterEach(async () => {
+    jest.restoreAllMocks();
+    await sharpInstanceManager.onModuleDestroy();
   });
 
   describe('submission imports', () => {
@@ -315,14 +333,9 @@ describe('LegacySubmissionConverter', () => {
     });
 
     it('should skip parts for missing accounts', async () => {
-      // Don't create website accounts — converter should skip parts gracefully
-      clearDatabase();
+      await accountRepository.deleteById(['acc-discord-001', 'acc-fa-001']);
 
-      // Still need NullAccount for default WebsiteOptions FK
-      accountRepository = new AccountRepository();
-      await accountRepository.insert(new NullAccount());
-
-      const freshConverter = new LegacySubmissionConverter(testDataPath, false);
+      const freshConverter = new LegacySubmissionConverter(testDataPath, fileService, false);
       await freshConverter.import();
 
       const options = await websiteOptionsRepository.findAll();
@@ -405,6 +418,52 @@ describe('LegacySubmissionConverter', () => {
   });
 
   describe('file submissions', () => {
+    it('generates and saves minified thumbnails for imported images', async () => {
+      await converter.import();
+
+      const files = await submissionFileRepository.findAll();
+      expect(files.length).toBeGreaterThan(0);
+      for (const file of files) {
+        expect(file.hasThumbnail).toBe(true);
+        expect(file.hasCustomThumbnail).toBe(false);
+        const thumbnail = await fileBufferRepository.findByIdOrThrow(
+          file.thumbnailId,
+        );
+        const source = await fileBufferRepository.findByIdOrThrow(
+          file.primaryFileId,
+        );
+        expect(thumbnail.id).not.toBe(source.id);
+        expect(thumbnail.width).toBeLessThanOrEqual(400);
+        expect(thumbnail.height).toBeLessThanOrEqual(400);
+        expect(thumbnail.buffer.length).toBeLessThan(source.buffer.length);
+      }
+    });
+
+    it('keeps imported files when generation fails and repairs them at startup', async () => {
+      const generate = jest
+        .spyOn(fileService, 'ensureThumbnail')
+        .mockRejectedValueOnce(new Error('Thumbnail generation failed'));
+
+      await converter.import();
+
+      expect(await submissionRepository.findAll()).toHaveLength(5);
+      const files = await submissionFileRepository.findAll();
+      const missing = files.filter((file) => !file.hasThumbnail);
+      expect(missing).toHaveLength(1);
+      expect(
+        await fileBufferRepository.findByIdOrThrow(missing[0].primaryFileId),
+      ).toBeDefined();
+      generate.mockRestore();
+
+      await fileService.onModuleInit();
+
+      expect(
+        (await submissionFileRepository.findAll()).every(
+          (file) => file.hasThumbnail && file.thumbnailId,
+        ),
+      ).toBe(true);
+    });
+
     it('should import primary file for FILE submissions', async () => {
       await converter.import();
 

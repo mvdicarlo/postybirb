@@ -325,7 +325,7 @@ export class CreateFileService {
   public async createFileThumbnail(
     ctx: TransactionContext,
     fileEntity: SubmissionFile,
-    file: MulterFileInfo,
+    file: Pick<MulterFileInfo, 'mimetype'>,
     imageBuffer: Buffer,
   ): Promise<IFileBuffer> {
     const {

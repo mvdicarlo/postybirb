@@ -307,4 +307,133 @@ describe('FileService', () => {
     // Restore the original method
     jest.restoreAllMocks();
   });
+
+  describe('missing thumbnail backfill', () => {
+    async function createImageWithoutThumbnail(
+      id = 'missing-image',
+      buffer = testFile!,
+    ) {
+      const submission = await createSubmission();
+      const repository = new SubmissionFileRepository();
+      const file = await repository.insert({
+        id,
+        submissionId: submission.id,
+        fileName: 'sample.jpg',
+        mimeType: 'image/jpeg',
+        hash: 'original-hash',
+        size: buffer.length,
+        width: 138,
+        height: 202,
+        hasThumbnail: false,
+      });
+      const source = await fileBufferRepository.insert({
+        submissionFileId: file.id,
+        buffer,
+        fileName: file.fileName,
+        mimeType: file.mimeType,
+        size: buffer.length,
+        width: file.width,
+        height: file.height,
+      });
+      return repository.update(file.id, { primaryFileId: source.id });
+    }
+
+    it('saves missing thumbnails at startup and does not regenerate them', async () => {
+      const file = await createImageWithoutThumbnail();
+      const generate = jest.spyOn(
+        module.get(CreateFileService),
+        'generateThumbnail',
+      );
+
+      await service.onModuleInit();
+      await service.onModuleInit();
+
+      const updated = await service.findFile(file.id);
+      await loadBuffers(updated);
+      expect(updated.hasThumbnail).toBe(true);
+      expect(updated.hasCustomThumbnail).toBe(false);
+      expect(updated.thumbnailId).toBeTruthy();
+      expect(updated.thumbnail?.fileName).toBe('thumbnail_sample.jpg');
+      expect(updated.thumbnail?.width).toBeLessThanOrEqual(400);
+      expect(updated.thumbnail?.height).toBeLessThanOrEqual(400);
+      expect(updated.file.buffer).toEqual(testFile);
+      expect(updated.hash).toBe(file.hash);
+      expect(generate).toHaveBeenCalledTimes(1);
+      generate.mockRestore();
+    });
+
+    it('preserves custom thumbnails and repairs a stale availability flag', async () => {
+      const file = await createImageWithoutThumbnail();
+      await service.ensureThumbnail(file.id);
+      const repository = new SubmissionFileRepository();
+      const before = await repository.update(file.id, {
+        hasThumbnail: false,
+        hasCustomThumbnail: true,
+      });
+      const thumbnail = await fileBufferRepository.findByIdOrThrow(
+        before.thumbnailId,
+      );
+
+      await service.onModuleInit();
+
+      const after = await service.findFile(file.id);
+      expect(after.hasThumbnail).toBe(true);
+      expect(after.hasCustomThumbnail).toBe(true);
+      expect(after.thumbnailId).toBe(before.thumbnailId);
+      expect(
+        (await fileBufferRepository.findByIdOrThrow(after.thumbnailId)).buffer,
+      ).toEqual(thumbnail.buffer);
+    });
+
+    it('continues past invalid images without marking them as generated', async () => {
+      const invalid = await createImageWithoutThumbnail(
+        'invalid-image',
+        Buffer.from('not an image'),
+      );
+      const valid = await createImageWithoutThumbnail();
+
+      await service.onModuleInit();
+
+      expect((await service.findFile(invalid.id)).hasThumbnail).toBe(false);
+      expect((await service.findFile(invalid.id)).thumbnailId).toBeFalsy();
+      expect((await service.findFile(valid.id)).hasThumbnail).toBe(true);
+    });
+
+    it('skips non-image files', async () => {
+      const file = await createImageWithoutThumbnail();
+      await new SubmissionFileRepository().update(file.id, {
+        mimeType: 'application/pdf',
+      });
+
+      await service.onModuleInit();
+
+      expect((await service.findFile(file.id)).thumbnailId).toBeFalsy();
+    });
+
+    it('visits every batch even when files cannot be repaired', async () => {
+      const submission = await createSubmission();
+      await new SubmissionFileRepository().insert(
+        Array.from({ length: 101 }, (_, index) => ({
+          id: `missing-image-${String(index).padStart(3, '0')}`,
+          submissionId: submission.id,
+          fileName: 'sample.jpg',
+          mimeType: 'image/jpeg',
+          hash: 'original-hash',
+          size: 0,
+          width: 0,
+          height: 0,
+          hasThumbnail: false,
+        })),
+      );
+      const generate = jest
+        .spyOn(service, 'ensureThumbnail')
+        .mockResolvedValue(undefined);
+
+      await service.onModuleInit();
+
+      expect(generate).toHaveBeenCalledTimes(101);
+      expect(generate).toHaveBeenLastCalledWith('missing-image-100');
+      generate.mockRestore();
+    });
+  });
 });
