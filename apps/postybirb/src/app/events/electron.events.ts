@@ -8,14 +8,10 @@
  */
 import { getTelemetryInstallationId, Logger } from '@postybirb/logger';
 import {
-  SubmissionSidecarSchema,
-  type SubmissionSidecar,
-} from '@postybirb/types';
-import {
-  getPartitionKey,
-  PostyBirbEnvConfig,
-  type RemoteConfig,
-  RemoteConfigManager,
+    getPartitionKey,
+    PostyBirbEnvConfig,
+    type RemoteConfig,
+    RemoteConfigManager,
 } from '@postybirb/utils/common';
 import { app, BrowserWindow, dialog, ipcMain, session } from 'electron';
 import { environment } from '../../environments/environment';
@@ -38,28 +34,6 @@ function assertTrustedSender(event: TrustableEvent, channel: string): void {
     logger.warn(`Rejected IPC '${channel}' from an untrusted sender.`);
     throw new Error(`Rejected IPC '${channel}' from an untrusted sender.`);
   }
-}
-
-/** Return the sidecar path for a file path, undefined otherwise. */
-function getSidecarPath(filePath: string): string | undefined {
-  if (filePath.endsWith('\\') || filePath.endsWith('/')) {
-    return undefined;
-  }
-
-  const basenameStart = Math.max(
-    filePath.lastIndexOf('/'),
-    filePath.lastIndexOf('\\'),
-  );
-  const basename = filePath.slice(basenameStart + 1);
-  const extensionStart = basename.lastIndexOf('.');
-  if (extensionStart > 0) {
-    return `${filePath.slice(0, basenameStart + 1)}${basename.slice(
-      0,
-      extensionStart,
-    )}.json`;
-  }
-
-  return `${filePath}.json`;
 }
 
 /** Register all IPC handlers. Call once, before the main window is created. */
@@ -262,57 +236,6 @@ export function bootstrapElectronEvents(): Electron.IpcMain {
         if (!words.includes(word)) {
           event.sender.session.removeWordFromSpellCheckerDictionary(word);
         }
-      }
-    },
-  );
-
-  ipcMain.handle(
-    IPC_CHANNELS.readSidecarOptions,
-    async (
-      event,
-      filePath: string,
-    ): Promise<SubmissionSidecar | undefined> => {
-      assertTrustedSender(event, IPC_CHANNELS.readSidecarOptions);
-
-      if (!filePath || typeof filePath !== 'string') {
-        return undefined;
-      }
-
-      const sidecarPath = getSidecarPath(filePath);
-      if (!sidecarPath) {
-        return undefined;
-      }
-
-      const { stat, readFile } = await import('fs/promises');
-      try {
-        const stats = await stat(sidecarPath);
-        if (!stats.isFile()) {
-          return undefined;
-        }
-        if (stats.size > 10 * 1024 * 1024) { // 10 MB
-          logger
-            .withMetadata({ sidecarPath, size: stats.size })
-            .warn('Sidecar file exceeds the maximum size.');
-          return undefined;
-        }
-
-        const raw = JSON.parse(await readFile(sidecarPath, 'utf-8'));
-        const sidecar = SubmissionSidecarSchema.safeParse(raw);
-        if (!sidecar.success) {
-          logger
-            .withMetadata({ sidecarPath })
-            .warn('Sidecar file failed validation.');
-          return undefined;
-        }
-        return sidecar.data;
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-          logger
-            .withMetadata({ sidecarPath })
-            .withError(error)
-            .warn('Failed to read sidecar file.');
-        }
-        return undefined;
       }
     },
   );

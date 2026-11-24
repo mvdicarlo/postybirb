@@ -1,6 +1,6 @@
 import type { PreloadBridge } from '@postybirb/types';
 import type { RemoteConfig } from '@postybirb/utils/common';
-import { contextBridge, ipcRenderer, webUtils } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 import { type AppMetadata, IPC_CHANNELS } from '../constants';
 
 // Implementation at electron.events.ts, typings for ui at main.tsx.
@@ -16,46 +16,6 @@ const metadata: AppMetadata = (ipcRenderer.sendSync(
   app_port: '',
   app_version: '',
 };
-
-const droppedFilePaths = new Map<string, string[]>();
-
-function getFileIdentity(file: Pick<File, 'name' | 'size' | 'lastModified'>) {
-  return `${file.name}\0${file.size}\0${file.lastModified}`;
-}
-
-type NativeDropEvent = {
-  dataTransfer?: {
-    files: ArrayLike<File>;
-  };
-};
-
-const preloadGlobal = globalThis as typeof globalThis & {
-  addEventListener(
-    type: 'drop',
-    listener: (event: NativeDropEvent) => void,
-    options?: boolean,
-  ): void;
-};
-
-preloadGlobal.addEventListener(
-  'drop',
-  (event) => {
-    const files = event.dataTransfer?.files;
-    if (!files?.length) return;
-
-    droppedFilePaths.clear();
-    for (const file of Array.from(files)) {
-      const filePath = webUtils.getPathForFile(file);
-      if (!filePath) continue;
-
-      const identity = getFileIdentity(file);
-      const paths = droppedFilePaths.get(identity) ?? [];
-      paths.push(filePath);
-      droppedFilePaths.set(identity, paths);
-    }
-  },
-  true,
-);
 
 const bridge: PreloadBridge = {
   pickDirectory: (defaultPath) =>
@@ -78,16 +38,6 @@ const bridge: PreloadBridge = {
     ipcRenderer.invoke(IPC_CHANNELS.getCookiesForAccount, accountId),
   getLocalStorageForAccount: (accountId: string, url: string) =>
     ipcRenderer.invoke(IPC_CHANNELS.getLocalStorageForAccount, accountId, url),
-  readSidecarOptions: (file: File) => {
-    const diskPath = webUtils.getPathForFile(file);
-    const identity = getFileIdentity(file);
-    const paths = droppedFilePaths.get(identity);
-    const filePath = diskPath || paths?.shift() || '';
-    if (paths?.length === 0) {
-      droppedFilePaths.delete(identity);
-    }
-    return ipcRenderer.invoke(IPC_CHANNELS.readSidecarOptions, filePath);
-  },
 
   // Gracefully request app quit from renderer.
   quit: (code?: number) => ipcRenderer.send(IPC_CHANNELS.quit, code),
