@@ -33,6 +33,7 @@ export const IPC_CHANNELS = {
   // Asynchronous request/response.
   getLanIp: 'get-lan-ip',
   pickDirectory: 'pick-directory',
+  readSidecarOptions: 'read-sidecar-options',
   getCookiesForAccount: 'get-cookies-for-account',
   getLocalStorageForAccount: 'get-local-storage-for-account',
   setSpellcheckerEnabled: 'set-spellchecker-enabled',
