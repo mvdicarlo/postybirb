@@ -84,8 +84,7 @@ If you're on linux or other OS please create an issue with log from the unsucess
 </summary>
 
 7. `yarn run setup` Installs hooks/husky
-8. `yarn start` Starts app (`yarn start --outputStyle=Stream` for live verbose output)
-9. If no GUI appears and the output includes an error like `Module did not self-register: '/home/flam/projects/posty-dogpixels/node_modules/better-sqlite3/build/Release/better_sqlite3.node'.`, try `yarn run electron-builder install-app-deps`.
+8. `yarn start` Starts app
 
 ## Common commands
 
