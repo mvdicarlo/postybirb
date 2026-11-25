@@ -21,6 +21,7 @@ export class MegalodonFileSubmission extends BaseWebsiteOptions {
     required: false,
     expectsInlineTags: true,
     expectsInlineTitle: true,
+    paragraphSpacing: true,
     // Static fallback used before instance limits are fetched. Overridden per
     // instance via `derive` from the account's stored `maxCharacters`.
     maxDescriptionLength: 500,

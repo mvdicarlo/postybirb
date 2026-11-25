@@ -122,6 +122,95 @@ describe('DescriptionNode', () => {
     expect(tree.toBBCode()).toBe('First paragraph.\nSecond paragraph.');
   });
 
+  describe('plaintext paragraph spacing', () => {
+    const context: ConversionContext = {
+      website: 'test',
+      shortcuts: {},
+      customShortcuts: new Map(),
+      defaultDescription: [],
+    };
+
+    const paragraph = (text?: string): TipTapNode => ({
+      type: 'paragraph',
+      content: text ? [{ type: 'text', text }] : [],
+    });
+
+    const toPlainText = (nodes: TipTapNode[], insertAd = false) =>
+      new DescriptionNodeTree(context, nodes, { insertAd }).toPlainText({
+        paragraphSpacing: true,
+      });
+
+    it('should separate consecutive paragraphs with a blank line', () => {
+      expect(toPlainText([paragraph('Hey!'), paragraph('Yo!!')])).toBe(
+        'Hey!\r\n\r\nYo!!',
+      );
+    });
+
+    it('should not add a second blank line around an empty paragraph', () => {
+      expect(
+        toPlainText([paragraph('Hey!'), paragraph(), paragraph('Yo!!')]),
+      ).toBe('Hey!\r\n\r\nYo!!');
+    });
+
+    it('should keep line breaks inside a paragraph as they are', () => {
+      expect(
+        toPlainText([
+          {
+            type: 'paragraph',
+            content: [
+              { type: 'text', text: 'Line 1' },
+              { type: 'hardBreak' },
+              { type: 'text', text: 'Line 2' },
+            ],
+          },
+          paragraph('Next'),
+        ]),
+      ).toBe('Line 1\r\nLine 2\r\n\r\nNext');
+    });
+
+    it('should only space paragraphs', () => {
+      expect(
+        toPlainText([
+          {
+            type: 'heading',
+            attrs: { level: 2 },
+            content: [{ type: 'text', text: 'Title' }],
+          },
+          paragraph('Intro'),
+          {
+            type: 'bulletList',
+            content: [
+              { type: 'listItem', content: [paragraph('One')] },
+              { type: 'listItem', content: [paragraph('Two')] },
+            ],
+          },
+          paragraph('Outro'),
+        ]),
+      ).toBe('Title\r\nIntro\r\n- One\r\n- Two\r\nOutro');
+    });
+
+    it('should keep a single blank line before the ad', () => {
+      expect(toPlainText([paragraph('Hey!'), paragraph('Yo!!')], true)).toBe(
+        'Hey!\r\n\r\nYo!!\r\n\r\nPosted using PostyBirb: https://postybirb.com',
+      );
+    });
+
+    it('should space the paragraphs of the default description', () => {
+      const tree = new DescriptionNodeTree(
+        {
+          ...context,
+          defaultDescription: [paragraph('Default 1'), paragraph('Default 2')],
+        },
+        [{ type: 'defaultShortcut', attrs: {} }],
+        { insertAd: false },
+      );
+
+      expect(tree.toPlainText({ paragraphSpacing: true })).toBe(
+        'Default 1\r\n\r\nDefault 2',
+      );
+    });
+  });
+
   it.each([
     { format: 'plain', marks: [], label: 'Gallery' },
     { format: 'bold', marks: [{ type: 'bold' }], label: '[b]Gallery[/b]' },
