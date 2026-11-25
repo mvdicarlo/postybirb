@@ -6,6 +6,7 @@
 import { Trans } from '@lingui/react/macro';
 import {
   ActionIcon,
+  Alert,
   Box,
   Divider,
   Group,
@@ -17,14 +18,12 @@ import {
 import type { CustomLoginType, UserLoginType } from '@postybirb/types';
 import {
   IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand,
-  IconX,
+  IconLayoutSidebarLeftExpand, IconX
 } from '@tabler/icons-react';
 import React, { useCallback } from 'react';
 import {
-  useNavigationStore,
-  useSubNavVisible,
-  useToggleSectionPanel,
+  useNavigationStore, useSubNavVisible,
+  useToggleSectionPanel
 } from '../../../stores';
 import { useAccount } from '../../../stores/entity/account-store';
 import { useWebsite } from '../../../stores/entity/website-store';
@@ -38,20 +37,25 @@ interface AccountsContentProps {
   viewState: ViewState;
 }
 
+export const websiteWarningByName = new Map<string, () => React.ReactNode>();
+
 /**
  * Header component showing website and account info.
  */
 interface AccountHeaderProps {
-  websiteName: React.ReactNode;
+  websiteName:  React.ReactNode;
+  websiteId: string;
   accountName: string;
   onClose: () => void;
 }
 
 function AccountHeader({
   websiteName,
+  websiteId,
   accountName,
   onClose,
 }: AccountHeaderProps) {
+  const Warning = websiteWarningByName.get(websiteId);
   const { visible: isSectionPanelVisible } = useSubNavVisible();
   const toggleSectionPanel = useToggleSectionPanel();
 
@@ -95,6 +99,11 @@ function AccountHeader({
         <ActionIcon variant="subtle" size="sm" onClick={onClose} color="gray">
           <IconX size={16} />
         </ActionIcon>
+        {Warning ? (
+          <Alert color="yellow">
+            <Warning />
+          </Alert>
+        ) : null}
       </Group>
     </Box>
   );
@@ -107,6 +116,7 @@ interface UserLoginContentProps {
   loginType: UserLoginType;
   accountId: string;
   websiteName: string;
+  websiteId: string;
   accountName: string;
   onClose: () => void;
 }
@@ -115,6 +125,7 @@ function UserLoginContent({
   loginType,
   accountId,
   websiteName,
+  websiteId,
   accountName,
   onClose,
 }: UserLoginContentProps) {
@@ -122,6 +133,7 @@ function UserLoginContent({
     <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
       <AccountHeader
         websiteName={websiteName}
+        websiteId={websiteId}
         accountName={accountName}
         onClose={onClose}
       />
@@ -153,6 +165,7 @@ function CustomLoginContent({
     <Box h="100%" style={{ display: 'flex', flexDirection: 'column' }}>
       <AccountHeader
         websiteName={website.displayName}
+        websiteId={website.id}
         accountName={account.name}
         onClose={onClose}
       />
@@ -206,6 +219,7 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
       <Box>
         <AccountHeader
           websiteName={<Trans>Accounts</Trans>}
+          websiteId=""
           accountName=""
           onClose={onClose}
         />
@@ -244,6 +258,7 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
         loginType={website.loginType}
         accountId={account.id}
         websiteName={website.displayName}
+        websiteId={website.id}
         accountName={account.name}
         onClose={onClose}
       />
@@ -266,6 +281,7 @@ export function AccountsContent({ viewState }: AccountsContentProps) {
     <Box>
       <AccountHeader
         websiteName={<Trans>Accounts</Trans>}
+        websiteId={website.id}
         accountName=""
         onClose={onClose}
       />
