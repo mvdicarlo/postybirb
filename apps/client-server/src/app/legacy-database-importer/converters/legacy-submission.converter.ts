@@ -21,6 +21,7 @@ import { createHash } from 'crypto';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { v4 } from 'uuid';
+import type { FileService } from '../../file/file.service';
 import {
   LegacyFileRecord,
   LegacySubmission,
@@ -127,6 +128,7 @@ export class LegacySubmissionConverter {
 
   constructor(
     private readonly databasePath: string,
+    private readonly fileService: Pick<FileService, 'ensureThumbnail'>,
     private readonly isTemplate = false,
     private readonly onPersisted?: (
       submissionId: SubmissionId,
@@ -312,6 +314,16 @@ export class LegacySubmissionConverter {
             await submissionFileDb.update(submissionFileId, {
               primaryFileId: fileBufferId,
             });
+
+            try {
+              await this.fileService.ensureThumbnail(submissionFileId);
+            } catch (error) {
+              logger
+                .withError(error)
+                .error(
+                  `Failed to generate thumbnail for imported file '${submissionFileId}'`,
+                );
+            }
 
             fileCount++;
           }

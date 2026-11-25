@@ -20,6 +20,7 @@ jest.mock('@postybirb/logger', () => ({
 
 interface WorkerMocks {
   accountRepository: {
+    find: jest.Mock;
     findByIdOrThrow: jest.Mock;
   };
   eventEmitter: {
@@ -78,6 +79,7 @@ function createWorker(): { worker: PostingWorker; mocks: WorkerMocks } {
   });
   const mocks: WorkerMocks = {
     accountRepository: {
+      find: jest.fn().mockResolvedValue([]),
       findByIdOrThrow: jest.fn().mockResolvedValue({ id: 'account-1' }),
     },
     eventEmitter: {
@@ -836,12 +838,53 @@ describe('PostingWorker', () => {
           evicted: false,
           url: '   ',
         },
+        {
+          postId: 'post-1',
+          accountId: 'source-account',
+          evicted: false,
+          url: ' https://example.com/automatic ',
+        },
+        {
+          postId: 'post-1',
+          accountId: 'discord-account',
+          evicted: false,
+          url: 'https://discord.com/channels/1/2/3',
+        },
+        {
+          postId: 'post-1',
+          accountId: 'discord-account',
+          evicted: false,
+          url: 'https://discord.com/channels/1/2/4',
+        },
+        {
+          postId: 'post-1',
+          accountId: 'telegram-account',
+          evicted: false,
+          url: 'https://t.me/example/1',
+        },
+        {
+          postId: 'post-1',
+          accountId: 'telegram-account',
+          evicted: false,
+          url: 'https://t.me/example/2',
+        },
       ])
       .mockResolvedValueOnce([]);
+    mocks.accountRepository.find.mockResolvedValue([
+      { id: 'source-account', website: 'bluesky' },
+      { id: 'source-account-2', website: 'fur-affinity' },
+      { id: 'discord-account', website: 'discord' },
+      { id: 'telegram-account', website: 'telegram' },
+    ]);
     const storedMetadata = {
       dimensions: {},
       ignoredWebsites: [],
-      sourceUrls: ['https://example.com/user', 'https://example.com/source'],
+      sourceUrls: [
+        'https://example.com/user',
+        'https://example.com/source',
+        'https://discord.com/channels/1/2/3',
+        'https://t.me/example/1',
+      ],
     };
     mocks.fileRepository.findByIdOrThrow.mockResolvedValue({
       id: 'file-1',
@@ -880,10 +923,15 @@ describe('PostingWorker', () => {
     expect(postedFiles[0].metadata.sourceUrls).toEqual([
       'https://example.com/user',
       'https://example.com/source',
+      'https://discord.com/channels/1/2/3',
+      'https://t.me/example/1',
+      'https://example.com/automatic',
     ]);
     expect(storedMetadata.sourceUrls).toEqual([
       'https://example.com/user',
       'https://example.com/source',
+      'https://discord.com/channels/1/2/3',
+      'https://t.me/example/1',
     ]);
 
     const sourceWhere = mocks.unitOfWorkRepository.find.mock.calls[1][0].where;

@@ -8,6 +8,7 @@ import { join } from 'path';
 import { AccountService } from '../account/account.service';
 import { publishEntityCreated } from '../common/events/entity-crud.events';
 import { CUSTOM_SHORTCUT_EVENT_PREFIX } from '../custom-shortcuts/custom-shortcut.events';
+import { FileService } from '../file/file.service';
 import { SubmissionEventPublisher } from '../submission/submission-event.publisher';
 import { TAG_CONVERTER_EVENT_PREFIX } from '../tag-converters/tag-converter.events';
 import { TAG_GROUP_EVENT_PREFIX } from '../tag-groups/tag-group.events';
@@ -30,6 +31,7 @@ export class LegacyDatabaseImporterService {
     private readonly eventEmitter: EventEmitter2,
     platform: PlatformService,
     private readonly submissionEventPublisher: SubmissionEventPublisher,
+    private readonly fileService: FileService,
   ) {
     this.LEGACY_POSTYBIRB_PLUS_PATH = join(
       platform.app.getPath('documents'),
@@ -129,7 +131,7 @@ export class LegacyDatabaseImporterService {
     if (importRequest.submissions) {
       // Import submissions (must be after accounts for FK references)
       const submissionResult = await this.processSubmissionImport(
-        new LegacySubmissionConverter(path, false, (id) =>
+        new LegacySubmissionConverter(path, this.fileService, false, (id) =>
           this.submissionEventPublisher?.markChanged(id),
         ),
       );
@@ -141,7 +143,7 @@ export class LegacyDatabaseImporterService {
     if (importRequest.templates) {
       // Import submission templates
       const templateResult = await this.processSubmissionImport(
-        new LegacySubmissionConverter(path, true, (id) =>
+        new LegacySubmissionConverter(path, this.fileService, true, (id) =>
           this.submissionEventPublisher?.markChanged(id),
         ),
       );
