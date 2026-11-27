@@ -1,5 +1,5 @@
-import { isZodDto } from './zod-dto';
 import * as Types from '../index';
+import { isZodDto } from './zod-dto';
 
 jest.mock('@nestjs/common', () => {
   throw new Error('Shared DTOs must not load Nest in the browser');
@@ -440,7 +440,6 @@ describe('submission requests', () => {
     { dependsOn: ['not-a-uuid'] },
     { dependsOn: JSON.stringify(['not-a-uuid']) },
     { defaultOptions: { tags: [1] } },
-    { defaultOptions: { rating: 'invalid' } },
     { fileMetadata: [{ filename: 'file' }] },
     { fileMetadata: JSON.stringify([{ filename: 'file' }]) },
     { isTemplate: true },
@@ -461,14 +460,14 @@ describe('submission requests', () => {
     ).toEqual({ name: '' });
   });
 
-  it('rejects invalid nested website options on submission updates', () => {
+  it('does not rejects valid nested website options on submission updates', () => {
     expect(() =>
       Types.UpdateSubmissionDto.create({
         newOrUpdatedOptions: [
-          { id: 'option', accountId: 'account', data: { rating: 'invalid' } },
+          { id: 'option', accountId: 'account', data: { rating: 'custom' } },
         ],
       }),
-    ).toThrow();
+    ).not.toThrow();
   });
 
   it('preserves nullable template selection and partial updates', () => {

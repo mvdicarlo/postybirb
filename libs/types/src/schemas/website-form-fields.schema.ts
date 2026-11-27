@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z, ZodEnum } from 'zod';
 import { SubmissionRating } from '../enums/submission-rating.enum';
 import type { IWebsiteFormFields } from '../models/submission/website-form-fields.interface';
 import { DescriptionValueSchema } from './description.schema';
@@ -13,6 +13,9 @@ export const WebsiteFormFieldsSchema: z.ZodType<IWebsiteFormFields> =
       })
       .optional(),
     description: DescriptionValueSchema.optional(),
-    rating: z.enum(SubmissionRating).optional(),
+    // Rating can have custom values while ZodType requires it to be default enum type
+    rating: z.string().optional() as unknown as ZodEnum<
+      typeof SubmissionRating
+    >,
     contentWarning: z.string().optional(),
   });
