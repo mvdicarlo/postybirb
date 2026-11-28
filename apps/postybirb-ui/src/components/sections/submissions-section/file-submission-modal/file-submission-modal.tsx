@@ -23,17 +23,21 @@ import {
   Text,
   Transition,
 } from '@mantine/core';
-import { FileWithPath } from '@mantine/dropzone';
+import type { FileWithPath } from '@mantine/dropzone';
 import {
   DefaultDescription,
+  SubmissionRating,
+  SubmissionType,
+} from '@postybirb/types';
+import type {
   Description,
   FileMetadata,
   SubmissionId,
-  SubmissionRating,
-  SubmissionType,
+  SubmissionSidecar,
   Tag,
 } from '@postybirb/types';
 import { IconPlus } from '@tabler/icons-react';
+import { uniq } from 'lodash';
 import { useCallback, useEffect, useState } from 'react';
 import { useLocalStorage } from 'react-use';
 import {
@@ -43,7 +47,13 @@ import {
 import { FileDropzone } from './file-dropzone';
 import { FileList } from './file-list';
 import './file-submission-modal.css';
-import { FileItem, getDefaultTitle } from './file-submission-modal.utils';
+import {
+  type FileItem,
+  getDefaultTitle,
+  mergeSidecarOptions,
+  readSidecarOptions,
+  textToDescription,
+} from './file-submission-modal.utils';
 import { ImageEditor } from './image-editor';
 import { OptionsMode, SubmissionOptions } from './submission-options';
 
@@ -85,16 +95,12 @@ export function FileSubmissionModal({
 }: FileSubmissionModalProps) {
   // File state
   const [fileItems, setFileItems] = useState<FileItem[]>([]);
-
   // Handle initial files when modal opens
   useEffect(() => {
     if (opened && initialFiles && initialFiles.length > 0) {
-      const newItems: FileItem[] = initialFiles.map((file) => ({
-        file,
-        title: getDefaultTitle(file.name),
-      }));
-      setFileItems((prev) => [...prev, ...newItems]);
+      handleDrop(initialFiles);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened, initialFiles]);
 
   // Template state
@@ -144,14 +150,84 @@ export function FileSubmissionModal({
   // Image editor state
   const [editingFile, setEditingFile] = useState<FileWithPath | null>(null);
 
+  // Transfer sidecar contents of dropped files to the form.
+  // Previously entered values win; within a batch, the last
+  // file with rating/description wins and tags are merged.
+  const applySidecarMetadata = useCallback(
+    (sidecars: (SubmissionSidecar | undefined)[], items: FileItem[]) => {
+      // Per-file titles apply regardless of options mode.
+      const titlesByFile = new Map(
+        items
+          .map((item, index) => [
+            item.file,
+            sidecars[index]?.title,
+          ] as const)
+          .filter(([, title]) => !!title),
+      );
+      if (titlesByFile.size > 0) {
+        setFileItems((prev) =>
+          prev.map((item) => {
+            const title = titlesByFile.get(item.file);
+            return title ? { ...item, title } : item;
+          }),
+        );
+      }
+
+      if ((optionsMode ?? 'custom') !== 'custom') return;
+
+      const {
+        rating: sidecarRating,
+        description: sidecarDescription,
+        tags: sidecarTags,
+      } = mergeSidecarOptions(sidecars);
+      if (sidecarRating) {
+        setRating((prev) =>
+          prev === SubmissionRating.GENERAL ? sidecarRating : prev,
+        );
+      }
+      if (sidecarDescription) {
+        setDescription((prev) =>
+          prev.content?.length ? prev : textToDescription(sidecarDescription),
+        );
+      }
+      if (sidecarTags?.length) {
+        setTags((prev) => uniq([...prev, ...sidecarTags]));
+      }
+    },
+    [optionsMode],
+  );
+
   // Handle file drop
-  const handleDrop = useCallback((acceptedFiles: FileWithPath[]) => {
-    const newItems: FileItem[] = acceptedFiles.map((file) => ({
-      file,
-      title: getDefaultTitle(file.name),
-    }));
-    setFileItems((prev) => [...prev, ...newItems]);
-  }, []);
+  const handleDrop = useCallback(
+    async (acceptedFiles: FileWithPath[]) => {
+      if (acceptedFiles.length === 0) return;
+
+      const newItems: FileItem[] = acceptedFiles.map((file) => ({
+        file,
+        title: getDefaultTitle(file.name),
+      }));
+      setFileItems((prev) => [...prev, ...newItems]);
+
+      // Look up JSON sidecar files next to the dropped files and transfer
+      // their options into the form. Entry is async on purpose: files show
+      // up immediately, sidecar data merges in once read.
+      const sidecars = await Promise.all(
+        acceptedFiles.map(async (file) => {
+          try {
+            return await readSidecarOptions(file);
+          } catch (error) {
+            // eslint-disable-next-line no-console, lingui/no-unlocalized-strings
+            console.error('Failed to read sidecar options', file.name, error);
+            return undefined;
+          }
+        }),
+      );
+      if (!opened) return;
+
+      applySidecarMetadata(sidecars, newItems);
+    },
+    [applySidecarMetadata, opened],
+  );
 
   // Handle file deletion
   const handleDelete = useCallback((file: FileWithPath) => {

@@ -1,9 +1,13 @@
 import type { RemoteConfig } from '@postybirb/utils/common';
+import type { SubmissionSidecar } from '../../schemas/submission-sidecar.schema';
 
 export interface PreloadBridge {
   getLanIp(): Promise<string | undefined>;
   getRemoteConfig(): RemoteConfig;
   pickDirectory?(defaultPath?: string): Promise<string | undefined>;
+  readSidecarOptions?(
+    file: File,
+  ): Promise<SubmissionSidecar | undefined>;
   openExternalLink(url: string): void;
   getCookiesForAccount(accountId: string): Promise<string>;
   getLocalStorageForAccount(
