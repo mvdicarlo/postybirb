@@ -33,10 +33,16 @@ export const TranslationMessages: TranslationsMap = {
     const maxLength = props?.maxLength ?? 0;
     const currentLength = props?.currentLength ?? 0;
     return (
-      <Trans>
-        Description length is greater then maximum ({currentLength} /{' '}
-        {maxLength})
-      </Trans>
+      <>
+        <Trans>
+          Description length is greater then maximum ({currentLength} /{' '}
+          {maxLength})
+        </Trans>{' '}
+        <Trans>
+          The inserted title, tags and shortcuts are counted too, open the
+          description preview to see the full text.
+        </Trans>
+      </>
     );
   },
 

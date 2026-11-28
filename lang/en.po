@@ -4218,6 +4218,10 @@ msgstr "The form encountered an error and couldn't be displayed properly."
 msgid "The header shows the submission title and action buttons. Use the template button to apply saved settings, the send button to post, and the trash button to delete."
 msgstr "The header shows the submission title and action buttons. Use the template button to apply saved settings, the send button to post, and the trash button to delete."
 
+#: apps/postybirb-ui/src/i18n/validation-translation.tsx
+msgid "The inserted title, tags and shortcuts are counted too, open the description preview to see the full text."
+msgstr "The inserted title, tags and shortcuts are counted too, open the description preview to see the full text."
+
 #: apps/postybirb-ui/src/components/website-login-views/adore34/adore34-login-view.tsx
 msgid "The key starts with adore_ak_ and is only shown once by Adore34."
 msgstr "The key starts with adore_ak_ and is only shown once by Adore34."
