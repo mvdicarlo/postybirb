@@ -467,6 +467,31 @@ export const TranslationMessages: TranslationsMap = {
       and tags are not used.
     </Trans>
   ),
+
+  'validation.file.yiff-party.not-logged-in': () => (
+    <Trans>Add your Yiff Party API key in the account settings.</Trans>
+  ),
+
+  'validation.file.yiff-party.min-dimensions': (props) => {
+    const { fileName, minWidth, minHeight } = props;
+    return (
+      <Trans>
+        {fileName} is too small for Yiff Party (minimum {minWidth} by{' '}
+        {minHeight} pixels)
+      </Trans>
+    );
+  },
+
+  'validation.tags.yiff-party.artist-tag': (props) => {
+    const { tags } = props;
+    return (
+      <>
+        <Trans>Yiff Party adds your artist tag by itself, remove these tags</Trans>
+        :{' '}
+        <span>{tags.join(', ')}</span>
+      </>
+    );
+  },
 };
 
 export function ValidationTranslation({

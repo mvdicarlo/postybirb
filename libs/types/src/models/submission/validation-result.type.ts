@@ -254,4 +254,16 @@ export interface ValidationMessages {
   'validation.file.tailspace.comic-unavailable': object;
 
   'validation.file.tailspace.comic-ignores-post-fields': object;
+
+  'validation.file.yiff-party.not-logged-in': object;
+
+  'validation.file.yiff-party.min-dimensions': {
+    fileName: string;
+    minWidth: number;
+    minHeight: number;
+  };
+
+  'validation.tags.yiff-party.artist-tag': {
+    tags: string[];
+  };
 }
