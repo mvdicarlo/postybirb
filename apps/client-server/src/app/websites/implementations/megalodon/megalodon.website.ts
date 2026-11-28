@@ -124,7 +124,12 @@ export abstract class MegalodonWebsite
     return instanceType;
   }
 
-  private async getInstanceType(
+  /**
+   * Instance type used to register the OAuth app.
+   * Subclasses whose software is not known to Megalodon's detector can
+   * override this to skip detection.
+   */
+  protected async getInstanceType(
     instanceUrl: string,
   ): Promise<FediverseInstanceTypes> {
     const detectedType = await this.detectMegalodonInstanceType(instanceUrl);
@@ -442,6 +447,24 @@ export abstract class MegalodonWebsite
     return this.instanceLimits?.supportedMimeTypes;
   }
 
+  /**
+   * Last chance to adapt the status text for a given software.
+   */
+  protected formatStatusText(text: string): string {
+    return text;
+  }
+
+  /**
+   * Content warning sent with the status.
+   */
+  protected getSpoilerText(
+    spoilerText: string | undefined,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    isSensitiveRating: boolean,
+  ): string | undefined {
+    return spoilerText || undefined;
+  }
+
   createFileModel(): MegalodonFileSubmission {
     return new MegalodonFileSubmission();
   }
@@ -581,15 +604,17 @@ export abstract class MegalodonWebsite
         cancellationToken.throwIfAborted();
         try {
           statusResult = await client.postStatus(
-            postData.options.description || '',
+            this.formatStatusText(postData.options.description || ''),
             {
               media_ids: mediaIds,
               sensitive: isSensitiveRating || false,
               visibility: postData.options.visibility || 'public',
-              spoiler_text:
+              spoiler_text: this.getSpoilerText(
                 postData.options.spoilerText ||
-                files[0]?.metadata?.spoilerText ||
-                undefined,
+                  files[0]?.metadata?.spoilerText ||
+                  undefined,
+                isSensitiveRating,
+              ),
               language: undefined,
             },
           );
@@ -616,6 +641,14 @@ export abstract class MegalodonWebsite
       if (!statusResult) throw new Error('No post result');
 
       const status = statusResult.data;
+      // Some servers answer 202 with an empty body when the post is queued
+      if (!isObject(status)) {
+        return PostResponse.fromWebsite(this).withAdditionalInfo({
+          message: 'Post accepted by the instance',
+          status: statusResult.status,
+        });
+      }
+
       // Check if it's a Status (not ScheduledStatus)
       if ('uri' in status) {
         const sourceUrl = status.url || status.uri;
@@ -656,16 +689,27 @@ export abstract class MegalodonWebsite
         postData.options.rating === SubmissionRating.EXTREME;
 
       const statusResult = await client.postStatus(
-        postData.options.description || '',
+        this.formatStatusText(postData.options.description || ''),
         {
           sensitive: isSensitiveRating || false,
           visibility: postData.options.visibility || 'public',
-          spoiler_text: postData.options.spoilerText || undefined,
+          spoiler_text: this.getSpoilerText(
+            postData.options.spoilerText || undefined,
+            isSensitiveRating,
+          ),
           language: undefined,
         },
       );
 
       const status = statusResult.data;
+      // Some servers answer 202 with an empty body when the post is queued
+      if (!isObject(status)) {
+        return PostResponse.fromWebsite(this).withAdditionalInfo({
+          message: 'Post accepted by the instance',
+          status: statusResult.status,
+        });
+      }
+
       // Check if it's a Status (not ScheduledStatus)
       if ('uri' in status) {
         const sourceUrl = status.url || status.uri;

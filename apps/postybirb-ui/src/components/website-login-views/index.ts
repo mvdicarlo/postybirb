@@ -56,6 +56,7 @@ const loginViewRegistry: Record<string, LoginViewComponent<any>> = {
   Tailspace: TailspaceLoginView,
   Telegram: TelegramLoginView,
   Twitter: TwitterLoginView,
+  Wafrn: MegalodonLoginView,
   e621: E621LoginView,
 };
 
